@@ -1,0 +1,77 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Results tables in the submission, generated from the CSVs rather than typed.
+#
+# A table transcribed by hand is the same defect class as a transcribed sentence, but larger:
+# the coverage table alone carries 24 numbers, and one stale entry after a re-run is invisible
+# to every proofread.  scripts/make_tex.py renders each spec below into a LaTeX tabular that
+# the document \input{}s, so the paper and results/tables/*.csv cannot disagree.
+#
+# Fields:
+#   key       macro-free filename stem; the document inputs generated/table-<key>.tex
+#   source    path relative to the repository root
+#   caption   LaTeX caption
+#   label     LaTeX \label
+#   rows      optional list of selectors; omitted means every row, in file order
+#   columns   ordered list of {from, header, format}; `derived` builds a column from others
+#
+# Headers containing LaTeX use SINGLE quotes.  A YAML double-quoted scalar processes
+# backslash escapes, so "$\chi$" fails to parse on the unknown escape \c, and any header
+# that happened to use a valid escape would silently lose its backslash instead.
+#   align     tabular column specification
+
+tables:
+  - key: coverage
+    source: results/tables/coverage_by_arm.csv
+    caption: >
+      False-decline coverage on $\Dtest$, calibrated on $\Dcal$ and judged against the exact
+      Beta-Binomial law rather than against $\alpha$.  The stratified and card-disjoint
+      control arms sit inside the interval at every level; the temporal arm does not.
+    label: tab:coverage
+    align: llrrrl
+    rows:
+      - {arm: temporal, alpha: 0.01}
+      - {arm: temporal, alpha: 0.005}
+      - {arm: temporal, alpha: 0.002}
+      - {arm: temporal, alpha: 0.001}
+      - {arm: stratified, alpha: 0.01}
+      - {arm: stratified, alpha: 0.001}
+      - {arm: card_disjoint, alpha: 0.01}
+      - {arm: card_disjoint, alpha: 0.001}
+    columns:
+      - {from: arm, header: Arm, format: label}
+      - {from: alpha, header: '$\alpha$', format: "{:.3f}"}
+      - {from: empirical, header: Empirical, format: "{:.5f}"}
+      - {from: ratio, header: Ratio, format: "{:.3f}"}
+      - {from: observed_errors, header: Errors, format: "{:.0f}"}
+      - {derived: interval_verdict, header: Verdict (interval)}
+
+  - key: mps
+    source: results/tables/mps_h4.csv
+    caption: >
+      H4 in the band: matrix-product-state against the tuned gradient-boosted baseline on
+      identical rows and features.  Intervals are 95\,\% card-clustered bootstraps.  Every
+      interval contains zero, and the comparison is underpowered against its pre-registered
+      ceiling, so what is established is a non-superiority bound rather than a null.
+    label: tab:mps
+    align: rrrrlr
+    columns:
+      - {from: bond_dimension, header: '$\chi$', format: "{:.0f}"}
+      - {from: ap_mps, header: AP (MPS), format: "{:.4f}"}
+      - {from: ap_gbdt, header: AP (GBDT), format: "{:.4f}"}
+      - {from: ap_difference, header: '$\Delta$AP', format: "{:+.4f}"}
+      - {derived: confidence_interval, header: '95\,\% CI'}
+      - {from: p_value, header: '$p$', format: "{:.3f}"}
+
+  - key: rolling
+    source: results/tables/rolling_origin.csv
+    caption: >
+      The temporal deviation across five rolling calibration origins.  Two of five breach and
+      the earliest is conservative, so no single ratio characterises the effect.
+    label: tab:rolling
+    align: rrrl
+    columns:
+      - {from: cal_start, header: Origin (day), format: "{:.0f}"}
+      - {from: ratio, header: Ratio, format: "{:.3f}"}
+      - {from: observed, header: Errors, format: "{:.0f}"}
+      - {derived: interval_verdict_rolling, header: Verdict (interval)}

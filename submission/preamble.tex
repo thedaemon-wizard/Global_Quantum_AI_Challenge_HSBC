@@ -1,0 +1,32 @@
+% SPDX-License-Identifier: Apache-2.0
+% Shared preamble.  The portal accepts A4 and the challenge sets a 10 pt floor; both are
+% asserted after the build by scripts/check_pdf.py rather than trusted here.
+\usepackage[a4paper,margin=18mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage[table]{xcolor}
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+
+\captionsetup{labelfont=bf,skip=3pt}
+\setlist[itemize]{leftmargin=*,topsep=2pt,itemsep=1pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=*,topsep=2pt,itemsep=1pt,parsep=0pt}
+\setlength{\parskip}{2pt}
+\setlength{\abovedisplayskip}{4pt}
+\setlength{\belowdisplayskip}{4pt}
+
+% Every number comes from docs/claims.yaml via scripts/make_tex.py.  A numeric literal in
+% the body is a defect: it means a figure was typed rather than measured.
+\input{generated/claims}
+
+\newcommand{\Dtrain}{\mathcal{D}_{\mathrm{train}}}
+\newcommand{\Dband}{\mathcal{D}_{\mathrm{band}}}
+\newcommand{\Dcal}{\mathcal{D}_{\mathrm{cal}}}
+\newcommand{\Dtest}{\mathcal{D}_{\mathrm{test}}}
+\newcommand{\tauhi}{\tau_{\mathrm{hi}}}
+\newcommand{\taulo}{\tau_{\mathrm{lo}}}

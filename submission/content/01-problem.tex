@@ -1,0 +1,28 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{The decision, and what is missing from it}
+
+An issuer authorising a card transaction has three actions, not two: approve, decline, or
+challenge the cardholder through 3-D Secure. The middle action is what makes the problem
+tractable at scale --- routing even one percent of authorisation volume to human analysts is
+not operationally possible, while a step-up challenge is --- and it is the action that
+published fraud-detection work almost never certifies. Models are reported by AUC or average
+precision on a held-out fold. Neither is a statement about a decision, and neither carries a
+finite-sample guarantee.
+
+\textbf{What we contribute.} A three-valued rule whose \emph{abstention band} carries a
+distribution-free, finite-sample risk certificate, evaluated under a pre-registration frozen
+before any model was fitted; and an honest measurement of where two quantum approaches sit
+against a tuned classical baseline on the same decision.
+
+\textbf{Both quantum arms returned negative results.} A fidelity quantum kernel was rejected
+by its own a-priori screens before it was run on the task. A matrix-product-state classifier
+ran and did not beat gradient boosting. We report both in the body rather than the appendix,
+because a screen that only ever passes is not a screen, and because the pre-registration
+committed us to reporting whatever it returned.
+
+\textbf{What we do not claim.} No quantum advantage of any kind. No portfolio-level PSD2
+compliance figure --- the SCA-RTS ceilings govern exemption eligibility across a whole
+portfolio, not a decline threshold on a fraud-enriched research benchmark, and treating them
+as a threshold selector is a category error we made and withdrew. No claim that the
+certificate binds the \emph{unconditional} false-decline rate: it does not, and
+Section~\ref{sec:method} says why that distinction is the point rather than a caveat.

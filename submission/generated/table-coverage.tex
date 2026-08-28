@@ -1,0 +1,19 @@
+% Generated from coverage_by_arm.csv by scripts/make_tex.py. Do not edit.
+\begin{table}[t]\centering
+\caption{False-decline coverage on $\Dtest$, calibrated on $\Dcal$ and judged against the exact Beta-Binomial law rather than against $\alpha$.  The stratified and card-disjoint control arms sit inside the interval at every level; the temporal arm does not.}
+\label{tab:coverage}
+\begin{tabular}{llrrrl}
+\toprule
+Arm & $\alpha$ & Empirical & Ratio & Errors & Verdict (interval) \\
+\midrule
+temporal & 0.010 & 0.01494 & 1.494 & 1667 & breached ($[973,1266]$) \\
+temporal & 0.005 & 0.00746 & 1.493 & 833 & breached ($[458,665]$) \\
+temporal & 0.002 & 0.00264 & 1.322 & 295 & breached ($[161,292]$) \\
+temporal & 0.001 & 0.00098 & 0.977 & 109 & inside ($[69,162]$) \\
+stratified & 0.010 & 0.00952 & 0.952 & 1085 & inside ($[993,1292]$) \\
+stratified & 0.001 & 0.00116 & 1.158 & 132 & inside ($[70,164]$) \\
+card-disjoint & 0.010 & 0.00896 & 0.896 & 990 & inside ($[960,1256]$) \\
+card-disjoint & 0.001 & 0.00076 & 0.760 & 84 & inside ($[67,161]$) \\
+\bottomrule
+\end{tabular}
+\end{table}

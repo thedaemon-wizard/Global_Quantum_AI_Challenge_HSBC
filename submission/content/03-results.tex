@@ -1,0 +1,37 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{Results}\label{sec:results}
+
+\paragraph{Coverage holds under two control splits and fails under time.}
+Table~\ref{tab:coverage} calibrates on $\Dcal$ and reports on $\Dtest$. The stratified and
+card-disjoint arms sit inside the Beta-Binomial interval at every $\alpha$. The temporal arm
+breaches at three of four levels.
+
+\input{generated/table-coverage}
+
+The three-arm design exists to decompose degradation into a temporal component and a
+sampling component. It does: the controls pass, so the breach is temporal.
+
+\paragraph{But the breach is origin-dependent, and this narrows the claim.} Re-running at
+five rolling calibration origins gives Table~\ref{tab:rolling}: the ratio ranges from
+\ClaimRollingRatioMin{} to \ClaimRollingRatioMax. Two of five breach, and the earliest is
+\emph{conservative} --- the deviation reverses direction. So the defensible statement is not
+that temporal splits inflate the false-decline rate by a fixed factor; it is that the
+deviation depends on where the calibration window falls, and a single origin cannot establish
+its size. An earlier draft of this work quoted a single seed's maximum as a central estimate.
+That was an overclaim, and correcting it removed our cleanest headline number.
+
+\input{generated/table-rolling}
+
+\paragraph{What the certificate actually reaches.} \ClaimCertifiedConfigs{} of \ClaimRiskConfigs{} configurations certify, all
+strictly inside the band --- the smallest margin below $\tauhi$ is \ClaimCertificateMargin. That property is
+not automatic: an earlier version certified a larger set, every one of them
+sitting exactly at the band edge, where the flagged set is empty by construction and the risk
+is structurally zero. The certificate was vacuous and we did not notice until we asked where
+the selected $\lambda$ sat.
+
+The surviving configurations need $\alpha \ge 0.10$ and $\alpha_{\mathrm{FN}} = 0.45$.
+Nothing certifies at the tightest band budget at all. The mechanism is sample size, not
+method: at a 2\,\% traffic budget $\Dcal$ contributes only \ClaimBandLegitCalMin{} legitimate in-band rows
+against \ClaimCalLegitCount{} overall, and the class-conditional degeneracy floor
+$\lceil 1/\alpha\rceil - 1$ then binds. We pre-registered this limitation as an amendment
+before running the arm, and the measurement landed where the amendment predicted.

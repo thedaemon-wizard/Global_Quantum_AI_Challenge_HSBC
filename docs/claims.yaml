@@ -1,0 +1,248 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Every number that appears in prose, bound to the table it comes from.
+#
+# This file exists because prose and tables have disagreed four times in this project:
+# a card-overlap figure of 84.8 % against a measured 0.849623, degeneracy counts transcribed
+# from the stratified arm of a superseded split, a count-weighted percentage spliced into a
+# value-weighted paragraph, and a claim of "all 24 combinations" against a different row
+# count.  Each was caught by reading.  Reading does not scale to a five-page proposal with
+# an appendix, and it does not survive a late edit.
+#
+# scripts/check_claims.py recomputes every entry from its source table and fails on any
+# mismatch beyond the stated tolerance.  scripts/make_tex.py emits each as a LaTeX macro, so
+# the proposal cannot contain a number that was typed rather than measured.
+#
+# Fields:
+#   key        LaTeX macro name (\ClaimKey) and the identifier used in review
+#   value      the number as it will appear, at the precision it will appear
+#   source     path relative to the repository root
+#   select     column -> value filters identifying the row; omit for single-row tables
+#   column     column to read
+#   tolerance  absolute tolerance for the comparison; set from the printed precision
+#   note       why this number matters, for a reviewer who does not know the study
+
+claims:
+  # -------------------------------------------------------------------- split and data
+  - key: CardOverlap
+    value: 0.8496
+    source: results/tables/data_integrity.csv
+    select: {arm: temporal}
+    column: fraction_test_entities_seen_in_train
+    tolerance: 0.00005
+    note: >
+      Fraction of test-block card1 values also present in training.  Quoted as 85.0 % in
+      prose; an earlier draft said 84.8 %.  This is why row-level exchangeability fails and
+      every interval is a card-level block bootstrap.
+
+  - key: TwoSampleAucTemporal
+    value: 0.5525
+    source: results/tables/data_integrity.csv
+    select: {arm: temporal}
+    column: cal_vs_test_two_sample_auc
+    tolerance: 0.00005
+    note: >
+      Distinguishability of D_cal from D_test without the entity key.  The with-entity
+      figure is reported alongside because including card1 while partitioning by card1 is
+      circular; the card-disjoint arm scores 0.9685 with it and 0.6554 without.
+
+  - key: CalFraudCount
+    value: 2121
+    source: results/tables/splits.csv
+    select: {arm: temporal, block: cal}
+    column: n_fraud
+    tolerance: 0
+    note: Fraud rows in D_cal, temporal arm.  Sets the fraud-conditional degeneracy floor.
+
+  - key: CalLegitCount
+    value: 58343
+    source: results/tables/splits.csv
+    select: {arm: temporal, block: cal}
+    column: n_legit
+    tolerance: 0
+    note: >
+      Legitimate rows in D_cal, temporal arm.  The guarantee lives on this class.  An
+      earlier protocol table read 56,993, taken from the stratified arm of a superseded
+      split.
+
+  # ------------------------------------------------------------------------- coverage
+  - key: TemporalRatioAlphaOnePct
+    value: 1.494
+    source: results/tables/coverage_by_arm.csv
+    select: {arm: temporal, alpha: 0.01}
+    column: ratio
+    tolerance: 0.0005
+    note: Empirical over nominal false-decline rate, temporal arm, alpha = 0.01.
+
+  - key: TemporalErrorsAlphaOnePct
+    value: 1667
+    source: results/tables/coverage_by_arm.csv
+    select: {arm: temporal, alpha: 0.01}
+    column: observed_errors
+    tolerance: 0
+    note: >
+      Observed errors against a Beta-Binomial band of [973, 1266].  The breach is judged
+      against the exact predictive law, not against alpha.
+
+  - key: StratifiedRatioAlphaOnePct
+    value: 0.952
+    source: results/tables/coverage_by_arm.csv
+    select: {arm: stratified, alpha: 0.01}
+    column: ratio
+    tolerance: 0.0005
+    note: The stratified control arm, inside the band.  Isolates the breach as temporal.
+
+  - key: CardDisjointRatioAlphaOnePct
+    value: 0.896
+    source: results/tables/coverage_by_arm.csv
+    select: {arm: card_disjoint, alpha: 0.01}
+    column: ratio
+    tolerance: 0.0005
+    note: The card-disjoint control arm, also inside the band.
+
+  # -------------------------------------------------------------- rolling origin (D-025)
+  - key: RollingRatioMin
+    value: 0.684
+    source: results/tables/rolling_origin.csv
+    select: {cal_start: 101}
+    column: ratio
+    tolerance: 0.0005
+    note: >
+      Earliest origin, conservative.  With RollingRatioMax this is the evidence that the
+      temporal deviation is origin-dependent and that no single ratio can be quoted.
+
+  - key: RollingRatioMax
+    value: 1.411
+    source: results/tables/rolling_origin.csv
+    select: {cal_start: 121}
+    column: ratio
+    tolerance: 0.0005
+    note: Largest breach across the five origins.
+
+  # --------------------------------------------------------------- quantum kernel screens
+  - key: ScreenPassBoth
+    value: 0
+    source: results/tables/screens.csv
+    reduce: {op: sum_and, columns: [passes_conditioning, passes_distinctness]}
+    tolerance: 0
+    note: >
+      Configurations passing both a-priori gates, out of 120.  Zero.  The kernel arm was
+      rejected before being run on the decision task.
+
+  - key: ScreenPassConditioning
+    value: 28
+    source: results/tables/screens.csv
+    reduce: {op: sum, column: passes_conditioning}
+    tolerance: 0
+    note: Configurations that are not exponentially concentrated.
+
+  - key: ScreenMinRbfCorrelation
+    value: 0.6291
+    source: results/tables/screens.csv
+    reduce: {op: min, column: rbf_correlation}
+    tolerance: 0.00005
+    note: >
+      Closest any configuration came to distinctness, against a 0.60 threshold.  Every
+      kernel tried is reproducible by a tuned RBF.
+
+  # ----------------------------------------------------------------------- tensor network
+  - key: MpsApBestChi
+    value: 0.1228
+    source: results/tables/mps_band.csv
+    select: {model: mps, bond_dimension: 32}
+    column: average_precision
+    tolerance: 0.00005
+    note: Best in-band average precision across the bond-dimension sweep.
+
+  - key: GbdtApBand
+    value: 0.1407
+    source: results/tables/mps_band.csv
+    select: {model: xgboost}
+    column: average_precision
+    tolerance: 0.00005
+    note: The tuned baseline on identical rows and features.
+
+  - key: MpsDeltaApBestChi
+    value: -0.0179
+    source: results/tables/mps_h4.csv
+    select: {bond_dimension: 32}
+    column: ap_difference
+    tolerance: 0.00005
+    note: Paired difference, MPS minus GBDT, at the largest bond dimension.
+
+  - key: MpsCiHighBestChi
+    value: 0.0222
+    source: results/tables/mps_h4.csv
+    select: {bond_dimension: 32}
+    column: ci_high
+    tolerance: 0.00005
+    note: >
+      Upper end of the 95 % clustered interval.  This is the non-superiority bound the
+      study actually establishes: any MPS improvement is under roughly +0.02 AP.
+
+  - key: MpsStandardErrorBestChi
+    value: 0.0204
+    source: results/tables/mps_h4.csv
+    select: {bond_dimension: 32}
+    column: standard_error
+    tolerance: 0.00005
+    note: >
+      The measured cross-family standard error.  Compare against the within-family 0.0025
+      the first power gate used; the eightfold gap is D-030.
+
+  - key: CertifiedConfigs
+    value: 5
+    source: results/tables/riskcontrol.csv
+    reduce: {op: sum, column: certified}
+    tolerance: 0
+    note: Configurations that certify, out of RiskConfigs.  All strictly inside the band.
+
+  - key: RiskConfigs
+    value: 48
+    source: results/tables/riskcontrol.csv
+    reduce: {op: count}
+    tolerance: 0
+    note: Total configurations on the pre-registered risk-control grid.
+
+  - key: BandLegitCalMin
+    value: 847
+    source: results/tables/riskcontrol.csv
+    reduce: {op: min, column: n_legit_band_cal}
+    tolerance: 0
+    note: >
+      Legitimate in-band rows in D_cal at the tightest band budget.  This is the sample
+      size the band-conditional certificate has to work with, and why nothing certifies
+      below alpha = 0.10.
+
+  - key: ScreenConfigs
+    value: 120
+    source: results/tables/screens.csv
+    reduce: {op: count}
+    tolerance: 0
+    note: >
+      Kernel configurations screened: encoding x qubits x bandwidth x entanglement.
+
+  - key: CertificateMargin
+    value: 0.0136
+    source: results/tables/riskcontrol.csv
+    reduce: {op: min_margin, columns: [band_hi, selected_lambda], where: certified}
+    tolerance: 0.00005
+    note: >
+      Smallest distance between a certified lambda and the upper band edge.  It must be
+      strictly positive: at band_hi the flagged set is empty by construction and the risk is
+      structurally zero, which is what made an earlier certificate vacuous.
+
+  # ----------------------------------------------------------------------------- power
+  - key: PowerSeWithinFamily
+    value: 0.0025
+    source: results/tables/power.csv
+    column: se_within_family
+    tolerance: 0.00005
+    note: Seed-to-seed noise of the baseline against itself.  A floor, not a description.
+
+  - key: PowerCeiling
+    value: 0.023
+    source: results/tables/power.csv
+    column: preregistered_ceiling
+    tolerance: 0.0000005
+    note: The pre-registered MDE ceiling above which H4 is declared underpowered.

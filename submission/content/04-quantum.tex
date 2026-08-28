@@ -1,0 +1,42 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{Two quantum arms, both negative}
+
+\paragraph{The kernel never reached the task.} Before running a fidelity quantum kernel we
+pre-registered two gates over \ClaimScreenConfigs{} configurations (encoding $\times$ qubits $\times$ bandwidth
+$\times$ entanglement). A kernel is usable only if it is not exponentially concentrated ---
+effective rank $r_{\mathrm{eff}} = (\sum_i \sigma_i)^2 / (n \sum_i \sigma_i^2)$ inside a
+usable band --- \emph{and} not reproducible by a tuned RBF, $\rho_{\mathrm{RBF}} < 0.60$.
+
+\ClaimScreenPassConditioning{} of \ClaimScreenConfigs{} pass conditioning. \textbf{\ClaimScreenPassBoth{} pass
+both.} The closest any configuration came to distinctness was
+$\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$. Every kernel we could construct on
+this data is, to within measurement, a classical RBF in disguise --- which is what the
+dequantisation literature predicts, and which we would not have known had we reported a
+downstream accuracy instead.
+
+\paragraph{The tensor network ran, and did not win.} A matrix-product-state classifier
+contracts $f(\mathbf{x}) = \sum_{\{s\}} A^{s_1} \cdots A^{s_N} \prod_j \phi^{s_j}(x_j)$ with
+$\phi(x) = [\cos\frac{\pi x}{2}, \sin\frac{\pi x}{2}]$, sweeping the bond dimension $\chi$
+rather than tuning it. In the band, on identical rows and features, it reaches average
+precision \ClaimMpsApBestChi{} at the largest bond dimension against \ClaimGbdtApBand{} for
+the tuned gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi.
+Table~\ref{tab:mps} gives the sweep.
+
+\input{generated/table-mps}
+
+\paragraph{The gate meant to tell us whether that was informative was itself wrong.} The
+pre-registration requires the minimum detectable effect to be computed \emph{before} the
+comparison, and commits to declaring the test underpowered if it exceeds \ClaimPowerCeiling{}
+average precision. Two defects followed. First, the calculation had no caller at all, so the
+comparison would have been \emph{observed} rather than tested; the script now refuses to
+start without it. Second, our noise estimate was the seed-to-seed spread of the baseline
+against itself, standard error \ClaimPowerSeWithinFamily. But this comparison is between
+model \emph{families}, whose measured standard error is \ClaimMpsStandardErrorBestChi{} ---
+roughly eightfold larger, so the minimum detectable effect this comparison actually
+supports \emph{exceeds} the pre-registered ceiling.
+
+\textbf{H4 is therefore reported as underpowered}, which is what the protocol commits to when
+this happens. What survives is weaker than a null result and we state it as such: every
+interval contains zero, so any improvement from the tensor network is bounded above by
+$+\ClaimMpsCiHighBestChi{}$ average precision. That is a non-superiority bound. It is not evidence of
+equivalence, and it is not evidence that the tensor network is worse.

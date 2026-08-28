@@ -1,0 +1,33 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{Limitations, and what would change the answer}
+
+\textbf{The population is conditional on an incumbent.} IEEE-CIS contains only transactions
+an existing stack already approved; declined attempts cannot generate a chargeback. The
+estimand is defined on the approved-and-settled population. That is exactly the population a
+champion/challenger comparison runs on, so the restriction is the right one --- but it is a
+restriction, and no result here extrapolates past it.
+
+\textbf{The label is partly an entity flag.} A chargeback propagates to later transactions
+sharing an account, email or billing address. Many $Y=1$ rows are not fraudulent
+transactions but transactions on a card that later had one. Fraud detection on this file is
+partly entity-contamination detection.
+
+\textbf{The certificate is sample-starved by design.} Conditioning on a 2\,\% band is what
+makes the guarantee bind the component we care about, and it is also what leaves
+\ClaimBandLegitCalMin{} legitimate rows to certify with. A larger $\Dcal$, or a wider band, buys tighter $\alpha$ ---
+nothing about the method needs to change.
+
+\textbf{What would change the quantum conclusion.} The screens rejected every kernel we could
+build because each was reproducible by a tuned RBF. An encoding whose Gram matrix is
+demonstrably outside the RBF family, at a bandwidth that does not concentrate, would pass the
+same gates unmodified --- we did not find one. For the tensor network, the honest requirement
+is a comparison powered for cross-family noise: at the measured standard error, resolving an effect the size of the interval above needs roughly eight times the in-band evaluation set, which a wider band or a
+longer observation window would supply.
+
+\medskip\noindent
+\textbf{Reproduction.} \texttt{make smoke \&\& make reproduce \&\& make check}. The
+pre-registration is enforced in code, not by discipline: a gate hashes every
+guarantee-bearing parameter and refuses undocumented change, the test-fold loader persists an
+access counter and raises on a second configuration, and every number in this document is
+generated from a results table rather than typed. The decision log records all thirty-one
+entries, including the four retractions above.

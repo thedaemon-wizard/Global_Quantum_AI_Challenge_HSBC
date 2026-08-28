@@ -1,0 +1,59 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{Method}\label{sec:method}
+
+\paragraph{The rule.} With a classical scorer $f$ and thresholds $\taulo < \tauhi$ fixed in
+advance,
+\[
+D(x) = \begin{cases}
+\textsc{decline} & f(x) \ge \tauhi\\
+\textsc{step-up}, \text{ then } g(x) \ge \lambda \Rightarrow \textsc{decline} & \taulo < f(x) < \tauhi\\
+\textsc{approve} & f(x) \le \taulo
+\end{cases}
+\]
+The band is $B = \{x : \taulo < f(x) < \tauhi\}$ and $g$ is the in-band re-scorer, which is
+where a quantum model would enter if one were usable.
+
+\paragraph{The estimand is band-conditional, deliberately.} We certify
+\[
+R(\lambda) \;=\; \mathbb{P}\bigl(D(X) = \textsc{decline} \,\bigm|\, Y = 0,\; X \in B\bigr),
+\]
+not the marginal false-decline rate. The marginal rate is dominated by $\tauhi$ and would be
+almost unchanged if $g$ were replaced by a coin flip. A certificate that does not bind the
+component it is said to license is not evidence about that component --- so the harder,
+smaller-sample quantity is the one we bound, and the cost of that choice is reported in
+Section~\ref{sec:results} rather than hidden.
+
+\paragraph{Four blocks, and two distinct breaks of exchangeability.} $\Dtrain$ (60\,\%) fits
+$f$; $\Dband$ (10\,\%) is the \emph{only} data that may set the band edges, $g$'s
+hyperparameters or any screen threshold; $\Dcal$ (10\,\%) certifies the composite rule;
+$\Dtest$ (20\,\%) is read once. Blocks are contiguous and snapped to day boundaries.
+
+Two breaks must not be conflated. The \textbf{temporal} break is that $\Dcal$ precedes
+$\Dtest$. The \textbf{selective} break is that conditioning on band membership is
+conditioning on a data-dependent event --- if the edges were estimated on the same data used
+to certify. Freezing the band on $\Dband$ removes the second by construction: membership in
+$B$ becomes a fixed measurable predicate, and filtering a sequence by a fixed predicate
+preserves exchangeability of what remains. Only the temporal break survives, and we measure
+it.
+
+\paragraph{Risk control.} Learn-then-Test controls family-wise error over a finite grid fixed
+in advance, using Hoeffding--Bentkus $p$-values with Holm. Two risks are controlled jointly:
+$R(\lambda)$ at level $\alpha$, and the false-negative rate at $\alpha_{\mathrm{FN}}$.
+
+The bound applies only to a \emph{mean of per-observation losses}. Our first formulation used
+$\max(0,\ \text{floor} - \text{recall})/\text{floor}$, a nonlinear transform of a mean; the
+quantities it produced were not valid $p$-values and the certificate resting on them was not
+a certificate. It is now a genuine $0/1$ loss averaged over frauds, which is equivalent to a
+recall floor at $1 - \alpha_{\mathrm{FN}}$.
+
+\paragraph{Coverage is judged against the exact law, not against $\alpha$.} For a sound
+split-conformal system the test-error count follows
+$E \sim \mathrm{BetaBinomial}(m,\ n{+}1{-}k,\ k)$ with $k = \lceil (n{+}1)(1-\alpha) \rceil$.
+Checking $\hat r \le \alpha$ is a one-sided test against the wrong null: on a correctly
+calibrated system it passes only about half the time. Every verdict below is a two-sided
+Beta-Binomial interval.
+
+\paragraph{Intervals resample entities, not rows.} The IEEE-CIS label propagates a reported
+chargeback to later transactions sharing an account, email or billing address, so rows are
+clustered: \ClaimCardOverlap{} of test-block \texttt{card1} values also appear in training.
+Every interval is a card-level block bootstrap.
