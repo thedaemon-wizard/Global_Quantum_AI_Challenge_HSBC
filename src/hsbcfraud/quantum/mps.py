@@ -50,7 +50,10 @@ from dataclasses import dataclass
 import numpy as np
 import torch
 
-__all__ = ["MPSClassifier", "MPSConfig", "local_feature_map"]
+__all__ = ["LEARNING_RATE_SCALE", "MPSClassifier", "MPSConfig", "local_feature_map"]
+
+# Numerator of the depth-scaled learning rate; see MPSConfig.learning_rate.
+LEARNING_RATE_SCALE = 0.15
 
 
 @dataclass(frozen=True)
@@ -60,14 +63,27 @@ class MPSConfig:
     bond_dimension: int = 16
     epochs: int = 40
     batch_size: int = 512
-    learning_rate: float = 3e-3
+    # None means "scale with chain length", which is what long chains require.  A single
+    # fixed rate does not work across the range this study uses: measured on 2,000 rows over
+    # five epochs, 3e-3 trains a 24-site chain but leaves a 431-site chain at its initial loss
+    # (0.7113 -> 0.6899), while 3e-4 takes the same 431-site chain to 0.3573.  The gradient
+    # passes through one einsum per site, so the effective step compounds with depth.
+    # LEARNING_RATE_SCALE / n_features reproduces the measured stable rates: 7.5e-4 at 200
+    # sites, 3.5e-4 at 431.  Pass a float to override.
+    learning_rate: float | None = None
     weight_decay: float = 1e-5
     # Positive-class weight in the loss.  At a 3.5 % base rate an unweighted fit collapses to
     # the majority class; this is the study's documented class-imbalance handling for this arm.
     positive_weight: float = 8.0
-    init_scale: float = 1e-2
+    init_scale: float = 3e-3
     seed: int = 20260828
     device: str = "cuda"
+
+    def resolved_learning_rate(self, n_features: int) -> float:
+        """The learning rate actually used, given the chain length."""
+        if self.learning_rate is not None:
+            return self.learning_rate
+        return LEARNING_RATE_SCALE / n_features
 
 
 def local_feature_map(x: torch.Tensor) -> torch.Tensor:
@@ -173,11 +189,14 @@ class MPSClassifier(torch.nn.Module):
             partial = partial / norm
             log_norm = log_norm + torch.log(norm.squeeze(-1))
 
-        logits = torch.einsum("bl,lc->bc", partial, self.head)
-        # Restoring the scale multiplicatively would overflow; the log-norm is added to both
-        # logits, so it cancels in the softmax and is retained only to keep the magnitude
-        # meaningful if a caller wants the unnormalised value.
-        return logits + log_norm.unsqueeze(-1) * 0.0
+        # The accumulated log-norm is deliberately discarded rather than added back.  It is
+        # identical across both logits, so it cancels in the softmax and cannot affect a
+        # decision; and it reaches around -330 at 431 sites, so any attempt to restore the
+        # scale multiplicatively overflows.  An earlier version kept it as
+        # `log_norm.unsqueeze(-1) * 0.0`, which is not the same as dropping it: if log_norm
+        # ever became infinite, `inf * 0.0` is nan and would silently poison the loss.
+        del log_norm
+        return torch.einsum("bl,lc->bc", partial, self.head)
 
     @torch.no_grad()
     def predict_proba(self, x: np.ndarray, batch_size: int = 4096) -> np.ndarray:
@@ -213,8 +232,9 @@ def fit_mps(
     yt = torch.as_tensor(np.asarray(y_train, dtype=np.int64), device=device)
     weight = torch.tensor([1.0, config.positive_weight], device=device)
     loss_fn = torch.nn.CrossEntropyLoss(weight=weight)
+    learning_rate = config.resolved_learning_rate(x_train.shape[1])
     optimiser = torch.optim.Adam(
-        model.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay
+        model.parameters(), lr=learning_rate, weight_decay=config.weight_decay
     )
 
     history: list[float] = []
@@ -230,9 +250,9 @@ def fit_mps(
             loss = loss_fn(model(xt[idx]), yt[idx])
             if not torch.isfinite(loss):
                 raise RuntimeError(
-                    "MPS loss became non-finite. The running log-norm renormalisation in "
-                    "MPSClassifier.forward exists to prevent this; if it fires, the "
-                    "initialisation scale or learning rate is wrong for this bond dimension."
+                    f"MPS loss became non-finite at {x_train.shape[1]} sites with learning "
+                    f"rate {learning_rate:.2e} and initialisation scale {config.init_scale:.2e}. "
+                    "The usable learning rate falls with chain length; see MPSConfig."
                 )
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)

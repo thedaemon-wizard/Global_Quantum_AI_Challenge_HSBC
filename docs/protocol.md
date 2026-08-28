@@ -1,9 +1,19 @@
 # Pre-registration protocol
 
 **Frozen 2026-08-28, before any model was fitted and before any block other than the file
-header was read.** `scripts/check_protocol.py` hashes this file together with
-`configs/default.yaml` and refuses to run an experiment if either has changed since the
-freeze without a dated entry in `docs/decisions.md` recording the change and its reason.
+header was read.** `scripts/check_protocol.py` hashes the **guarantee-bearing fields of
+`configs/default.yaml`** — every alpha grid, `delta`, `rho`, the decision-grid size, the FWER
+method, the band traffic-budget and recall-floor grids, the split fractions and the decline
+budget — and refuses to proceed if any of them changed since the freeze without a matching
+amendment below and a corresponding entry in `docs/decisions.md`.
+
+It does **not** hash this file's prose. An earlier version of this paragraph said it hashed
+"this file together with `configs/default.yaml`", which was written before the script existed
+and was never true of it. Prose here can be corrected — a mis-transcribed count, a stale
+percentage — without tripping a gate whose purpose is to catch movement in the quantities a
+theorem depends on. Fields that enter no guarantee (output paths, model-fitting seeds,
+plotting choices) are deliberately outside the hash: a gate annoying enough to be bypassed
+protects nothing.
 
 This document exists because two of the guarantees claimed in this work are only valid if
 their parameters were chosen without reference to the data.
@@ -54,7 +64,7 @@ Three conditions are carried explicitly rather than left for a reader to discove
    detection" on this file is partly entity-contamination detection, and no claim here
    asserts otherwise.
 3. **Row-level exchangeability does not hold.** The propagation rule clusters rows by
-   entity. Measured on the file: 84.8 % of the `card1` values present in the test block
+   entity. Measured on the file: 85.0 % of the `card1` values present in the test block
    also appear in the training block, with a median of 4 and a 95th percentile of 107
    transactions per value. All confidence intervals are therefore card-level block
    bootstrap, and the guarantee is stated at block level.
@@ -201,12 +211,17 @@ interchangeably, and the proposal states which is which.
 Mondrian class-conditional calibration degenerates when a class has fewer than
 `(1/alpha) - 1` calibration points: the quantile becomes `+inf` and the class enters every
 prediction set regardless of score (Ding, Angelopoulos, Bates, Jordan & Tibshirani, NeurIPS
-2023). Measured counts in `D_cal` at the 60/10/10/20 split:
+2023). Measured counts in `D_cal` at the 60/10/10/20 split, temporal arm, which is the
+primary arm and the one `results/tables/degeneracy.csv` reports:
 
 | Class | Count in `D_cal` | Smallest admissible `alpha` |
 |---|---|---|
-| legitimate | 56,993 | 1.8e-5 |
-| fraud | 2,061 | 4.9e-4 |
+| legitimate | 58,343 | 1.7e-5 |
+| fraud | 2,121 | 4.7e-4 |
+
+An earlier revision of this table read 56,993 and 2,061. Those figures came from the
+stratified arm of a superseded split and were never the temporal ones; the counts above are
+regenerated from `results/tables/splits.csv` and agree with `degeneracy.csv` row for row.
 
 The whole `alpha` grid clears both. The guarantee lives on the legitimate class, where
 degeneracy never binds — a design property, not luck. On ULB the fraud-conditional quantile

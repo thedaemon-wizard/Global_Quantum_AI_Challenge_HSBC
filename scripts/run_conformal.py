@@ -156,7 +156,17 @@ def main(argv: list[str] | None = None) -> int:
     # -------------------------------------------- E5: two-sided risk control on D_cal
     y_cal = cal_df["y"].to_numpy()
     s_cal = cal_df["score"].to_numpy()
+    # Fraud the outer threshold already declines, before the band rule is consulted at all.
+    # Reported because it sets the scale of what the in-band certificate can add: the
+    # false-negative rate below is over ALL fraud in D_cal, not only the part in the band, so
+    # a large outer catch caps how much of the remaining rate any in-band rule can move.
+    n_fraud_cal = int((y_cal == 1).sum())
     outer_caught = int(((s_cal >= operating_threshold) & (y_cal == 1)).sum())
+    print(
+        f"  the outer threshold alone declines {outer_caught:,} of {n_fraud_cal:,} fraudulent "
+        f"transactions in D_cal ({outer_caught / n_fraud_cal:.1%}); the band rule is tested "
+        f"against the false-negative rate over all of them"
+    )
 
     risk_rows: list[dict] = []
     for budget in cfg.band.budget_grid:

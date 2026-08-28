@@ -279,7 +279,7 @@ primary metric look nearly 60 % better than deployment conditions support.
 
 The card-disjoint arm coming in *below* the temporal arm (0.8474) is consistent with the
 label-propagation mechanism: forbidding an entity from appearing on both sides removes
-signal that a temporal split leaves available, since 84.8 % of test-block entities also
+signal that a temporal split leaves available, since 85.0 % of test-block entities also
 occur in training.
 
 ### D-017 The full feature set is used, including the identity join
@@ -705,3 +705,70 @@ because it carries the fixture S6 tests against.
 invokes are not written, including the entire document path. It is deliberately an expected
 failure rather than a skip, so the count appears in every test run and shrinks visibly as the
 scripts land.
+
+---
+
+## Round 8 — The power gate, and the long-chain instability (2026-08-28)
+
+### D-030 The H4 power gate was calibrated on the wrong noise, and passed for the wrong reason
+
+The pre-registration commits to computing the minimum detectable effect **before** the
+tensor-network comparison, and to declaring H4 underpowered in advance if it exceeds 0.023
+average precision. Until this round the calculation had no caller at all: `power.csv` was
+never written, so H4 was going to be *observed* rather than tested. That is the first defect
+and it is the more serious one.
+
+The second defect is in the fix. `scripts/run_power.py` estimated the noise as the
+seed-to-seed spread of the gradient-boosted baseline against itself, reasoning that two
+models differing only in random seed have a true difference of zero, so the spread of their
+bootstrap distribution is pure noise. That reasoning is correct and the quantity is
+irrelevant. It gave a standard error of 0.0025 and an MDE of 0.0069, comfortably inside the
+0.023 ceiling.
+
+The comparison H4 actually makes is between **model families**, and when it ran, its measured
+standard error was 0.0183–0.0204 depending on bond dimension — about eightfold larger. The
+true MDE for this comparison is therefore near 0.056, which **exceeds** the pre-registered
+ceiling. A gate calibrated on seed noise passes almost anything, and this one did.
+
+`run_power.py` now computes a second proxy — a regularised logistic model against the same
+gradient-boosted baseline, on identical rows — and the gate binds on the larger of the two.
+Neither proxy involves a quantum model or touches `D_test`, so the ordering commitment is
+preserved.
+
+**Consequence for the claim.** H4 must be reported as underpowered against its
+pre-registered ceiling. What survives is weaker than a null result and is stated as such: the
+95 % clustered interval on the MPS-minus-GBDT difference in band-conditional average
+precision is `[-0.0597, +0.0136]` at bond dimension 4 and `[-0.0574, +0.0222]` at bond
+dimension 32, so **any improvement is bounded above by roughly +0.02 AP**. That is a
+non-superiority bound, not evidence of equivalence, and not evidence that the tensor network
+is worse.
+
+### D-031 A matrix-product-state chain over 431 sites needs a depth-scaled learning rate
+
+The full-scale arm raised `RuntimeError: MPS loss became non-finite` at 431 features. The
+guard fired correctly and no number was produced, which is the behaviour it exists for.
+
+Diagnosis. The forward contraction is stable at initialisation: the running log-norm reaches
+about −327 at 431 sites and the logits stay finite. The failure is in training. Measured on
+2,000 rows over five epochs, holding everything else fixed:
+
+| Sites | lr 3e-3 | lr 1e-3 | lr 3e-4 |
+|---|---|---|---|
+| 200 | 0.7009 → 0.6951 (stalls) | 0.7002 → 0.4562 | 0.6988 → 0.4330 |
+| 431 | 0.7113 → 0.6899 (stalls) | 0.6977 → 0.6909 (stalls) | 0.7102 → 0.3573 |
+
+The gradient passes through one einsum per site, so the effective step compounds with depth.
+`MPSConfig.learning_rate` now defaults to `None`, meaning `LEARNING_RATE_SCALE / n_features`
+with the numerator fixed at 0.15, which reproduces the measured stable rates (7.5e-4 at 200
+sites, 3.5e-4 at 431). A float still overrides it.
+
+This is a property of the ansatz worth reporting rather than a bug: the usable learning rate
+falls with chain length, which is a practical constraint on applying matrix-product-state
+classifiers to wide tabular data, where the number of sites is the number of features and is
+not something the modeller chooses.
+
+A separate latent hazard was removed while diagnosing. `forward` ended with
+`logits + log_norm.unsqueeze(-1) * 0.0` — the log-norm cancels in the softmax, so multiplying
+by zero was intended to discard it while keeping the tensor in the graph. But `inf * 0.0` is
+`nan`, so had the log-norm ever overflowed, the term would have silently poisoned the loss
+instead of being ignored. It is now dropped outright.

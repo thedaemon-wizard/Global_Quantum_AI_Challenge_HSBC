@@ -18,7 +18,7 @@ Three consequences run through the whole study and are handled rather than noted
 * many ``isFraud == 1`` rows are transactions linked to a compromised card, not frauds, so
   a model fitted here is partly performing entity contamination detection;
 * a purely temporal split does not separate entities.  It changes the direction of the
-  overlap, and measured on this file 84.8 % of the ``card1`` values in the test block also
+  overlap, and measured on this file 85.0 % of the ``card1`` values in the test block also
   occur in the training block.  Confidence intervals are therefore card-level block
   bootstrap, never row-level (see :mod:`hsbcfraud.stats`);
 * the propagation rule is exactly what the competition's winning "UID" feature

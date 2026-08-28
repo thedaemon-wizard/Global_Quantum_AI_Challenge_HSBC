@@ -31,14 +31,33 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.preprocessing import MinMaxScaler
 
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.quantum.mps import MPSConfig, fit_mps
+from hsbcfraud.stats import clustered_bootstrap_difference, holm_bonferroni
 
 REPO = Path(__file__).resolve().parents[1]
+
+
+def require_power_gate(tables: Path) -> pd.DataFrame:
+    """Refuse to run the H4 comparison until the power gate has been recorded.
+
+    The pre-registration commits to deciding whether this comparison can resolve an effect
+    *before* seeing its outcome.  Enforcing the order in code is the only version of that
+    commitment that survives contact with a deadline: a gate that can be computed afterwards
+    is not a gate, because by then the result is already known.
+    """
+    path = tables / "power.csv"
+    if not path.exists():
+        raise SystemExit(
+            f"{path} is missing. The H4 power gate is pre-registered to run before the "
+            "comparison it governs.\n  Run: .venv/bin/python scripts/run_power.py"
+        )
+    return pd.read_csv(path)
 
 
 def prepare(frame: pd.DataFrame, rows: np.ndarray, columns: list[str], scaler: MinMaxScaler | None):
@@ -48,7 +67,11 @@ def prepare(frame: pd.DataFrame, rows: np.ndarray, columns: list[str], scaler: M
     per block would leak the deployment distribution into the encoding.
     """
     numeric = frame.iloc[rows][columns]
-    filled = numeric.fillna(numeric.median(numeric_only=True)).fillna(0.0).to_numpy(dtype=np.float32)
+    filled = (
+        numeric.fillna(numeric.median(numeric_only=True))
+        .fillna(0.0)
+        .to_numpy(dtype=np.float32)
+    )
     if scaler is None:
         scaler = MinMaxScaler(clip=True).fit(filled)
     return scaler.transform(filled).astype(np.float32), scaler
@@ -73,9 +96,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--band-features", type=int, default=8)
     parser.add_argument("--skip-full", action="store_true")
+    parser.add_argument("--resamples", type=int, default=2000)
     args = parser.parse_args(argv)
 
     cfg = load_config(args.config)
+    power = require_power_gate(args.out)
+    mde = float(power["minimum_detectable_effect"].iloc[0])
+    powered = bool(power["adequately_powered"].iloc[0])
+    print(
+        f"H4 power gate (recorded before this run): MDE {mde:.4f} AP against a ceiling of "
+        f"{float(power['preregistered_ceiling'].iloc[0]):.4f} -- "
+        f"{'adequately powered' if powered else 'UNDERPOWERED, a null result is uninformative'}"
+    )
+
     seed = args.seed or cfg.split.seeds[0]
     scores = pd.read_parquet(args.runs / f"scores_{args.arm}_{seed}.parquet")
     loaded = load_ieee_cis(args.zip, None, with_identity=True)
@@ -127,6 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         f"{args.band_features} features"
     )
 
+    band_predictions: dict[int, np.ndarray] = {}
     for chi in args.bonds:
         start = time.perf_counter()
         model, history = fit_mps(
@@ -135,7 +169,8 @@ def main(argv: list[str] | None = None) -> int:
             MPSConfig(bond_dimension=chi, epochs=args.epochs, seed=seed, device="cuda"),
         )
         elapsed = time.perf_counter() - start
-        metrics = evaluate(y_be, model.predict_proba(x_be))
+        band_predictions[chi] = model.predict_proba(x_be)
+        metrics = evaluate(y_be, band_predictions[chi])
         rows.append(
             {
                 "experiment": "band",
@@ -165,7 +200,8 @@ def main(argv: list[str] | None = None) -> int:
     start = time.perf_counter()
     control.fit(x_bt, y_bt)
     elapsed = time.perf_counter() - start
-    metrics = evaluate(y_be, control.predict_proba(x_be)[:, 1])
+    control_prediction = control.predict_proba(x_be)[:, 1]
+    metrics = evaluate(y_be, control_prediction)
     rows.append(
         {
             "experiment": "band", "model": "xgboost", "bond_dimension": np.nan,
@@ -181,6 +217,60 @@ def main(argv: list[str] | None = None) -> int:
     pd.DataFrame([r for r in rows if r["experiment"] == "band"]).to_csv(
         args.out / "mps_band.csv", index=False
     )
+
+    # ------------------------------------------------------------------------- H4
+    # The null is that the tensor network does not improve band-conditional average precision
+    # over the tuned baseline.  Testing it at every bond dimension rather than at the best one
+    # avoids the winner's curse; Holm controls the family-wise error across the sweep.  Cards
+    # are the resampling unit because rows within a card are not independent.
+    band_clusters = frame.iloc[band_eval_rows]["card1"].to_numpy()
+    h4_rows, p_values = [], {}
+    for chi, prediction in band_predictions.items():
+        result = clustered_bootstrap_difference(
+            average_precision_score,
+            y_be,
+            prediction,
+            control_prediction,
+            band_clusters,
+            n_resamples=args.resamples,
+            seed=seed,
+        )
+        # One-sided: H4 asks whether the MPS *improves* on the baseline, so the evidence
+        # against it is the resampled mass at or below zero.
+        p_values[f"chi={chi}"] = float(
+            stats.norm.sf(result.point / result.spread) if result.spread > 0 else 1.0
+        )
+        h4_rows.append(
+            {
+                "hypothesis": "H4",
+                "bond_dimension": chi,
+                "ap_mps": float(average_precision_score(y_be, prediction)),
+                "ap_gbdt": float(average_precision_score(y_be, control_prediction)),
+                "ap_difference": result.point,
+                "ci_low": result.low,
+                "ci_high": result.high,
+                "standard_error": result.spread,
+                "n_clusters": result.n_clusters,
+                "n_resamples_usable": result.n_resamples,
+                "minimum_detectable_effect": mde,
+                "resolvable": bool(abs(result.point) >= mde),
+                "seed": seed,
+            }
+        )
+    rejected = holm_bonferroni(p_values, alpha=0.05)
+    for row in h4_rows:
+        row["p_value"] = p_values[f"chi={row['bond_dimension']}"]
+        row["rejects_null_holm"] = rejected[f"chi={row['bond_dimension']}"]
+    pd.DataFrame(h4_rows).to_csv(args.out / "mps_h4.csv", index=False)
+
+    print("\n  H4: does the tensor network improve band-conditional AP over the baseline?")
+    for row in h4_rows:
+        verdict = "improves" if row["rejects_null_holm"] else "no improvement"
+        print(
+            f"    chi={row['bond_dimension']:3d}  dAP {row['ap_difference']:+.4f} "
+            f"[{row['ci_low']:+.4f}, {row['ci_high']:+.4f}]  p={row['p_value']:.3f}  "
+            f"{verdict}"
+        )
 
     # ------------------------------------------------------------------ full-scale arm
     if not args.skip_full:
@@ -218,7 +308,8 @@ def main(argv: list[str] | None = None) -> int:
             "and AP 0.5055-0.5114 (results/tables/baselines.csv)."
         )
 
-    print(f"\nWrote {args.out / 'mps_band.csv'}" + ("" if args.skip_full else f" and {args.out / 'mps_full.csv'}"))
+    written = ["mps_band.csv", "mps_h4.csv"] + ([] if args.skip_full else ["mps_full.csv"])
+    print("\nWrote " + ", ".join(str(args.out / name) for name in written))
     return 0
 
 

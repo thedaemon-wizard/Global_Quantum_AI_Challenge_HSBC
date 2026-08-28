@@ -47,6 +47,7 @@ __all__ = [
     "exact_mcnemar",
     "holm_bonferroni",
     "minimum_detectable_effect",
+    "minimum_detectable_effect_from_standard_error",
     "tost_equivalence",
 ]
 
@@ -61,6 +62,10 @@ class BootstrapResult:
     level: float
     n_resamples: int
     n_clusters: int
+    # Standard deviation of the resampled differences.  Carried explicitly because a power
+    # calculation needs it and recovering it from the interval width would impose a normal
+    # approximation that the percentile interval itself deliberately avoids.
+    spread: float
 
     @property
     def excludes_zero(self) -> bool:
@@ -131,6 +136,7 @@ def clustered_bootstrap_difference(
         level=level,
         n_resamples=len(deltas),
         n_clusters=int(unique.size),
+        spread=float(np.std(deltas, ddof=1)),
     )
 
 
@@ -251,10 +257,37 @@ def tost_equivalence(
     )
 
 
+def minimum_detectable_effect_from_standard_error(
+    standard_error: float, *, alpha: float = 0.05, power: float = 0.80
+) -> float:
+    """Smallest paired difference detectable at the given power, from a standard error.
+
+    This is the form to use whenever the uncertainty came from a bootstrap, because a
+    bootstrap standard deviation *is* a standard error: the sample size and, for a clustered
+    resample, the dependence structure are already inside it.
+
+    It is also the only correct form for average precision.  AP is not a mean of per-row
+    quantities -- it is a functional of the whole ranking -- so "the standard deviation of one
+    observation" does not exist for it and no division by the square root of anything is
+    meaningful.  Passing a bootstrap standard error to ``minimum_detectable_effect`` instead
+    understates the MDE by a factor of the square root of the sample size, which on the band
+    evaluation block is about fifty and turns a gate into a formality.
+    """
+    z_alpha = stats.norm.ppf(1.0 - alpha / 2.0)
+    z_power = stats.norm.ppf(power)
+    return float((z_alpha + z_power) * standard_error)
+
+
 def minimum_detectable_effect(
     sd: float, n: int, *, alpha: float = 0.05, power: float = 0.80
 ) -> float:
     """Smallest paired difference detectable at the given power, for a two-sided test.
+
+    ``sd`` is the standard deviation of a **single paired observation**, and ``n`` the number
+    of pairs; the standard error is formed here as ``sd / sqrt(n)``.  If the uncertainty is
+    already a standard error -- anything from a bootstrap -- call
+    :func:`minimum_detectable_effect_from_standard_error` instead, or the sample size is
+    counted twice.
 
     Computed and reported **before** the comparison runs, as a gate.  The pre-registration
     commits to declaring the quantum comparison underpowered in advance if this exceeds
@@ -263,6 +296,6 @@ def minimum_detectable_effect(
     """
     if n < 2:
         raise ValueError(f"need at least two observations, got {n}")
-    z_alpha = stats.norm.ppf(1.0 - alpha / 2.0)
-    z_power = stats.norm.ppf(power)
-    return float((z_alpha + z_power) * sd / math.sqrt(n))
+    return minimum_detectable_effect_from_standard_error(
+        sd / math.sqrt(n), alpha=alpha, power=power
+    )
