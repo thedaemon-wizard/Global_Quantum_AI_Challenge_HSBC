@@ -406,6 +406,7 @@ def s6_pandas_chained_assignment() -> str:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         try:
+            # chained-assignment-exempt: this IS the fixture the gate must catch
             df["a"][df["b"] > 20] = 999
         except Exception:
             silent_noop = False

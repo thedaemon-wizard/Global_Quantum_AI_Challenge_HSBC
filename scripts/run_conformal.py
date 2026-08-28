@@ -119,6 +119,9 @@ def main(argv: list[str] | None = None) -> int:
             band_df["amount"].to_numpy(),
             rate,
         )
+        decline_rate = (
+            float((band_df["score"].to_numpy() >= thr).mean()) if np.isfinite(thr) else float("nan")
+        )
         envelope_rows.append(
             {
                 "etv_eur": int(tier),
@@ -127,12 +130,9 @@ def main(argv: list[str] | None = None) -> int:
                 "achieved_value_fraud_rate": achieved,
                 "recall_at_threshold": recall,
                 "feasible": bool(np.isfinite(thr)),
+                "decline_rate": decline_rate,
             }
         )
-        decline_rate = (
-            float((band_df["score"].to_numpy() >= thr).mean()) if np.isfinite(thr) else float("nan")
-        )
-        envelope_rows[-1]["decline_rate"] = decline_rate
         print(
             f"  ETV EUR {tier:>3s}  ceiling {rate:.4%}  -> threshold {thr:.6g}  "
             f"achieved {achieved:.4%}  recall {recall:.3f}  declines {decline_rate:.3%}"

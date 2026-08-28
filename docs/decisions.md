@@ -661,3 +661,47 @@ distinction is worth preserving. The quantum kernel was rejected *before* being 
 a-priori screens that no candidate passed. The tensor-network arm *was* run and lost to a
 tuned classical baseline on the same rows and features. Two pre-registered approaches, two
 mechanisms identified, two negative results.
+
+---
+
+## Round 7 — Repository integrity (2026-08-28)
+
+### D-028 Four source files were absent from every pushed commit
+
+`.gitignore` line 5 read `data/`. A git ignore pattern without a leading slash matches at
+**any** depth, so it excluded `src/hsbcfraud/data/` along with the intended top-level data
+directory. Absent from the repository: `ieee_cis.py` (the loader and its file-identity
+assertions), `splits.py` (the four-block temporal split, the two control arms and
+`TestFoldGuard`), `label_audit.py` (the censoring test), and the package marker.
+
+The failure was invisible locally and total remotely. `git add -A` does not warn when it skips
+an ignored path, `git status` does not list it, and every command still worked here because
+the files were present on disk. A reviewer following the repository link would have found a
+Makefile whose first target imports a package that is not there.
+
+Verified: `git check-ignore -v src/hsbcfraud/data/splits.py` returned `.gitignore:5:data/`.
+
+The pattern is now anchored (`/data/`, `/datasets/`), and
+`tests/test_repo_hygiene.py::test_every_source_file_is_tracked` compares the files on disk
+against `git ls-files` so the class of defect cannot recur silently.
+
+### D-029 The repository-hygiene suite, and two things it found about itself
+
+`tests/` was empty. It now asserts seven properties of the artefact rather than of the
+science: every source file tracked, every result table tracked, no bare `python3`, no chained
+pandas assignment, an SPDX header on every file, every Makefile-referenced script present, and
+the pre-registration gate not failing with an undocumented change.
+
+Two findings worth recording.
+
+The chained-assignment detector is syntactic and cannot distinguish a DataFrame from a list,
+so it flagged `envelope_rows[-1]["decline_rate"] = decline_rate` in `run_conformal.py` -- a
+list of dicts, where the assignment is correct. The code was rewritten to build the row before
+appending rather than weakening the detector; the rewrite is clearer regardless. A file that
+must contain the pattern opts out with an explicit marker, which `scripts/smoke.py` uses
+because it carries the fixture S6 tests against.
+
+`test_makefile_scripts_exist` currently reports `xfail`: 15 of the 22 scripts the Makefile
+invokes are not written, including the entire document path. It is deliberately an expected
+failure rather than a skip, so the count appears in every test run and shrinks visibly as the
+scripts land.

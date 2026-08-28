@@ -1,8 +1,12 @@
 # Raw data is never committed.  IEEE-CIS is distributed under Kaggle competition rules
 # rather than an open licence, and the ULB database carries ODbL share-alike terms on the
 # database itself.  scripts/fetch_data.py reconstructs everything from a token.
-datasets/
-data/
+# Anchored to the repository root.  An unanchored `data/` matches at ANY depth and silently
+# excluded src/hsbcfraud/data/ -- the IEEE-CIS loader, the four-block split, TestFoldGuard and
+# the label audit were absent from three pushed commits, so a clone could not run anything.
+# git add does not warn when it skips an ignored path.
+/datasets/
+/data/
 
 .venv/
 __pycache__/
