@@ -772,3 +772,39 @@ A separate latent hazard was removed while diagnosing. `forward` ended with
 by zero was intended to discard it while keeping the tensor in the graph. But `inf * 0.0` is
 `nan`, so had the log-norm ever overflowed, the term would have silently poisoned the loss
 instead of being ignored. It is now dropped outright.
+
+### D-032 The bond-dimension sweep is nearly free, because the chain is launch-bound
+
+A matrix product state contracts one site at a time, so a forward pass over 431 features
+issues 431 sequential `einsum` calls whose individual arithmetic is small. The expectation
+from the ansatz is that cost scales with the square of the bond dimension: each site
+contraction is a `(batch, chi) x (chi, p, chi)` product.
+
+Measured on this host, 512-row batches, 431 sites, forward plus backward plus optimiser step:
+
+| chi | ms/step | relative | chi^2 would predict |
+|---|---|---|---|
+| 4 | 139.5 | 1.00 | 1 |
+| 8 | 148.8 | 1.07 | 4 |
+| 16 | 161.4 | 1.16 | 16 |
+| 32 | 158.8 | 1.14 | 64 |
+
+Cost is essentially flat. At these bond dimensions the kernel-launch overhead of 431
+sequential operations dominates the arithmetic entirely, which is consistent with the 14 %
+GPU utilisation observed during the full-scale run while a core was pinned at 100 %.
+
+Two consequences.
+
+**For the study.** Sweeping the bond dimension at full scale costs about four times one
+job, not the sixty-five times a `chi^2` cost model predicts -- roughly three hours rather
+than sixty-five. The sweep is therefore affordable, and reporting capacity dependence
+across `chi` is not a compute concession. It also means `chi` is not the cost knob for long
+chains that it is for short ones; the number of sites is.
+
+**For the progress reporting added in D-033.** A remaining-time estimate can be extrapolated
+across the sweep from a single completed job, because the per-step cost barely moves. Had the
+`chi^2` model held, no such extrapolation would have been defensible and the estimator would
+have had to refuse to predict past the current job.
+
+The prediction was recorded before the measurement: the alternative hypotheses were 2765 s
+per job under launch-bound behaviour against 2765, 11062, 44246 and 176986 s under `chi^2`.
