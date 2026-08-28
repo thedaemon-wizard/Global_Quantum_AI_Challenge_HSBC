@@ -808,3 +808,55 @@ have had to refuse to predict past the current job.
 
 The prediction was recorded before the measurement: the alternative hypotheses were 2765 s
 per job under launch-bound behaviour against 2765, 11062, 44246 and 176986 s under `chi^2`.
+
+### D-033 Progress reporting, and a first design that would have warned on every healthy run
+
+Three defects in one: a full-scale run produced no output for forty-six minutes, then failed
+with no record of when it turned, and the four-job sweep gave no estimate of remaining time.
+`src/hsbcfraud/progress.py` addresses each. Two of its decisions are measurements rather than
+preferences and are recorded here because the first attempt at both was wrong.
+
+**Per-step telemetry is affordable, and the first measurement of that was contaminated.** An
+initial A/B put the cost of a full per-step JSON record at 8 %, which would have forced a
+compromise. That measurement was taken while a training job held the GPU, and every
+subsequent variant came out *faster* than the baseline -- an impossible result that made the
+contamination visible. Re-measured with the conditions interleaved round-robin to cancel
+drift, the cost is 1.3 % against a 146 ms step, within the interquartile spread of the
+baseline itself. At 431 sites the step is dominated by kernel launches, so the record is
+effectively free and no compromise was needed.
+
+**The divergence detector had to be rebuilt after it failed its own test.** The first version
+compared the latest pre-clip gradient norm against its running median and warned above a
+multiple of it. Against simulated traces carrying the heavy-tailed spikes real training
+produces -- rare batches at eight to twenty-five times typical -- it warned on **40 of 40
+healthy runs** at multiples of 5, 10 and 20. Raising the multiple to 40 or 80 bought silence
+at the cost of firing 228 and 314 steps *after* the loss had already doubled, which is not a
+warning. The signature that separates divergence from a spike is persistence, not magnitude,
+so the test now compares the median of a fifty-step window against the median of the last
+2,048: a single spike cannot move a median. At a multiple of 2 it gives 0 of 40 false alarms
+and warns a median of 117 steps before the loss doubles.
+
+The loss-trend fallback, for callers with no gradient norm, has a limit that is derivable
+rather than empirical. Comparing half-window means detects exponential growth `exp(t/tau)`
+only when `tau < (window/2) / ln(multiple)`, because the ratio of the two half-means is
+exactly `exp((window/2)/tau)` and does not grow as the run proceeds. With the gradient
+window of 50 and a multiple of 1.5 the limit is 62 steps, and a simulated divergence with
+`tau = 90` was never detected at any point in a 5,000-step run. The loss window is therefore
+separate and larger -- 200 steps, limit 247 -- and the boundary is pinned by test at
+`tau = 150` detected and `tau = 400` missed.
+
+`clip_grad_norm_` already returned the pre-clip total norm and the loop was discarding it, so
+the earlier of the two signals was available at no cost the whole time.
+
+### D-034 An exploratory run could silently overwrite a pre-registered result
+
+Testing the new reporting with `--bonds 4 --epochs 6` overwrote `results/tables/mps_band.csv`
+and `mps_h4.csv`, replacing a thirty-epoch four-bond result with a six-epoch single-bond one.
+Nothing warned. The files have the same schema and plausible values, so only the git history
+distinguished them, and had this happened before a commit rather than after, the study would
+have quietly acquired numbers from a smoke test.
+
+`results/tables/` now holds the pre-registered configuration and nothing else: `run_mps.py`
+compares its arguments against the parser defaults and diverts a non-default run to
+`results/runs/exploratory/`, saying so on stdout. Verified by re-running the same command and
+confirming the committed table's hash is unchanged.

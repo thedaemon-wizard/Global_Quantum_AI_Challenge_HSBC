@@ -1,0 +1,210 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Behaviour of the progress and telemetry module.
+
+Each test pins a property that was established by measurement rather than by preference, and
+the docstring says which measurement.  The divergence thresholds in particular were chosen
+after a first design failed: see ``DivergenceWatch`` and the tests below.
+"""
+
+from __future__ import annotations
+
+import io
+import json
+import math
+
+import numpy as np
+import pytest
+
+from hsbcfraud.progress import (
+    DivergenceWatch,
+    ProgressReporter,
+    SweepTimer,
+    format_duration,
+)
+
+
+def synthetic_trace(
+    kind: str, seed: int, *, n: int = 5000, onset: int = 3000, tau: float = 90.0
+) -> tuple[list[float], list[float]]:
+    """A loss and gradient-norm trace, healthy or diverging.
+
+    Healthy training carries rare legitimate gradient spikes -- hard minibatches produce
+    norms eight to twenty-five times typical.  Modelling them is the point: a detector that
+    cannot tolerate them warns on every real run, which is what the first version of
+    ``DivergenceWatch`` did.
+    """
+    rng = np.random.default_rng(seed)
+    loss: list[float] = []
+    norms: list[float] = []
+    for step in range(n):
+        healthy = 0.70 * math.exp(-step / 1500) + 0.30
+        spike = rng.uniform() < 0.004
+        if kind == "healthy" or step < onset:
+            loss.append(healthy * (1 + 0.04 * rng.standard_normal()))
+            base = abs(0.8 + 0.25 * rng.standard_normal())
+            norms.append(base * rng.uniform(8, 25) if spike else base)
+        else:
+            norms.append(abs(0.8 * math.exp((step - onset) / 120) + 0.25 * rng.standard_normal()))
+            loss.append(0.34 if step < onset + 150 else 0.34 * math.exp((step - onset - 150) / tau))
+    return loss, norms
+
+
+def first_warning(watch: DivergenceWatch, trace: tuple[list[float], list[float]], *, norms: bool):
+    loss, gradient = trace
+    for index, (value, norm) in enumerate(zip(loss, gradient, strict=True)):
+        if watch.observe(value, norm if norms else None) is not None:
+            return index
+    return None
+
+
+def test_format_duration_has_no_false_precision() -> None:
+    assert format_duration(0) == "0s"
+    assert format_duration(95) == "1m35s"
+    assert format_duration(3725) == "1h02m"
+    assert format_duration(math.inf) == "unknown"
+    assert format_duration(-1) == "unknown"
+
+
+def test_reporter_writes_one_line_per_tick_to_a_file_destination() -> None:
+    """A carriage-return progress bar in a redirected file is one unreadable line.
+
+    The run that motivated this module was launched with stdout redirected, so the
+    non-terminal path is the one that matters.
+    """
+    stream = io.StringIO()  # not a tty
+    reporter = ProgressReporter("job", 3, stream=stream)
+    for _ in range(3):
+        reporter.tick(loss=0.5)
+    reporter.close()
+    lines = [line for line in stream.getvalue().splitlines() if line.strip()]
+    assert len(lines) == 3
+    assert "\r" not in stream.getvalue()
+    assert "1/3" in lines[0] and "3/3" in lines[2]
+
+
+def test_log_is_readable_while_the_run_continues(tmp_path) -> None:
+    """The forty-six-minute silence was buffering. Every record is flushed as it is written."""
+    path = tmp_path / "run.jsonl"
+    reporter = ProgressReporter("job", 4, log_path=path)
+    reporter.tick(loss=0.9)
+    reporter.tick(loss=0.8)
+    # Read from a separate handle while the reporter still holds its own open.
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    assert records[0]["event"] == "start"
+    assert [r["loss"] for r in records[1:]] == [0.9, 0.8]
+    reporter.close()
+
+
+def test_unwritable_log_path_fails_at_construction(tmp_path) -> None:
+    """Fail in the first second, not forty minutes in."""
+    blocker = tmp_path / "blocker"
+    blocker.write_text("not a directory", encoding="utf-8")
+    with pytest.raises(NotADirectoryError):
+        ProgressReporter("job", 2, log_path=blocker / "sub" / "run.jsonl")
+
+
+def test_metrics_that_are_not_scalars_raise_rather_than_coerce() -> None:
+    """Silently stringifying an unexpected value would record something meaningless."""
+    reporter = ProgressReporter("job", 1)
+    with pytest.raises(TypeError, match="cannot be recorded"):
+        reporter.tick(loss=object())
+
+
+def test_estimate_excludes_the_warmup_tick() -> None:
+    """The first pass through a CUDA model pays kernel compilation and is not representative.
+
+    Simulated here by making the first tick far slower than the rest and checking the
+    estimate follows the rest rather than the mean.
+    """
+    reporter = ProgressReporter("job", 100)
+    ticks = []
+    for index in range(6):
+        # Force the durations rather than sleeping: the property under test is which samples
+        # enter the median, not the clock.
+        reporter._last -= 10.0 if index == 0 else 0.1
+        ticks.append(reporter.tick())
+    # With the warmup excluded, the per-unit estimate is near 0.1 s, so the remaining 94 units
+    # are about 9 s rather than the ~160 s a mean including the 10 s tick would give.
+    assert ticks[-1].remaining < 30
+
+
+def test_watch_does_not_warn_on_healthy_runs_that_contain_gradient_spikes() -> None:
+    """Measured: 0 of 40 healthy seeds warn.
+
+    The first design compared the latest gradient norm against its running median. On these
+    same traces it warned on 40 of 40 healthy runs at multiples of 5, 10 and 20, because
+    legitimate spikes reach twenty-five times typical. Comparing medians instead makes a
+    single spike invisible and sustained elevation obvious.
+    """
+    warned = sum(
+        first_warning(DivergenceWatch(), synthetic_trace("healthy", seed), norms=True) is not None
+        for seed in range(12)
+    )
+    assert warned == 0
+
+
+def test_watch_warns_before_the_loss_has_visibly_degraded() -> None:
+    """Measured: median warning 117 steps before the loss doubles.
+
+    Clipping masks the effect of a bad region on the loss for a while, which is exactly why
+    the pre-clip gradient norm is the earlier signal.
+    """
+    leads = []
+    for seed in range(12):
+        loss, norms = synthetic_trace("diverge", seed)
+        index = first_warning(DivergenceWatch(), (loss, norms), norms=True)
+        assert index is not None, f"seed {seed} diverged without a warning"
+        reference = float(np.median(loss[2900:3000]))
+        doubled = next((i for i in range(3000, len(loss)) if loss[i] > 2 * reference), None)
+        assert doubled is not None
+        leads.append(doubled - index)
+    assert float(np.median(leads)) > 50
+
+
+def test_watch_reports_once() -> None:
+    """A diverging run trips the test on every later step; twenty thousand copies is noise."""
+    loss, norms = synthetic_trace("diverge", 0)
+    watch = DivergenceWatch()
+    messages = [
+        m for m in (watch.observe(v, g) for v, g in zip(loss, norms, strict=True)) if m is not None
+    ]
+    assert len(messages) == 1
+
+
+def test_loss_only_sensitivity_matches_the_derived_limit() -> None:
+    """The half-window ratio is exp((window/2)/tau) and does not grow with the run.
+
+    So the test detects growth with time constant below ``(window/2)/ln(multiple)`` and never
+    detects anything slower, however long it runs. The default gives 247 steps; this pins
+    both sides of that boundary so a change to the window cannot silently blind the test.
+    """
+    watch = DivergenceWatch()
+    assert 240 < watch.slowest_detectable_growth < 255
+
+    detected = first_warning(DivergenceWatch(), synthetic_trace("diverge", 0, tau=150), norms=False)
+    assert detected is not None, "growth well inside the limit should be detected"
+
+    missed = first_warning(DivergenceWatch(), synthetic_trace("diverge", 0, tau=400), norms=False)
+    assert missed is None, "growth beyond the limit is not detectable by this test, by design"
+
+
+def test_sweep_timer_reports_no_estimate_before_a_job_finishes() -> None:
+    timer = SweepTimer(4)
+    assert timer.remaining() == math.inf
+    assert "no estimate yet" in timer.summary()
+    timer.record(100.0)
+    timer.record(120.0)
+    # Median of finished jobs times the number left; flat cost across the sweep is measured,
+    # not assumed. See docs/decisions.md D-032.
+    assert timer.remaining() == pytest.approx(220.0)
+    assert "2 of 4" in timer.summary()
+
+
+def test_reporter_closes_even_when_the_body_raises(tmp_path) -> None:
+    """A diverged run must still leave a complete record."""
+    path = tmp_path / "run.jsonl"
+    with pytest.raises(RuntimeError), ProgressReporter("job", 2, log_path=path) as reporter:
+        reporter.tick(loss=1.0)
+        raise RuntimeError("diverged")
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    assert records[-1]["event"] == "end"

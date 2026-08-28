@@ -28,6 +28,7 @@ Both sweep the bond dimension rather than tuning it, so the capacity dependence 
 from __future__ import annotations
 
 import argparse
+import sys
 import time
 from pathlib import Path
 
@@ -39,6 +40,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
+from hsbcfraud.progress import ProgressReporter, SweepTimer
 from hsbcfraud.quantum.mps import MPSConfig, fit_mps
 from hsbcfraud.stats import clustered_bootstrap_difference, holm_bonferroni
 
@@ -79,6 +81,46 @@ def prepare(frame: pd.DataFrame, rows: np.ndarray, columns: list[str], scaler: M
     return scaler.transform(filled).astype(np.float32), scaler
 
 
+def progress_probe(x_eval: np.ndarray, y_eval: np.ndarray, n_rows: int, seed: int):
+    """A per-epoch ranking metric, on a stratified subsample.
+
+    Loss is not evidence of learning.  Two silent bugs in this classifier produced steadily
+    falling loss with an AUC of exactly 0.5000, and only a ranking metric distinguishes
+    "training" from "the contraction no longer depends on the input".
+
+    The subsample is stratified because average precision on a 3.4 percent positive rate is
+    unstable under simple random sampling, and it is drawn once and reused so the number
+    moves between epochs only when the model does.  Returns None when a probe would be
+    degenerate rather than reporting a metric computed on one class.
+    """
+    if len(np.unique(y_eval)) < 2:
+        return None
+    if n_rows <= 0 or n_rows >= len(y_eval):
+        rows = np.arange(len(y_eval))
+    else:
+        rng = np.random.default_rng(seed)
+        positive = np.flatnonzero(y_eval == 1)
+        negative = np.flatnonzero(y_eval == 0)
+        take_pos = max(1, round(n_rows * len(positive) / len(y_eval)))
+        take_neg = max(1, n_rows - take_pos)
+        rows = np.concatenate(
+            [
+                rng.choice(positive, size=min(take_pos, len(positive)), replace=False),
+                rng.choice(negative, size=min(take_neg, len(negative)), replace=False),
+            ]
+        )
+    x_probe, y_probe = x_eval[rows], y_eval[rows]
+
+    def probe(model) -> dict[str, float]:
+        scores = model.predict_proba(x_probe)
+        return {
+            "auc": float(roc_auc_score(y_probe, scores)),
+            "ap": float(average_precision_score(y_probe, scores)),
+        }
+
+    return probe
+
+
 def evaluate(y_true, scores) -> dict[str, float]:
     return {
         "roc_auc": float(roc_auc_score(y_true, scores)),
@@ -99,10 +141,42 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--band-features", type=int, default=8)
     parser.add_argument("--skip-full", action="store_true")
     parser.add_argument("--resamples", type=int, default=2000)
+    parser.add_argument(
+        "--eval-rows",
+        type=int,
+        default=20_000,
+        help=(
+            "rows used for the per-epoch progress metric, stratified on the label. "
+            "0 uses the whole evaluation block, which costs about 11 percent of an epoch "
+            "at full scale against about 2 percent for the default."
+        ),
+    )
     args = parser.parse_args(argv)
 
     cfg = load_config(args.config)
-    power = require_power_gate(args.out)
+
+    # results/tables/ holds the pre-registered configuration and nothing else.  An
+    # exploratory run -- a shorter sweep, fewer epochs, a smoke test -- produces numbers that
+    # are not the study's, and writing them to the same path silently replaces the committed
+    # result with something that merely looks like it.  That happened once: a six-epoch
+    # single-bond smoke test overwrote a thirty-epoch four-bond table, and only the git
+    # history distinguished them.  Non-default runs are diverted to results/runs/.
+    defaults = parser.parse_args([])
+    exploratory = (args.bonds, args.epochs, args.band_features) != (
+        defaults.bonds,
+        defaults.epochs,
+        defaults.band_features,
+    )
+    if exploratory and args.out == defaults.out:
+        args.out = args.runs / "exploratory"
+        args.out.mkdir(parents=True, exist_ok=True)
+        print(
+            f"Not the pre-registered configuration (bonds={args.bonds}, "
+            f"epochs={args.epochs}, band_features={args.band_features}); writing tables to "
+            f"{args.out.relative_to(REPO)} instead of results/tables/."
+        )
+
+    power = require_power_gate(defaults.out)
     mde = float(power["minimum_detectable_effect"].iloc[0])
     powered = bool(power["adequately_powered"].iloc[0])
     print(
@@ -163,14 +237,30 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     band_predictions: dict[int, np.ndarray] = {}
+    band_probe = progress_probe(x_be, y_be, args.eval_rows, seed)
+    band_sweep = SweepTimer(len(args.bonds))
+    args.runs.mkdir(parents=True, exist_ok=True)
     for chi in args.bonds:
         start = time.perf_counter()
-        model, history = fit_mps(
-            x_bt,
-            y_bt,
-            MPSConfig(bond_dimension=chi, epochs=args.epochs, seed=seed, device="cuda"),
+        reporter = ProgressReporter(
+            f"band chi={chi}",
+            args.epochs,
+            stream=sys.stdout,
+            log_path=args.runs / f"mps_band_chi{chi}_{seed}.jsonl",
+            context={"experiment": "band", "bond_dimension": chi, "seed": seed,
+                     "n_train": len(x_bt), "n_features": args.band_features},
+            label_width=14,
         )
+        with reporter:
+            model, history = fit_mps(
+                x_bt,
+                y_bt,
+                MPSConfig(bond_dimension=chi, epochs=args.epochs, seed=seed, device="cuda"),
+                reporter=reporter,
+                evaluate=band_probe,
+            )
         elapsed = time.perf_counter() - start
+        band_sweep.record(elapsed)
         band_predictions[chi] = model.predict_proba(x_be)
         metrics = evaluate(y_be, band_predictions[chi])
         rows.append(
@@ -284,14 +374,35 @@ def main(argv: list[str] | None = None) -> int:
             f"evaluate on {len(x_te):,} test rows"
         )
         full_rows = []
+        full_probe = progress_probe(x_te, y[test_rows], args.eval_rows, seed)
+        # The sweep estimate extrapolates from finished jobs, which is defensible here
+        # because per-step cost is flat in the bond dimension at this chain length: 139.5,
+        # 148.8, 161.4 and 158.8 ms at chi = 4, 8, 16, 32 against the 1x/4x/16x/64x a chi^2
+        # model predicts. The chain is bound by 431 sequential kernel launches. See D-032.
+        full_sweep = SweepTimer(len(args.bonds))
         for chi in args.bonds:
             start = time.perf_counter()
-            model, history = fit_mps(
-                x_tr,
-                y[train_rows],
-                MPSConfig(bond_dimension=chi, epochs=args.epochs, seed=seed, device="cuda"),
+            reporter = ProgressReporter(
+                f"full chi={chi}",
+                args.epochs,
+                stream=sys.stdout,
+                log_path=args.runs / f"mps_full_chi{chi}_{seed}.jsonl",
+                context={"experiment": "full", "bond_dimension": chi, "seed": seed,
+                         "n_train": len(x_tr), "n_features": len(all_numeric)},
+                label_width=14,
             )
+            with reporter:
+                model, history = fit_mps(
+                    x_tr,
+                    y[train_rows],
+                    MPSConfig(bond_dimension=chi, epochs=args.epochs, seed=seed,
+                              device="cuda"),
+                    reporter=reporter,
+                    evaluate=full_probe,
+                )
             elapsed = time.perf_counter() - start
+            full_sweep.record(elapsed)
+            print(f"  sweep: {full_sweep.summary()}")
             metrics = evaluate(y[test_rows], model.predict_proba(x_te))
             full_rows.append(
                 {
