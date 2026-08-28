@@ -604,3 +604,60 @@ not breach where the temporal arm does. What cannot be claimed is that a tempora
 `docs/protocol.md` section 7 pre-registered "realised risk gap per time window" as a headline
 deliverable, so this measurement was promised rather than added after the fact. It is in
 `results/tables/rolling_origin.csv`.
+
+---
+
+## Round 6 — The tensor-network arm (2026-08-28)
+
+### D-026 Two silent initialisation defects in the MPS classifier
+
+Both produced a model that trained without error, reported a plausible loss near ln 2, and
+scored exactly at chance. Neither raised.
+
+**Both physical channels initialised to the identity.** `core[:, 0, :]` and `core[:, 1, :]`
+were each set to the identity plus small noise. The contraction then reduces to a scalar
+multiple of a fixed vector, the running renormalisation divides that scalar out, and the model
+becomes input-independent. Measured: logits bit-identical for all-zeros and all-ones input,
+loss flat at 0.6931, holdout AUC 0.5000. The `cos` channel now carries the identity and the
+`sin` channel a small learnable perturbation.
+
+**The final bond closed to one.** With the right boundary core shaped `(chi, 2, 1)` the partial
+contraction becomes a scalar, and the per-sample renormalisation maps every sample to plus or
+minus one before the output head sees it. Measured that way: AUC 0.4990, 0.4970 and 0.5000 at
+bond dimensions 4, 12 and 32 on a linearly separable task. The right bond now stays open at
+`chi` and the head closes the network.
+
+After both repairs, on the same synthetic task: AUC 0.9519, 0.9591 and 0.9593 at bond
+dimensions 4, 12 and 32, against 0.9801 for logistic regression. An MPS reaching close to but
+below a linear model on a linearly separable problem is the expected ordering, which is what
+makes it a usable check that the implementation works.
+
+### D-027 The in-band tensor-network result is negative, and it is not under-training
+
+Fitted on the 2,916 band rows of `D_band` (292 fraud), evaluated on the 2,537 band rows of
+`D_cal` (278 fraud), eight features selected by mutual information on `D_train`:
+
+| model | AUC | AP |
+|---|---|---|
+| MPS, bond dimension 16 | 0.5251 | 0.1205 |
+| gradient boosting | 0.5643 | 0.1407 |
+| logistic regression | 0.5103 | 0.1182 |
+| base rate | — | 0.1096 |
+
+The MPS performs comparably to logistic regression and below gradient boosting.
+
+**Under-training was tested and ruled out.** Sweeping epochs and learning rate: 30 epochs at
+3e-3 gives AUC 0.5127; 150 epochs at 3e-3 gives 0.5251; 150 at 1e-2 gives 0.5061; 400 at 1e-2
+gives 0.4420. Longer training makes it worse, not better, so the model is at capacity for this
+data rather than short of optimisation.
+
+**Context for the number.** The band is by construction the region where the primary scorer is
+uncertain, and little signal remains there for anything: gradient boosting itself reaches only
+0.5643 AUC against a base rate of 0.1096 AP. The MPS captures approximately the linear part of
+what is left.
+
+**How this sits with the quantum kernel result.** The two arms fail differently and that
+distinction is worth preserving. The quantum kernel was rejected *before* being run, by
+a-priori screens that no candidate passed. The tensor-network arm *was* run and lost to a
+tuned classical baseline on the same rows and features. Two pre-registered approaches, two
+mechanisms identified, two negative results.
