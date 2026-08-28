@@ -46,6 +46,7 @@ silently, which is exactly the failure this project's discipline exists to catch
 from __future__ import annotations
 
 import math
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -82,6 +83,11 @@ class MPSConfig:
     # the majority class; this is the study's documented class-imbalance handling for this arm.
     positive_weight: float = 8.0
     init_scale: float = 3e-3
+    # Sites folded into one reduction tree before the running vector is renormalised.  None
+    # means measure it: the best width depends on the bond dimension and on the device, and a
+    # table baked from one GPU is a number that silently stops being true on another.  1 is
+    # the original sequential fold.  See MPSClassifier.forward.
+    contraction_chunk: int | None = None
     seed: int = 20260828
     device: str = "cuda"
 
@@ -168,41 +174,122 @@ class MPSClassifier(torch.nn.Module):
             torch.randn(chi, 2, generator=generator) / np.sqrt(chi)
         )
 
+        # Held on the model rather than read from the config at call time, so predict_proba
+        # contracts the same way the fit did.  A model that was never tuned falls back to the
+        # sequential fold, which is correct everywhere and fastest at large bond dimensions.
+        self.contraction_chunk = config.contraction_chunk or 1
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Contract the network against a batch, returning two class logits.
 
-        The running log-norm is what makes this trainable at 439 sites.  After each site the
-        partial contraction is divided by its per-sample norm and the log of that norm is
-        accumulated; the final logit is the log of the closed scalar plus the accumulated log
-        norms.  Omitting this underflows to zero within about forty sites in float32.
+        The contraction is reassociated into a binary reduction tree, which is where almost
+        all of the runtime went.
+
+        **Why reassociating is legitimate.**  The accumulated log-norm is discarded rather
+        than returned (D-031), and the loop's last act is to divide by the running norm, so
+        the output is exactly ``normalise(v0 @ M_1 @ ... @ M_d) @ head`` where ``M_i`` is the
+        transfer matrix at site ``i``.  The per-site renormalisation exists only to keep the
+        product inside float32 range; it cannot change the direction of the result.  Matrix
+        multiplication is associative, so any bracketing of that chain computes the same
+        direction, and a pairwise tree finishes in ``log2(d)`` rounds instead of ``d``.
+
+        **Why it is worth doing.**  The site loop was issuing about seven kernels per site,
+        each on a ``(batch, chi, chi)`` tensor far too small to occupy the device.  Measured
+        at 439 sites, batch 512: per-step time was flat across bond dimensions 4 to 128
+        (137, 126, 131, 137, 131, 127 ms) despite a 1024-fold change in arithmetic, and
+        linear in the number of sites at about 300 microseconds each.  Achieved throughput
+        was 0.0067 TFLOPS against roughly 125 TFLOPS of fp32 peak -- about 0.005 per cent.
+        The work was launch-bound, not compute-bound.
+
+        **Why the tree is not always faster, and what ``contraction_chunk`` is for.**  The
+        fold does ``d`` matrix-vector products, ``6.b.d.chi^2`` flops in total; the tree does
+        about ``d`` matrix-matrix products, ``4.b.d.chi^2 + 2.b.d.chi^3``.  The tree
+        therefore performs ``(2 + chi)/3`` times the arithmetic -- twice as much at ``chi=4``
+        and forty-three times as much at ``chi=128`` -- in exchange for roughly three thousand
+        fewer launches.  A crossover exists by arithmetic alone.  Measured per-step time at
+        439 sites, batch 512, with the conditions interleaved to cancel drift:
+
+        =====  ==========  ==========  ==========  ===========  ===========
+        chi    chunk 1     chunk 8     chunk 32    chunk 128    chunk 439
+        =====  ==========  ==========  ==========  ===========  ===========
+        4      134.8 ms    60.0 ms     27.6 ms     17.0 ms      11.5 ms
+        8      145.5 ms    66.0 ms     29.7 ms     17.5 ms      12.2 ms
+        16     148.1 ms    64.1 ms     30.6 ms     17.9 ms      17.0 ms
+        32     144.6 ms    67.9 ms     47.9 ms     66.0 ms      82.3 ms
+        64     143.0 ms    79.0 ms     119.9 ms    138.6 ms     155.7 ms
+        128    142.3 ms    459.0 ms    546.7 ms    574.1 ms     627.2 ms
+        =====  ==========  ==========  ==========  ===========  ===========
+
+        The best width falls as the bond dimension rises, and by ``chi = 128`` the original
+        sequential fold is already optimal.  ``contraction_chunk = 1`` reproduces it exactly,
+        which is why it is the safe value rather than a special case.
+
+        Memory moves the other way: the tree materialises every transfer matrix at once, so
+        peak allocation grows with the chunk width.  At ``chi = 32`` the fold peaks at
+        0.99 GiB and the full tree at 3.93 GiB.  Memory, not time, is what bounds the bond
+        dimension here.
         """
+        chunk = max(1, min(self.contraction_chunk, self.n_features))
         phi = local_feature_map(x)  # (batch, d, 2)
-        batch = phi.shape[0]
 
-        # (batch, 1) left boundary
-        partial = torch.ones(batch, 1, device=x.device, dtype=x.dtype)
-        log_norm = torch.zeros(batch, device=x.device, dtype=x.dtype)
+        # Site 0 has a left bond of 1 while every other site has chi, so it cannot join the
+        # stacked batch.  It is contracted separately rather than padded: a padded core would
+        # put zero rows into the reduction, and a zero row that later picks up a nan is
+        # exactly the kind of defect this file already carries two entries about.
+        partial = torch.einsum("pr,bp->br", self.cores[0][0], phi[:, 0, :])
+        partial = self._renormalise(partial)
+        if self.n_features == 1:
+            return torch.einsum("bl,lc->bc", partial, self.head)
 
-        for site in range(self.n_features):
-            core = self.cores[site]  # (left, 2, right)
-            # Contract the physical index with this site's spin, then the bond with the
-            # running partial contraction.
-            site_matrix = torch.einsum("lpr,bp->blr", core, phi[:, site, :])
-            partial = torch.einsum("bl,blr->br", partial, site_matrix)
+        # One batched einsum builds every remaining transfer matrix, replacing d separate
+        # launches with one.
+        stack = torch.stack(list(self.cores[1:]), dim=0)  # (d-1, chi, 2, chi)
+        n_sites = stack.shape[0]
 
-            norm = torch.linalg.vector_norm(partial, dim=-1, keepdim=True)
-            norm = torch.clamp(norm, min=1e-12)
-            partial = partial / norm
-            log_norm = log_norm + torch.log(norm.squeeze(-1))
+        for start in range(0, n_sites, chunk):
+            stop = min(start + chunk, n_sites)
+            mats = torch.einsum(
+                "dlpr,bdp->bdlr", stack[start:stop], phi[:, 1 + start : 1 + stop, :]
+            )
+            partial = torch.einsum("bl,blr->br", partial, self._reduce(mats))
+            partial = self._renormalise(partial)
 
-        # The accumulated log-norm is deliberately discarded rather than added back.  It is
-        # identical across both logits, so it cancels in the softmax and cannot affect a
-        # decision; and it reaches around -330 at 431 sites, so any attempt to restore the
-        # scale multiplicatively overflows.  An earlier version kept it as
-        # `log_norm.unsqueeze(-1) * 0.0`, which is not the same as dropping it: if log_norm
-        # ever became infinite, `inf * 0.0` is nan and would silently poison the loss.
-        del log_norm
         return torch.einsum("bl,lc->bc", partial, self.head)
+
+    @staticmethod
+    def _reduce(mats: torch.Tensor) -> torch.Tensor:
+        """Collapse ``(batch, k, chi, chi)`` to ``(batch, chi, chi)`` by pairwise products.
+
+        Site order is preserved because the even-indexed factor is always the LEFT operand:
+        ``mats[:, 0::2] @ mats[:, 1::2]`` pairs sites (0,1), (2,3), ... in place, and an odd
+        tail is carried forward unpaired so it stays rightmost.  Matrix multiplication is
+        associative but not commutative, so a tail appended on the wrong side would silently
+        permute the chain -- the model would still train and still report plausible metrics.
+        ``tests/test_mps_contraction.py`` pins this against a deliberate site swap, which
+        moves the output by order 1 while the reassociation moves it by order 1e-5.
+
+        Each round divides by the largest absolute entry rather than a Frobenius norm.  The
+        products square in magnitude every round, so the quantity that must stay in range is
+        the extreme entry, and max-abs bounds it directly.
+        """
+        while mats.shape[1] > 1:
+            count = mats.shape[1]
+            paired = torch.matmul(mats[:, 0 : count - count % 2 : 2], mats[:, 1:count:2])
+            if count % 2:
+                paired = torch.cat([paired, mats[:, -1:]], dim=1)
+            scale = torch.clamp(paired.abs().amax(dim=(-2, -1), keepdim=True), min=1e-12)
+            mats = paired / scale
+        return mats[:, 0]
+
+    @staticmethod
+    def _renormalise(partial: torch.Tensor) -> torch.Tensor:
+        """Divide by the per-sample norm, clamped away from zero.
+
+        Without it the product underflows to zero within about forty sites in float32.  The
+        discarded scale is identical across both logits and cancels in the softmax.
+        """
+        norm = torch.clamp(torch.linalg.vector_norm(partial, dim=-1, keepdim=True), min=1e-12)
+        return partial / norm
 
     @torch.no_grad()
     def predict_proba(self, x: np.ndarray, batch_size: int = 4096) -> np.ndarray:
@@ -216,6 +303,72 @@ class MPSClassifier(torch.nn.Module):
             )
             out.append(torch.softmax(self(chunk), dim=-1)[:, 1].cpu().numpy())
         return np.concatenate(out)
+
+
+# Candidate reduction widths.  Powers of two spanning the sequential fold to the full tree;
+# the measured optimum moves across this range with the bond dimension, so the set has to be
+# wide rather than centred on any one machine's answer.
+CHUNK_CANDIDATES = (1, 8, 32, 128, 512)
+
+
+def tune_contraction_chunk(
+    n_features: int, config: MPSConfig, *, batch_size: int | None = None, repeats: int = 3
+) -> tuple[int, dict[int, float]]:
+    """Time each candidate reduction width and return the fastest, with the measurements.
+
+    Measured rather than tabulated.  The best width depends on the bond dimension, the number
+    of sites, the batch size and the device, and the crossover is sharp: at 439 sites the full
+    tree is 11.7 times faster than the fold at ``chi = 4`` and 4.4 times *slower* at
+    ``chi = 128``.  A table baked from one GPU is a number that silently stops being true on
+    another, and being wrong here costs hours.
+
+    Tuning runs on a throwaway model with random inputs, so it cannot perturb the fit: no
+    parameter of the real model is touched and no data is read.  The cost is
+    ``len(CHUNK_CANDIDATES) * (repeats + 1)`` steps, about twenty against the twenty-one
+    thousand a full-scale job runs.
+
+    Candidates that exhaust memory are skipped and reported as such rather than silently
+    dropped, because "the tree did not help" and "the tree did not fit" are different facts.
+    """
+    if not torch.cuda.is_available():
+        raise RuntimeError("chunk tuning requires CUDA; pass contraction_chunk explicitly")
+
+    batch = batch_size or config.batch_size
+    device = torch.device(config.device)
+    probe = MPSClassifier(n_features, config).to(device)
+    x = torch.rand(batch, n_features, device=device)
+    y = torch.randint(0, 2, (batch,), device=device)
+    loss_fn = torch.nn.CrossEntropyLoss()
+
+    # The full tree is always a candidate.  Without it the search tops out at the largest
+    # power of two below the site count, and at small bond dimensions the full tree is the
+    # fastest option by a clear margin.
+    candidates = sorted({c for c in CHUNK_CANDIDATES if c <= n_features} | {1, n_features})
+    timings: dict[int, float] = {}
+    for candidate in candidates:
+        probe.contraction_chunk = candidate
+        try:
+            for _ in range(2):  # warmup: the first pass pays allocator and kernel setup
+                probe.zero_grad(set_to_none=True)
+                loss_fn(probe(x), y).backward()
+            torch.cuda.synchronize()
+            start = time.perf_counter()
+            for _ in range(repeats):
+                probe.zero_grad(set_to_none=True)
+                loss_fn(probe(x), y).backward()
+            torch.cuda.synchronize()
+            timings[candidate] = (time.perf_counter() - start) / repeats
+        except torch.cuda.OutOfMemoryError:
+            torch.cuda.empty_cache()
+
+    if not timings:
+        raise RuntimeError(
+            f"no reduction width fitted in memory at {n_features} sites, bond dimension "
+            f"{config.bond_dimension}, batch {batch}. Reduce the batch size."
+        )
+    del probe, x, y
+    torch.cuda.empty_cache()
+    return min(timings, key=timings.__getitem__), timings
 
 
 def fit_mps(
@@ -256,6 +409,17 @@ def fit_mps(
     torch.manual_seed(config.seed)
     device = torch.device(config.device)
     model = MPSClassifier(x_train.shape[1], config).to(device)
+
+    if config.contraction_chunk is None:
+        chunk, timings = tune_contraction_chunk(x_train.shape[1], config)
+        model.contraction_chunk = chunk
+        if reporter is not None:
+            reporter.note(
+                "reduction width "
+                + ", ".join(f"{c}: {t * 1000:.1f} ms" for c, t in sorted(timings.items()))
+                + f" -- using {chunk}",
+                contraction_chunk=chunk,
+            )
 
     xt = torch.as_tensor(np.asarray(x_train, dtype=np.float32), device=device)
     yt = torch.as_tensor(np.asarray(y_train, dtype=np.int64), device=device)

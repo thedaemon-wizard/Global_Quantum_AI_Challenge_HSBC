@@ -903,3 +903,69 @@ claim was re-derived here before being acted on. One detail of the review's acco
 survive checking: it stated that the `nan` propagates to every parameter, whereas the clip
 coefficient of zero means the others receive a zero update and stay finite. The consequence
 is the same and the fix is the same, but the mechanism is recorded as measured.
+
+### D-036 The site loop was launch-bound; reassociating it into a reduction tree is 12x
+
+`MPSClassifier.forward` contracted one site at a time in a Python loop, issuing roughly seven
+small CUDA kernels per site. Measured at 439 sites, batch 512, one full training step:
+
+| | |
+|---|---|
+| time across bond dimensions 4, 8, 16, 32, 64, 128 | 137, 126, 131, 137, 131, 127 ms |
+| time across 55, 110, 220, 439 sites at chi=32 | 17.8, 35.1, 60.6, 132.7 ms |
+| achieved throughput at chi=32 | 0.0067 TFLOPS against roughly 125 TFLOPS peak |
+
+A 1024-fold change in arithmetic produced no change in time, and time was linear in sites at
+about 300 microseconds each. The work was bound by kernel launches, not by the GPU.
+
+**What licenses the fix.** The accumulated log-norm is discarded (D-031) and the loop ends by
+dividing by the running norm, so the output is exactly `normalise(v0 @ M_1 @ ... @ M_d) @ head`.
+The per-site renormalisation keeps the product in float32 range; it cannot change the
+direction. Matrix multiplication is associative, so any bracketing computes the same
+direction, and a pairwise tree finishes in `log2(d)` rounds rather than `d`.
+
+**Why it is not a free win.** The fold does `6.b.d.chi^2` flops; the tree does
+`4.b.d.chi^2 + 2.b.d.chi^3`. The tree performs `(2 + chi)/3` times the arithmetic -- twice as
+much at `chi=4`, forty-three times at `chi=128` -- in exchange for about three thousand fewer
+launches. A crossover exists by arithmetic alone. Measured per-step time, conditions
+interleaved to cancel drift:
+
+| chi | chunk 1 | chunk 8 | chunk 32 | chunk 128 | chunk 439 | best |
+|---|---|---|---|---|---|---|
+| 4 | 134.8 | 60.0 | 27.6 | 17.0 | **11.5** | 11.7x |
+| 8 | 145.5 | 66.0 | 29.7 | 17.5 | **12.2** | 11.9x |
+| 16 | 148.1 | 64.1 | 30.6 | 17.9 | **17.0** | 8.7x |
+| 32 | 144.6 | 67.9 | **47.9** | 66.0 | 82.3 | 3.0x |
+| 64 | 143.0 | **79.0** | 119.9 | 138.6 | 155.7 | 1.8x |
+| 128 | **142.3** | 459.0 | 546.7 | 574.1 | 627.2 | 1.0x |
+
+By `chi = 128` the original fold is already optimal. `contraction_chunk` therefore selects the
+reduction width, and it is **measured at fit time** rather than tabulated: the crossover
+depends on the bond dimension, the site count, the batch size and the device, and a table
+baked from one GPU is a number that silently stops being true on another. Tuning costs about
+twenty steps against the twenty-one thousand a full-scale job runs, and the tuner reproduced
+the interleaved sweep's choice at every bond dimension tested.
+
+**Validation.** `contraction_chunk = 1` is bit-identical to the previous implementation --
+max absolute logit difference exactly 0.00e+00 at four configurations, checked against the
+code at the preceding commit -- so the default path is the shipped behaviour rather than an
+approximation of it. Wider settings agree to 3e-6 on uniform inputs and 3e-5 on the real
+MinMax-scaled features, which are 72.7 per cent exact zeros and nothing like uniform. Gradient
+cosine similarity is 0.9999999974 and the gradient norm ratio is 1.000000, so the training
+trajectory and the norm-based guard of D-035 are unaffected. Re-running the in-band arm moved
+ROC AUC by at most 4.8e-6 and average precision by at most 7.2e-6, well inside the four-decimal
+precision the claims are checked at.
+
+**The ordering trap.** Matrix multiplication is associative but not commutative, so a tail
+appended on the wrong side of an odd round permutes the chain silently -- the model still
+trains and still reports plausible metrics, which is precisely how D-026 and D-027 got in.
+The reduction pairs `mats[:, 0::2]` as the left operand with `mats[:, 1::2]` as the right and
+carries an odd tail forward unpaired so it stays rightmost. The test establishes its own
+teeth before asserting: a single interior site swap moves the output by order 1, against
+order 1e-5 for the reassociation, so the agreement is evidence about ordering rather than
+about a chain whose factors happen to commute.
+
+Memory moves the other way. The tree materialises every transfer matrix at once, so peak
+allocation grows with the width: at `chi = 32`, 0.99 GiB for the fold against 3.93 GiB for the
+full tree. Memory, not time, is what bounds the bond dimension here, and the tuner skips
+widths that do not fit rather than reporting them as slow.

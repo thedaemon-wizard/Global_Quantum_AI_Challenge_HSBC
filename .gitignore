@@ -8,6 +8,11 @@
 /datasets/
 /data/
 
+# Isolated worktrees created for parallel agent runs.  They are full checkouts of this
+# repository, so `git add -A` embeds them as nested repositories and the commit carries a
+# gitlink to a commit that exists only locally.
+.claude/worktrees/
+
 .venv/
 __pycache__/
 *.py[cod]
