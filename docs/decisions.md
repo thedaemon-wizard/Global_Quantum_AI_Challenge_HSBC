@@ -1007,3 +1007,49 @@ configuration. It was nearly used as grounds to reject the rewrite.
 The same instability was then found independently on the current code, at a far larger
 magnitude, and is recorded in D-038. The agent's conclusion was right; its evidence was not
 transferable, and the difference matters.
+
+### D-038 The full-scale bond-dimension sweep measures seed noise, not capacity
+
+The committed full-scale table reports one seed per bond dimension and shows ROC AUC from
+0.7889 to 0.8074 and average precision from 0.1693 to 0.2464. Four seeds were then run at a
+**fixed** bond dimension of 16, on the committed contraction path:
+
+| Seed | ROC AUC | AP | Final loss |
+|---|---|---|---|
+| 20260828 | 0.7983 | 0.2464 | 0.3120 |
+| 20260829 | 0.7867 | 0.1789 | 0.3099 |
+| 20260830 | 0.8012 | 0.1945 | 0.3445 |
+| 20260831 | 0.7824 | 0.1740 | 0.2935 |
+
+| | ROC AUC spread | AP spread |
+|---|---|---|
+| across four seeds at one bond dimension | 0.0188 | 0.0724 |
+| across four bond dimensions, one seed each | 0.0186 | 0.0771 |
+| ratio | 1.01 | 0.94 |
+
+The two are the same size. **A per-configuration reading of the sweep is reading seed noise.**
+The proposal previously quoted "the best across the sweep", which takes a maximum over four
+draws from a distribution whose spread equals the quantity being reported -- the winner's
+curse, in a study whose protocol exists to prevent exactly that.
+
+The first seed reproduces the committed chi=16 row exactly, which is the reproduction check
+rather than a result: it is the seed that run used.
+
+**What survives, and is strengthened.** Every seed and every bond dimension lands between
+0.174 and 0.246 average precision against a tuned gradient-boosted baseline at 0.5055 to
+0.5114. The tensor network loses by a factor of two to three in every draw, so the arm's
+conclusion does not depend on which draw is reported. What is withdrawn is any claim about
+how capacity affects it.
+
+**A second finding, from the same measurement.** The reduction tree of D-036 does not merely
+perturb the trajectory, it destabilises the optimisation. At width 128 the same four seeds
+gave ROC AUC 0.5636 to 0.8007 and average precision 0.0438 to 0.1792, and **two of four
+failed to train at all** -- final loss 0.52 and 0.63 against 0.29 to 0.34 at width 1. Seed
+spread rises from 0.0188 to 0.2371 in ROC AUC. That is why the sequential fold is the default
+and the tree is opt-in: it is not an equivalent path that happens to round differently, it is
+a worse-conditioned one.
+
+The speedup remains useful for exactly the work that produced this entry. A four-seed sweep
+at the reduced width costs twenty minutes against three and a half hours, and reporting a
+range instead of a point is what the arm needed. It is only unsound to use it for the numbers
+the study reports as its own.

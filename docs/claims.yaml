@@ -235,26 +235,74 @@ claims:
       structurally zero, which is what made an earlier certificate vacuous.
 
   # ------------------------------------------------------ tensor network, full scale
-  - key: MpsFullAucBest
-    value: 0.8074
-    source: results/tables/mps_full.csv
-    select: {bond_dimension: 4}
-    column: roc_auc
+  - key: MpsFullApSeedMin
+    value: 0.1740
+    source: results/tables/mps_seed_spread.csv
+    reduce: {op: min, column: average_precision, where_equals: {contraction_width: 1}}
     tolerance: 0.00005
     note: >
-      Best full-scale MPS ROC AUC across the bond-dimension sweep, on all 431 features
-      against the held-out test block.  The tuned gradient-boosted baseline reaches
-      0.8837-0.8884 on the same split.
+      Lowest full-scale average precision across four seeds at a FIXED bond dimension of 16.
+      With MpsFullApSeedMax this replaces the earlier "best across the bond-dimension sweep",
+      which took a maximum over four draws whose spread turned out to equal the seed spread.
 
-  - key: MpsFullApBest
+  - key: MpsFullApSeedMax
     value: 0.2464
-    source: results/tables/mps_full.csv
-    select: {bond_dimension: 16}
-    column: average_precision
+    source: results/tables/mps_seed_spread.csv
+    reduce: {op: max, column: average_precision, where_equals: {contraction_width: 1}}
     tolerance: 0.00005
     note: >
-      Best full-scale MPS average precision.  The baseline reaches 0.5055-0.5114, so the gap
-      is roughly a factor of two on the metric that matters at this class balance.
+      Highest of the same four seeds.  It coincides with the committed chi=16 value because
+      that run used this seed; the coincidence is the reproduction check, not a result.
+
+  - key: MpsFullAucSeedMin
+    value: 0.7824
+    source: results/tables/mps_seed_spread.csv
+    reduce: {op: min, column: roc_auc, where_equals: {contraction_width: 1}}
+    tolerance: 0.00005
+    note: Lowest full-scale ROC AUC across four seeds at fixed bond dimension 16.
+
+  - key: MpsFullAucSeedMax
+    value: 0.8012
+    source: results/tables/mps_seed_spread.csv
+    reduce: {op: max, column: roc_auc, where_equals: {contraction_width: 1}}
+    tolerance: 0.00005
+    note: >
+      Highest of the same four seeds.  The spread across these four, 0.0188, is 1.01 times
+      the spread the committed table shows ACROSS bond dimension, 0.0186 -- which is why the
+      per-configuration numbers cannot be read as capacity dependence.
+
+  - key: MpsFullAucSeedSpread
+    value: 0.0188
+    source: results/tables/mps_seed_spread.csv
+    reduce: {op: range, column: roc_auc, where_equals: {contraction_width: 1}}
+    tolerance: 0.00005
+    note: >
+      ROC AUC spread across four seeds at a FIXED bond dimension.  Compare
+      MpsFullAucChiSpread: they are the same size, which is why the sweep cannot be read as
+      capacity dependence.
+
+  - key: MpsFullApSeedSpread
+    value: 0.0724
+    source: results/tables/mps_seed_spread.csv
+    reduce: {op: range, column: average_precision, where_equals: {contraction_width: 1}}
+    tolerance: 0.00005
+    note: Average-precision spread across four seeds at a fixed bond dimension.
+
+  - key: MpsFullAucChiSpread
+    value: 0.0186
+    source: results/tables/mps_full.csv
+    reduce: {op: range, column: roc_auc}
+    tolerance: 0.00005
+    note: >
+      ROC AUC spread ACROSS bond dimension in the committed sweep, one seed each.  It is
+      1.01 times the seed spread at one bond dimension, so it carries no capacity signal.
+
+  - key: MpsFullApChiSpread
+    value: 0.0771
+    source: results/tables/mps_full.csv
+    reduce: {op: range, column: average_precision}
+    tolerance: 0.00005
+    note: Average-precision spread across bond dimension, against a seed spread of 0.0724.
 
   - key: MpsFullSecondsMin
     value: 2765

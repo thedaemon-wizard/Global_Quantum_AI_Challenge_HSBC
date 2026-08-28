@@ -83,6 +83,12 @@ def resolve(claim: dict[str, Any]) -> float:
             subset = frame[frame[reduce_spec["where"]].astype(bool)]
             left, right = reduce_spec["columns"]
             return float((subset[left] - subset[right]).min())
+        if op == "range":
+            # Max minus min. The comparison that motivates it -- seed spread against
+            # across-configuration spread -- is a statement about two ranges, so the range
+            # itself has to be the bound quantity rather than a difference computed in prose.
+            values = frame[reduce_spec["column"]]
+            return float(values.max() - values.min())
         if op == "count":
             return float(len(frame))
         if op == "min":

@@ -32,15 +32,22 @@ Table~\ref{tab:mps} gives the sweep.
 
 \input{generated/table-mps}
 
-\paragraph{At full scale it loses by a wider margin.} On all 431 features, trained on
-$\Dtrain$ and scored once on $\Dtest$, the tensor network reaches \ClaimMpsFullAucBest{} ROC
-AUC and \ClaimMpsFullApBest{} average precision at best across the sweep, against
-\ClaimGbdtFullAucMin--\ClaimGbdtFullAucMax{} and
-\ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the tuned baseline. The gap is roughly a
-factor of two on average precision, which is the metric that matters at a
+\paragraph{At full scale it loses by a wider margin, and the margin is all the arm supports.}
+On all 431 features, trained on $\Dtrain$ and scored once on $\Dtest$, the tensor network
+lands between \ClaimMpsFullAucSeedMin{} and \ClaimMpsFullAucSeedMax{} ROC AUC and between
+\ClaimMpsFullApSeedMin{} and \ClaimMpsFullApSeedMax{} average precision across four seeds at
+a fixed bond dimension, against \ClaimGbdtFullAucMin--\ClaimGbdtFullAucMax{} and
+\ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the tuned baseline. Every draw loses by a
+factor of two to three on average precision, which is the metric that matters at a
 \ClaimTestFraudRate\,\% positive rate.
 
-That comparison is affordable only because a matrix product state has no qubit ceiling, and
+\textbf{We do not report capacity dependence at full scale, because we cannot resolve it.}
+The spread across those four seeds at one bond dimension is \ClaimMpsFullAucSeedSpread{} ROC
+AUC and \ClaimMpsFullApSeedSpread{} average precision. The spread the sweep shows \emph{across} bond dimension is
+\ClaimMpsFullAucChiSpread{} and \ClaimMpsFullApChiSpread{} --- the same size. A per-configuration reading of that sweep would be reading seed noise, and an
+earlier draft of this paragraph did exactly that by quoting the best of four draws.
+
+The seed sweep is affordable only because a matrix product state has no qubit ceiling, and
 because its cost turns out not to depend on the bond dimension the way the ansatz suggests:
 the four jobs took \ClaimMpsFullSecondsMin{} to \ClaimMpsFullSecondsMax{} seconds against
 the sixty-four-fold spread a $\chi^2$ model predicts. A 431-site chain is bound by the launch
