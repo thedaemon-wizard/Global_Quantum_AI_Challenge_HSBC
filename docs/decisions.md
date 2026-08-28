@@ -848,6 +848,15 @@ separate and larger -- 200 steps, limit 247 -- and the boundary is pinned by tes
 `clip_grad_norm_` already returned the pre-clip total norm and the loop was discarding it, so
 the earlier of the two signals was available at no cost the whole time.
 
+**The failure dump could not be provoked, which is itself a result.** When the fit raises on a
+non-finite loss it now writes the preceding steps at step resolution, because a per-epoch
+record answers only "which of the thirty epochs", and an epoch is 696 steps. Exercising that
+path meant provoking a real divergence, and after the cosine decay of D-031 the model
+survived initial learning rates of 3, 50, 500 and 5000 on a 200-site chain -- gradient
+clipping at norm 1.0 and a decaying step together make it very hard to break. The dump path
+is therefore covered by unit tests on its components rather than by an end-to-end failure,
+and the inability to trigger it is evidence about the fix rather than a gap in the test.
+
 ### D-034 An exploratory run could silently overwrite a pre-registered result
 
 Testing the new reporting with `--bonds 4 --epochs 6` overwrote `results/tables/mps_band.csv`

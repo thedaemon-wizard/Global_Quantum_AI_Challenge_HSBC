@@ -249,6 +249,14 @@ class ProgressReporter:
             self._stream.write(f"{prefix}  {message}\n")
             self._stream.flush()
 
+    def trace(self, record: Mapping[str, object]) -> None:
+        """Record a step-resolution row.  Goes to the log only, never to the stream.
+
+        A failure dump is hundreds of rows; putting them on stdout would bury the message
+        that says why they are there.
+        """
+        self._write_log({"event": "trace", **{k: _plain(v) for k, v in record.items()}})
+
     def close(self, **summary: object) -> None:
         """Finish the task.  Safe to call twice; the second call does nothing."""
         if self._stream is not None and self._interactive:
@@ -419,6 +427,29 @@ class DivergenceWatch:
     @property
     def observations(self) -> int:
         return self._observations
+
+    def recent_trace(self, limit: int = 200) -> list[dict[str, float]]:
+        """The last steps, for dumping when a fit dies.
+
+        Per-epoch records answer "which epoch did it turn in", which at 696 steps an epoch is
+        not an answer.  The watch is already holding these deques for its own tests, so
+        exposing them costs nothing and converts the post-mortem from a re-run into a read.
+
+        The window is bounded, and that bound is a real limitation rather than a detail: a
+        precursor beginning more than ``limit`` steps before the failure will not appear here,
+        and nothing in the record says so.  The per-epoch gradient-norm maximum is the only
+        coarser signal, and a maximum over an epoch cannot say where in the epoch it occurred.
+        """
+        losses = list(self._losses)[-limit:]
+        norms = list(self._history_norms)[-len(losses) :] if self._history_norms else []
+        first_step = self._observations - len(losses) + 1
+        trace: list[dict[str, float]] = []
+        for offset, loss in enumerate(losses):
+            record: dict[str, float] = {"step": first_step + offset, "loss": loss}
+            if offset < len(norms):
+                record["grad_norm"] = norms[offset]
+            trace.append(record)
+        return trace
 
     @property
     def slowest_detectable_growth(self) -> float:

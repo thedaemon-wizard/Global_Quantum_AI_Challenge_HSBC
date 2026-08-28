@@ -208,3 +208,47 @@ def test_reporter_closes_even_when_the_body_raises(tmp_path) -> None:
         raise RuntimeError("diverged")
     records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
     assert records[-1]["event"] == "end"
+
+
+def test_recent_trace_numbers_steps_from_the_end_of_the_run() -> None:
+    """The failure dump must say which step each row is, not just give an ordered list.
+
+    Per-epoch records answer "which epoch did it turn in", and at 696 steps an epoch that is
+    not an answer.
+    """
+    watch = DivergenceWatch()
+    for step in range(1, 501):
+        watch.observe(loss=1.0 / step, grad_norm=float(step))
+    trace = watch.recent_trace(limit=10)
+    assert len(trace) == 10
+    assert [row["step"] for row in trace] == list(range(491, 501))
+    assert trace[-1]["loss"] == pytest.approx(1.0 / 500)
+    assert trace[-1]["grad_norm"] == pytest.approx(500.0)
+
+
+def test_recent_trace_is_bounded_by_what_the_watch_retains() -> None:
+    """Asking for more than is held returns what is held rather than padding.
+
+    This bound is a real limitation: a precursor starting earlier than the retained window
+    does not appear, and nothing in the record says so.
+    """
+    watch = DivergenceWatch()
+    for _ in range(50):
+        watch.observe(loss=0.5, grad_norm=1.0)
+    assert len(watch.recent_trace(limit=1000)) == 50
+
+
+def test_trace_rows_go_to_the_log_and_not_to_the_stream(tmp_path) -> None:
+    """A dump is hundreds of rows; on stdout it would bury the message explaining it."""
+    path = tmp_path / "run.jsonl"
+    stream = io.StringIO()
+    reporter = ProgressReporter("job", 1, stream=stream, log_path=path)
+    reporter.note("loss became non-finite at step 900")
+    for step in range(3):
+        reporter.trace({"step": 900 + step, "loss": float("inf")})
+    reporter.close()
+
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    assert sum(r.get("event") == "trace" for r in records) == 3
+    assert "non-finite" in stream.getvalue()
+    assert "trace" not in stream.getvalue()

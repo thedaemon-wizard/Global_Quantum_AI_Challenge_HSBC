@@ -292,6 +292,16 @@ def fit_mps(
             optimiser.zero_grad(set_to_none=True)
             loss = loss_fn(model(xt[idx]), yt[idx])
             if not torch.isfinite(loss):
+                # Dump what the watch is already holding.  Without it the post-mortem knows
+                # only which epoch failed, and an epoch is hundreds of steps.
+                if reporter is not None:
+                    reporter.note(
+                        f"loss became non-finite at step {step}; dumping the preceding steps",
+                        step=step,
+                        learning_rate=schedule.get_last_lr()[0],
+                    )
+                    for record in watch.recent_trace():
+                        reporter.trace(record)
                 raise RuntimeError(
                     f"MPS loss became non-finite at {x_train.shape[1]} sites, step {step}, "
                     f"with initial learning rate {learning_rate:.2e} and initialisation "
