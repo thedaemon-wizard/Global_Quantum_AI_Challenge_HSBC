@@ -113,9 +113,11 @@ class BandConfig(_Strict):
     bank actually budgets; the drift in risk content is then measured rather than assumed.
     """
 
-    traffic_budget: Fraction = 0.02
+    # 0.035 is the smallest budget at which the band-conditional certificate is reachable
+    # at alpha = 1e-2 with a 10 % calibration block; see docs/protocol.md amendment A1.
+    traffic_budget: Fraction = 0.05
     # Candidate budgets swept on the band block only.  The test fold sees exactly one.
-    budget_grid: list[Fraction] = [0.005, 0.01, 0.02, 0.05]
+    budget_grid: list[Fraction] = [0.02, 0.035, 0.05, 0.10]
     definition: Literal["fixed_quantile", "fixed_score"] = "fixed_quantile"
 
 
@@ -134,12 +136,19 @@ class RiskControlConfig(_Strict):
     """
 
     alpha_grid: list[Probability] = [1e-2, 5e-3, 2e-3, 1e-3]
+    # Decision-threshold grid size.  Holm corrects over (grid points x risks), so a larger
+    # grid costs power directly: 41 points needs a ~30 % larger band budget than 11 points
+    # to certify the same alpha.  Eleven is the smallest grid that still resolves the
+    # budget-alpha frontier.
+    n_lambda: int = 11
     # PAC confidence: P(risk <= alpha) >= 1 - delta.
     delta: Probability = 0.05
     # Both risks are certified. Controlling only the false-decline side would leave the
     # side that PSD2 caps, and that the loss reserve is held against, uncertified.
     risks: list[Literal["false_positive_rate", "recall"]] = ["false_positive_rate", "recall"]
+    # Reported as a frontier rather than certified at one blind value; see A3.
     recall_floor: Probability = 0.60
+    recall_floor_grid: list[Probability] = [0.45, 0.50, 0.55, 0.60]
     fwer_method: Literal["bonferroni", "bonferroni_holm"] = "bonferroni_holm"
     rho: Probability = 0.999
     # Central band level for the exact Beta-Binomial coverage check.
@@ -186,6 +195,14 @@ class ExperimentConfig(_Strict):
     # official locator.
     psd2_reference_rates: dict[str, float] = {"100": 0.0013, "250": 0.0006, "500": 0.0001}
     psd2_window_days: int = 90
+    # The operating point is selected by decline-rate budget, not by the PSD2 rates: on a
+    # fraud-enriched benchmark those portfolio-level ceilings are reachable only at absurd
+    # decline rates (94.7 % for the loosest tier, measured). See docs/protocol.md amendment
+    # A2. Published all-in card-not-present decline rates run about 0.5-3 % of volume.
+    # 5 %, not 2 %: below about 5 % the outer threshold catches too little fraud for the
+    # concentration bound to establish any recall floor. See docs/protocol.md A3.
+    decline_rate_budget: Probability = 0.05
+    decline_rate_sensitivity: list[Probability] = [0.02, 0.05, 0.10]
 
 
 def load_config(path: str | Path | None = None) -> ExperimentConfig:

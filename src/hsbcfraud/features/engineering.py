@@ -1,0 +1,132 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Feature construction, and the two ablations that make it honest.
+
+Causality
+---------
+Per-entity aggregates are computed over **strictly past** transactions using an expanding
+window.  Computing them over the whole frame is the single most common leakage route in
+fraud modelling: a "mean transaction amount for this card" that includes the transaction
+being scored, and includes transactions that happen after it, encodes the future.  The
+non-causal variant is built anyway and reported as an ablation, because the size of the gap
+is the evidence that the causal version was necessary.
+
+The UID feature is deliberately absent
+--------------------------------------
+The IEEE-CIS competition was won by reconstructing a client identifier,
+``card1_addr1 + floor(day - D1)``, and aggregating over it; published analysis puts its
+contribution at about +0.011 AUC.  It is not used here, and the ablation is reported.
+
+The reason is not modesty.  The label rule propagates a chargeback across transactions
+linked by account, email or billing address, so a reconstructed client key is partly a
+reconstruction of the labelling mechanism itself.  More practically: an issuer already holds
+the true client identifier natively.  Recovering it from de-identified columns measures the
+de-identification, not headroom that would transfer to a deployed system.
+"""
+
+from __future__ import annotations
+
+import numpy as np
+import pandas as pd
+
+__all__ = ["ENTITY_KEYS", "add_entity_aggregates", "add_uid", "select_model_columns"]
+
+# Entities over which behavioural aggregates are formed.  card1 is a coarse card attribute
+# rather than a card identifier; addr1 is a billing region.  Both are named in the label
+# propagation rule, which is why they are the ones that matter.
+ENTITY_KEYS = ("card1", "addr1")
+
+# Columns that are identifiers or targets rather than features.
+_EXCLUDED = {"TransactionID", "isFraud", "day", "TransactionDT"}
+
+
+def add_entity_aggregates(
+    frame: pd.DataFrame,
+    *,
+    keys: tuple[str, ...] = ENTITY_KEYS,
+    amount_column: str = "TransactionAmt",
+    causal: bool = True,
+) -> pd.DataFrame:
+    """Per-entity behavioural features.
+
+    With ``causal=True`` every statistic for row *i* uses only rows before *i* within the
+    same entity, via an expanding window shifted by one.  The first transaction for an
+    entity therefore has NaN aggregates, which is correct -- there is no history -- and the
+    gradient-boosted models used here handle NaN natively rather than needing an imputed
+    value that would invent one.
+
+    With ``causal=False`` the same statistics are computed over the entity's whole history.
+    That variant exists only to be reported as an ablation.
+    """
+    if amount_column not in frame.columns:
+        raise KeyError(f"{amount_column!r} is required to build entity aggregates")
+    out = frame.copy()
+
+    for key in keys:
+        if key not in frame.columns:
+            raise KeyError(f"entity key {key!r} is not present")
+        grouped = out.groupby(key, sort=False, observed=True)[amount_column]
+
+        if causal:
+            shifted = grouped.shift(1)
+            history = shifted.groupby(out[key], sort=False, observed=True)
+            expanding = history.expanding()
+            out[f"{key}_amt_mean_past"] = expanding.mean().reset_index(level=0, drop=True)
+            out[f"{key}_amt_std_past"] = expanding.std().reset_index(level=0, drop=True)
+            out[f"{key}_count_past"] = expanding.count().reset_index(level=0, drop=True)
+        else:
+            out[f"{key}_amt_mean_past"] = grouped.transform("mean")
+            out[f"{key}_amt_std_past"] = grouped.transform("std")
+            out[f"{key}_count_past"] = grouped.transform("count")
+
+        # Ratio to the entity's own history is the actual signal: an unusual amount *for
+        # this card* is informative where an unusual amount overall mostly encodes the
+        # merchant category.
+        mean_past = out[f"{key}_amt_mean_past"]
+        out[f"{key}_amt_ratio"] = np.where(
+            mean_past.to_numpy() > 0, out[amount_column].to_numpy() / mean_past.to_numpy(), np.nan
+        )
+
+    return out
+
+
+def add_uid(frame: pd.DataFrame) -> pd.DataFrame:
+    """The competition's reconstructed client key, for the ablation only.
+
+    ``UID = card1_addr1 + floor(day - D1)``.  ``D1`` is days since the card first appeared,
+    so ``day - D1`` is approximately the card's first-seen date and is stable across that
+    card's transactions.
+    """
+    for required in ("card1", "addr1", "D1", "day"):
+        if required not in frame.columns:
+            raise KeyError(f"{required!r} is required to build the UID feature")
+    out = frame.copy()
+    first_seen = np.floor(out["day"].to_numpy() - out["D1"].to_numpy())
+    out["uid"] = (
+        out["card1"].astype("string").fillna("NA")
+        + "_"
+        + out["addr1"].astype("string").fillna("NA")
+        + "_"
+        + pd.Series(first_seen, index=out.index).astype("string").fillna("NA")
+    )
+    grouped = out.groupby("uid", sort=False, observed=True)["TransactionAmt"]
+    shifted = grouped.shift(1)
+    expanding = shifted.groupby(out["uid"], sort=False, observed=True).expanding()
+    out["uid_amt_mean_past"] = expanding.mean().reset_index(level=0, drop=True)
+    out["uid_count_past"] = expanding.count().reset_index(level=0, drop=True)
+    return out.drop(columns=["uid"])
+
+
+def select_model_columns(frame: pd.DataFrame, *, drop: tuple[str, ...] = ()) -> list[str]:
+    """Numeric feature columns, with identifiers and targets removed.
+
+    String columns are converted to integer codes upstream rather than left as pandas
+    categoricals: SHAP's tree explainer has a long-standing incompatibility with categorical
+    dtypes on boosted models, and explainability is a scored criterion here, so the dtype is
+    chosen to keep that path working.
+    """
+    excluded = _EXCLUDED | set(drop)
+    return [
+        column
+        for column in frame.columns
+        if column not in excluded and pd.api.types.is_numeric_dtype(frame[column])
+    ]

@@ -1,0 +1,9 @@
+alpha,label,class_name,n_calibration,floor,headroom,degenerate
+0.01,0,legitimate,58343,99.0,58244.0,False
+0.01,1,fraud,2121,99.0,2022.0,False
+0.005,0,legitimate,58343,199.0,58144.0,False
+0.005,1,fraud,2121,199.0,1922.0,False
+0.002,0,legitimate,58343,499.0,57844.0,False
+0.002,1,fraud,2121,499.0,1622.0,False
+0.001,0,legitimate,58343,999.0,57344.0,False
+0.001,1,fraud,2121,999.0,1122.0,False

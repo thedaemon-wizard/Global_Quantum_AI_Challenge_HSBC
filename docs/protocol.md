@@ -335,3 +335,149 @@ Recorded here so that no later result can be presented as though it had been sou
 * No merchant-side false-decline economics presented as issuer benefit.
 * No number from the author's prior intrusion-detection work presented as a forecast for
   card fraud.
+
+---
+
+## Amendment A1 — 2026-08-28, before any calibration risk was observed
+
+**What changed:** the band traffic-budget grid becomes {0.02, 0.035, 0.05, 0.10}, the
+decision grid is fixed at 11 points, and the certified `alpha` is reported per achievable
+(budget, alpha) pair rather than as a single level across the whole grid.
+
+**Why this does not compromise the guarantee.** The change was derived from *sample sizes
+and the concentration bound alone*. No risk value from `D_cal` was computed, inspected or
+used. The quantity that drove it — how many legitimate transactions fall in a band of a
+given width — is a property of the split, which was fixed in E1, and of the Hoeffding-Bentkus
+bound, which is a formula. Learn-then-Test requires the grid to be fixed before the risks are
+evaluated; it does not require the grid to be chosen without arithmetic.
+
+**What was found.** The band-conditional risk of section 1 is conditioned on two events at
+once — legitimate, and inside the band — and the band is deliberately a few percent of
+traffic. At a 10 % calibration block (58,343 legitimate rows measured) the reachable `alpha`
+is capped by the band budget:
+
+| target `alpha` | minimum band budget that certifies |
+|---|---|
+| 1e-2 | 0.035 |
+| 5e-3 | 0.070 |
+| 2e-3 | 0.175 |
+| 1e-3 | 0.345 |
+
+computed at an assumed true risk of `alpha/3`, with Holm correction over an 11-point grid
+and two risks. The original grid {0.005, 0.01, 0.02, 0.05} therefore could not have
+certified anything below `alpha = 1e-2`, and only at its widest point.
+
+The **unconditional** false-decline rate, which uses the whole calibration block, reaches
+`alpha = 5e-4` comfortably (p = 1.7e-4 against a Holm level of 2.3e-3).
+
+**Consequences, all reported rather than hidden.**
+
+1. Two certificates are reported side by side, with their different characters stated: the
+   unconditional one is tight but does not constrain the in-band scorer; the band-conditional
+   one constrains it but is capped by sample size. Neither alone is the whole story.
+2. The reachable (budget, alpha) frontier is a **result**, not a configuration choice. It is
+   the guarantee-versus-abstention trade-off that section 6 promised, derived from the
+   concentration bound rather than asserted.
+3. It settles a design question that was previously argued on operational grounds alone.
+   A certificate at `alpha = 1e-2` requires routing at least 3.5 % of traffic into the band.
+   Sending 3.5 % of an issuer's authorisation volume to **manual review** is not possible;
+   sending it to **3-D Secure step-up** is ordinary. The statistics independently force the
+   architecture the operational argument already preferred.
+
+**Grid size is now a stated cost.** Holm correction runs over grid points times risks, so a
+41-point grid costs roughly a 30 % larger minimum band budget than an 11-point grid at the
+same `alpha`. Eleven points is chosen as the smallest grid that still resolves the frontier.
+
+---
+
+## Amendment A2 — 2026-08-28, operating point rule corrected
+
+**What changed:** the operating point is selected by an issuer decline-rate budget, not by
+the PSD2 reference fraud rate. The PSD2 comparison is retained and reported, but as a
+distance measurement rather than as a constraint.
+
+**Why.** Section 5 committed to "maximise recall subject to the value-weighted fraud rate on
+the approved branch remaining at or below the PSD2 Annex reference rate". Applied to
+IEEE-CIS this is a category error, and the measurement makes it plain.
+
+Measured on `D_band` (58,326 rows), value-weighted, as Article 19 defines it:
+
+| decline rate | approved-branch value fraud rate |
+|---|---|
+| 0 % | 5.554 % |
+| 5 % | 2.556 % |
+| 20 % | 1.055 % |
+| 50 % | 0.347 % |
+| 60 % | 0.247 % |
+
+Reaching the loosest tier (ETV EUR 100, ceiling 0.13 %) requires declining **94.7 %** of
+traffic; the strictest (EUR 500, 0.01 %) requires **98.2 %**.
+
+The reason is not that the model is weak. The PSD2 reference rates govern a payment service
+provider's **entire remote card portfolio**, which is overwhelmingly ordinary traffic.
+IEEE-CIS is a fraud-detection benchmark assembled by sampling for fraud density: at a
+5.554 % value-weighted fraud rate it sits roughly forty times above the loosest ceiling
+before any model is applied. A portfolio-level threshold cannot be applied to an enriched
+sample and read as an operating constraint.
+
+**What replaces it.** The operating point is the highest threshold whose decline rate stays
+within an issuer-plausible budget. Published figures put all-in card-not-present decline
+rates in the range of roughly 0.5-3 % of volume, so the pre-registered budget is **2 %**,
+with 1 % and 3 % reported alongside as sensitivity.
+
+**What survives from the PSD2 framing, and it is the part that mattered.** The structural
+argument is unaffected: the regulated quantity is value-weighted, is computed on a rolling
+90-day basis, and imposes a portfolio-level ceiling on the fraud side while nothing
+regulates the false-decline side. A one-sided objective is therefore the wrong target and a
+two-sided envelope is the right one. What is withdrawn is only the use of those specific
+numbers as a threshold selector on this specific dataset.
+
+**The distance measurement is kept as a result.** The decline rate required to bring an
+enriched benchmark down to portfolio-level fraud rates is a quantity no other submission is
+likely to report, and it is the honest way to say how far this data sits from deployment.
+
+**Guarantee integrity.** As with A1, this was derived from `D_band` alone. No `D_cal` risk
+value and no `D_test` quantity was computed, inspected or used.
+
+---
+
+## Amendment A3 — 2026-08-28, decline budget and the reporting of the recall floor
+
+**What changed:** the pre-registered decline budget moves from 2 % to 5 %, and the recall
+floor is reported as a **frontier across floors** rather than certified at a single
+pre-chosen value.
+
+**Why the budget moved.** Measured on `D_band` and `D_cal`, with the band corrected to sit
+below the decline threshold:
+
+| decline budget | outer-threshold recall | any configuration certifiable? |
+|---|---|---|
+| 2 % | 0.354 | no, at any band width, alpha or recall floor tested |
+| 5 % | 0.561 | yes, all 24 combinations tested |
+
+At 2 % the outer threshold catches 35.4 % of fraud and even declining the entire band
+reaches only 62.7 %; the concentration bound cannot establish a recall floor from a band
+that small. At 5 % the outer threshold reaches 56.1 % and every tested combination
+certifies. The boundary is between the two, and it is a property of the data and the bound,
+not a preference.
+
+**Why the recall floor is now a frontier.** The floor of 0.60 in section 6 was chosen before
+any data were seen, which was the right procedure but produced a number with no particular
+justification. Certifying at one blind value and reporting only that would present an
+arbitrary choice as a finding. All of 0.45, 0.50, 0.55 and 0.60 certify at a 5 % decline
+budget, so the frontier is reported and the operating choice is left where it belongs — with
+the institution that knows its own loss tolerance.
+
+**The operational consequence is the same one A1 reached by a different route.** A certified
+envelope needs roughly 5 % declines plus a 5-20 % step-up band: about a tenth of
+authorisation traffic receives some intervention. That is routine for 3-D Secure step-up and
+impossible for manual review, so the statistics again select the architecture.
+
+**A bug was fixed in the process, and it mattered.** The band was initially centred *on* the
+decline threshold and extended above it, so the in-band scorer was being asked to re-rank
+transactions already routed to decline; with the threshold at the 98th percentile the upper
+edge also clipped to the maximum score for any budget above 4 %. The band now occupies the
+traffic immediately beneath the decline threshold, which is what the three-region decision
+rule in section 3 actually describes.
+
+**Guarantee integrity.** Derived from `D_band` and `D_cal` only. `D_test` was not consulted.

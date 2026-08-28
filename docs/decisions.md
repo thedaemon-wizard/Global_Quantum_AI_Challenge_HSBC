@@ -235,3 +235,115 @@ a subtle way to manufacture a significant result.
 margin is wider than the effect it is meant to exclude proves nothing, and reporting one is
 worse than reporting nothing. The reference effect is 0.023 average precision, the point
 estimate Chaves et al. (arXiv:2603.06473) report for a comparable hybrid architecture.
+
+---
+
+## Round 3 — Classical baselines (2026-08-28)
+
+### D-016 The G1 gate was mis-specified, and the measurement that shows why is a headline result
+
+The implementation plan set a go/no-go gate of "IEEE-CIS test AUC >= 0.92, else retune".
+That number came from published figures for this dataset — Deotte's 1st-place solution
+reports 0.9459 on the competition's private leaderboard and about 0.9363 in local
+validation without the UID feature.
+
+Those are **cross-validation** numbers, computed with time-based GroupKFold over the
+training file. This study evaluates on a strict forward holdout: fit on days 0-100, report
+on days 141-181. Those are different tasks, and the gate silently compared across them.
+
+Measured with an identical model and identical hyperparameters, 431 features including the
+identity join, changing only the split:
+
+| arm | test AUC | test AP |
+|---|---|---|
+| temporal (days 141-181 held out) | 0.8805 | 0.5083 |
+| stratified random | 0.9619 | 0.8031 |
+| card-disjoint | 0.8474 | 0.5365 |
+
+A random split inflates AUC by **+0.081** and average precision by **+0.295** over the
+temporal split, on the same data with the same model.
+
+Two consequences.
+
+**The gate is corrected** to be stated against the arm it is measured on: temporal AUC
+>= 0.87, with the stratified arm reported alongside as the control. Retuning to reach 0.92
+on the temporal arm would mean tuning against the test block, which the pre-registration
+forbids and which would defeat the purpose of the holdout.
+
+**The contrast is promoted from a control to a result.** It is the cleanest available
+evidence for the study's framing: published fraud-detection numbers on this dataset family
+are largely obtained under random splits, and the gap between those numbers and what a
+forward holdout yields is the distribution shift that the risk-control layer has to survive.
+The AP gap is the one to quote — 0.5083 against 0.8031 means a random split makes the
+primary metric look nearly 60 % better than deployment conditions support.
+
+The card-disjoint arm coming in *below* the temporal arm (0.8474) is consistent with the
+label-propagation mechanism: forbidding an entity from appearing on both sides removes
+signal that a temporal split leaves available, since 84.8 % of test-block entities also
+occur in training.
+
+### D-017 The full feature set is used, including the identity join
+
+An initial run used 40 hand-picked columns and reached temporal AUC 0.8830 / AP 0.4823. The
+full set — 431 features, all V columns plus the 40 identity columns left-joined on
+TransactionID — reaches AUC 0.8805 / AP 0.5083. AUC is unchanged within noise while average
+precision improves by 0.026, which is the metric that matters at this prevalence.
+
+The full set is used, because selecting 40 columns by hand is itself a modelling decision
+made with knowledge of the dataset, and leaving it in would make the baseline weaker than a
+straightforward one — an artificially weak baseline is the most common way a comparison is
+tilted, and this study's entire argument depends on the classical arm being tuned as hard as
+the quantum arm.
+
+### D-018 The test-fold guard fired, and the reset is recorded here
+
+`TestFoldGuard` refused a second `D_test` evaluation after the configuration digest changed,
+which is what it was written to do. The first evaluation ran under the configuration
+withdrawn by protocol amendments A2 and A3 — an operating point selected by a PSD2 ceiling
+that is not applicable to a fraud-enriched benchmark, and a band that extended above the
+decline threshold. That evaluation is void, not spent.
+
+`results/tables/test_access.json` is therefore reset once, here, deliberately, with this
+entry as the record. The ledger is not reset again: the next `D_test` evaluation is the one
+that counts.
+
+### D-019 The central experimental result: the guarantee breaks, and only under time
+
+Split conformal calibrated on `D_cal` and applied to `D_test`, identical code and identical
+alpha grid across three split arms. The only difference is how the blocks were formed.
+
+| arm | alpha=1e-2 | 5e-3 | 2e-3 | 1e-3 |
+|---|---|---|---|---|
+| temporal | 1.49x, breached | 1.49x, breached | 1.32x, breached | 0.98x, inside |
+| stratified random | 0.95x, inside | 1.02x, inside | 1.03x, inside | 1.16x, inside |
+| card-disjoint | 0.90x, inside | 0.85x, inside | 0.78x, inside | 0.76x, inside |
+
+"Breached" means the observed false-decline count on the test block falls outside the exact
+99 % Beta-Binomial predictive band, one-sided tail p < 0.004.
+
+Three things follow, and the third is the one that matters.
+
+**The implementation is correct.** Under a random split the empirical rate lands inside the
+exact band at every alpha, with ratios between 0.95 and 1.16. If the conformal machinery
+were wrong it would be wrong here too.
+
+**Entity overlap is not the cause.** The card-disjoint arm, where no entity appears on both
+sides, also passes — conservatively, at 0.76-0.90x nominal. So the breach is not the
+label-propagation clustering.
+
+**The breach is specifically temporal, and it is large at operationally relevant levels.**
+Calibrating on days 120-140 and deploying on days 141-181 inflates the realised
+false-decline rate to about 1.5x its nominal value at alpha = 1e-2 and 5e-3. A control
+document stating "at most 1 % of legitimate customers are declined" would in fact be
+declining 1.49 %.
+
+This is the study's central finding and it is a negative one about naive practice. It is not
+an argument that conformal prediction fails; the guarantee is conditional on exchangeability
+and time-ordered fraud data violates it, exactly as Barber et al. (2023) and Oliveira et al.
+(2024) describe. What this measurement adds is the size of the violation on real payments
+data under a protocol that isolates its cause — which is what an institution needs in order
+to decide how much recalibration headroom to hold.
+
+The alpha = 1e-3 temporal cell passing is consistent rather than anomalous: at that level the
+threshold sits far enough into the tail that the drift in the bulk of the score distribution
+moves it comparatively little.
