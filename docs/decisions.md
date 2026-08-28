@@ -419,3 +419,62 @@ mechanical: cross-validation lets a client recur across folds, and across a 40-d
 that recurrence has largely decayed. The contrast is independent evidence for the same point
 the split-arm comparison makes — that numbers obtained under cross-validation on this dataset
 family do not transfer to a forward holdout.
+
+---
+
+## Round 4 — The quantum arm (2026-08-28)
+
+### D-022 Braket becomes a first-class execution path; D-006 was too narrow
+
+D-006 chose `FidelityStatevectorKernel` on two grounds: it needs no proprietary NVIDIA binary,
+and a GPU does not accelerate a pairwise Python loop. Both remain true. The conclusion drawn
+from them was too narrow, because it optimised compute and in doing so dropped a stated
+requirement: the challenge Executive Summary asks participants to use Amazon Braket, and
+section 5.4 puts simulator-based execution in scope.
+
+`src/hsbcfraud/quantum/kernel.py` therefore implements four independent routes to the same
+overlap -- exact statevector, Braket `LocalSimulator` on `braket_sv`, Aer CPU, and Aer GPU
+with cuStateVec -- and `scripts/check_parity.py` asserts they agree.
+
+Measured agreement against the exact statevector, 24 points, four feature-map configurations:
+
+| backend | max absolute difference |
+|---|---|
+| Braket `braket_sv` | 3.9e-16 to 5.6e-16 |
+| Aer CPU | 2.6e-15 to 4.8e-13 |
+| Aer GPU | 2.6e-15 to 4.8e-13 |
+
+This is a better answer than either the original plan or D-006. Four independent
+implementations of the same mathematical object either agree to numerical precision or one of
+them is wrong, so running them against each other is a stronger statement than running any one
+alone -- and it is the substitute this study offers for hardware execution, which the
+challenge explicitly does not penalise omitting.
+
+Two implementation notes worth recording because both cost time.
+
+Braket's OpenQASM dialect does not resolve `stdgates.inc` and names two gates differently from
+Qiskit: `p` is `phaseshift` and `cx` is `cnot`. The translation is a literal rename of leading
+gate tokens, not a reconstruction of the circuit, so gate order, qubit indices and parameter
+values pass through untouched. Rebuilding the circuit in Braket's Python API was rejected: a
+circuit assembled twice by hand can differ in gate order or rotation convention, and the
+parity check would then report a real discrepancy as a numerical one, or hide one behind a
+compensating difference.
+
+The Gram diagonal is set to exactly 1 rather than left to accumulate floating-point error.
+`|<phi|phi>|^2` is analytically 1, and a diagonal reading 0.9999999997 propagates into the
+eigenspectrum and shifts the effective-rank screen -- which is the quantity the a-priori gate
+is decided on.
+
+### D-023 The entanglement ablation is the same circuit, not a different one
+
+`build_feature_map` takes an `entanglement` argument, and the `none` setting removes the
+entangling layer from the *same* construction rather than switching to a different library
+builder. Bowles, Ahmed and Schuld (arXiv:2403.07059) found that removing entanglement often
+does not hurt a quantum model, so a quantum arm reported without a product-state control has
+not been tested; but an ablation that changes the rotation structure as well as the
+entanglement measures neither.
+
+Measured on 24 uniform points, 4 qubits, ZZ map: effective-rank ratio 0.861 with linear
+entanglement against 0.658 without, and off-diagonal mean 0.0757 against 0.1301. The
+entangling layer materially changes the kernel, which is what makes the ablation worth running
+rather than a formality.

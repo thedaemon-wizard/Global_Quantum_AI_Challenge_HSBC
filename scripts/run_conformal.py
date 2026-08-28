@@ -41,7 +41,9 @@ from hsbcfraud.data.splits import TestFoldGuard
 REPO = Path(__file__).resolve().parents[1]
 
 
-def band_edges(scores: np.ndarray, decline_budget: float, band_budget: float) -> tuple[float, float]:
+def band_edges(
+    scores: np.ndarray, decline_budget: float, band_budget: float
+) -> tuple[float, float]:
     """The step-up band, which sits entirely BELOW the decline threshold.
 
     The three regions are contiguous and disjoint::
@@ -138,11 +140,16 @@ def main(argv: list[str] | None = None) -> int:
     s_band = band_df["score"].to_numpy()
     operating_threshold = float(np.quantile(s_band, 1.0 - cfg.decline_rate_budget))
     approved_band = s_band < operating_threshold
+    value_rate = metrics.value_weighted_fraud_rate(
+        band_df["y"].to_numpy(), band_df["amount"].to_numpy(), approved_band
+    )
+    approved_recall = metrics.recall_at_threshold(
+        band_df["y"].to_numpy(), s_band, operating_threshold
+    )
     print(
         f"\n  operating point at a {cfg.decline_rate_budget:.1%} decline budget: "
         f"threshold {operating_threshold:.6g}, approved-branch value fraud rate "
-        f"{metrics.value_weighted_fraud_rate(band_df['y'].to_numpy(), band_df['amount'].to_numpy(), approved_band):.4%}, "
-        f"recall {metrics.recall_at_threshold(band_df['y'].to_numpy(), s_band, operating_threshold):.3f}"
+        f"{value_rate:.4%}, recall {approved_recall:.3f}"
     )
 
     # -------------------------------------------- E5: two-sided risk control on D_cal

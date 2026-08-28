@@ -193,7 +193,11 @@ def report(
     if amounts is not None:
         amount = np.asarray(amounts, dtype=float).ravel()
         fraud_value = amount[y == 1].sum()
-        value_recall = float(amount[(y == 1) & decisions].sum() / fraud_value) if fraud_value else float("nan")
+        value_recall = (
+            float(amount[(y == 1) & decisions].sum() / fraud_value)
+            if fraud_value
+            else float("nan")
+        )
         value_rate_approved = value_weighted_fraud_rate(y, amount, ~decisions)
 
     return ClassificationReport(

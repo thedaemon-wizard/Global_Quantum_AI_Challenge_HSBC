@@ -11,8 +11,11 @@ forms of leakage.  Rather than assert that neither was used, both are run and re
 
 **Causal aggregates.**  Per-entity behavioural features computed over an entity's whole
 history include the transaction being scored and every transaction after it.  The causal
-version uses an expanding window shifted by one, so only strictly past rows contribute.  The
-gap between the two is the size of the leak.
+version uses an expanding window shifted by one, so only strictly past rows contribute.
+
+Measured here, the gap is null: +0.0054 AP for the non-causal variant against a per-seed
+standard deviation of 0.0053.  That is the reported result, not a disappointment.  The causal
+construction is kept because it is correct and costs nothing.
 
 **The UID feature.**  The competition was won by reconstructing a client key,
 ``card1_addr1 + floor(day - D1)``, and aggregating over it.  It is not used in the reported
@@ -20,7 +23,12 @@ baseline.  The reason is not modesty: the label rule propagates a chargeback acr
 transactions linked by account, email or billing address, so a reconstructed client key is
 partly a reconstruction of the labelling mechanism.  An issuer holds the true identifier
 natively, so recovering it from de-identified columns measures the de-identification rather
-than transferable headroom.  The ablation quantifies what is being declined.
+than transferable headroom.
+
+Measured here it is worth +0.0015 AP, inside noise, against a published +0.011 AUC obtained
+under time-based cross-validation.  The difference is mechanical -- cross-validation lets a
+client recur across folds and a 40-day forward gap does not -- and is independent evidence for
+this study's framing.
 
     .venv/bin/python scripts/run_ablations.py
 """

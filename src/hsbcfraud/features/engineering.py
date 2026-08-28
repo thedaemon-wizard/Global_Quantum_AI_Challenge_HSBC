@@ -31,8 +31,8 @@ it against 0.5081 without, a difference of +0.0015 against a per-seed standard d
 a client seen in one fold recurs in another; across a 40-day forward gap that recurrence has
 largely decayed.  The contrast is itself evidence for the study's framing.
 
-The reason for excluding it is not modesty.  The label rule propagates a chargeback across transactions
-linked by account, email or billing address, so a reconstructed client key is partly a
+The reason for excluding it is not modesty.  The label rule propagates a chargeback across
+transactions linked by account, email or billing address, so a reconstructed client key is partly a
 reconstruction of the labelling mechanism itself.  More practically: an issuer already holds
 the true client identifier natively.  Recovering it from de-identified columns measures the
 de-identification, not headroom that would transfer to a deployed system.
