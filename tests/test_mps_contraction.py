@@ -121,15 +121,18 @@ def test_gradients_agree_so_the_training_trajectory_is_unchanged() -> None:
     assert abs(norm_b / norm_a - 1) < 1e-4
 
 
-def test_width_one_is_the_sequential_fold() -> None:
-    """The default path must be the shipped behaviour, not an approximation of it.
+def test_the_default_is_the_sequential_fold() -> None:
+    """The default must reproduce the committed tables, not merely approximate them.
 
-    A model that has never been tuned contracts with width 1, so this is what runs unless a
-    caller opts in.
+    Reassociating changes the floating-point order by about 1e-6 per step, and over the
+    21,000 steps of a full-scale job that compounds: at chi=16 it moved test average
+    precision from 0.246 to 0.056. The first batch is bit-identical, so this is accumulated
+    divergence rather than an error -- but a pre-registered study cannot have a default that
+    silently produces a different number. Opting in is explicit. See D-037.
     """
-    assert build(64, 8, 1).contraction_chunk == 1
-    assert MPSConfig().contraction_chunk is None
+    assert MPSConfig().contraction_chunk == 1
     assert MPSClassifier(8, MPSConfig(bond_dimension=4)).contraction_chunk == 1
+    assert MPSConfig(contraction_chunk=None).contraction_chunk is None
 
 
 def test_tuning_prefers_the_tree_at_small_bond_and_the_fold_at_large() -> None:

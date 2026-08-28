@@ -969,3 +969,41 @@ Memory moves the other way. The tree materialises every transfer matrix at once,
 allocation grows with the width: at `chi = 32`, 0.99 GiB for the fold against 3.93 GiB for the
 full tree. Memory, not time, is what bounds the bond dimension here, and the tuner skips
 widths that do not fit rather than reporting them as slow.
+
+### D-037 A parallel investigation produced no recorded results, for two reasons, both avoidable
+
+Four agents were run in isolated worktrees to evaluate restructurings of the contraction.
+All four did substantial work; the run recorded four `started` events and zero results.
+
+**The reporting schema was too strict and its payload too large.** The structured-output
+schema asked each agent for the complete rewritten function and its raw measurement output as
+free text, which produced 16 to 18 kB payloads, and those failed JSON parsing on escaping.
+One agent then fixed the escaping and was rejected by `additionalProperties: false` for a
+single extra key. Both agents spent their remaining turns retrying and returned nothing. The
+work survived only because it was on disk in the worktrees.
+
+The lesson is specific: a schema that carries large free text is fragile at exactly the moment
+it matters, and `additionalProperties: false` converts a trivial surplus into total loss. Ask
+for short fields and a path to the artefact instead of the artefact.
+
+**Every worktree was eight commits stale.** The four worktrees were created at 19:57 on
+commit `4d4559f` from 15:29, while the repository head was `77bd690` from 19:52. The agents
+therefore saw no cosine decay, no depth-scaled learning rate, no gradient-norm guard, no
+telemetry module and no decision entries past D-029. Their `MPSConfig.learning_rate` was the
+fixed `3e-3` that D-031 established as divergent at 431 sites.
+
+One agent reported that the brief was wrong because `docs/decisions.md` contained no D-031.
+From its vantage that was correct, and the objection was the right one to raise: the brief had
+cited as checkable authority a document the agent could not see.
+
+**What this cost.** The timing measurements survive, because the only difference in `forward`
+between the two commits is a trailing multiply-by-zero -- two kernels out of roughly three
+thousand. What does not survive is the finding that mattered most: an agent measured a
+0.026 change in average precision between two numerically equivalent implementations and
+concluded the training trajectory was unstable. That was measured at `3e-3` with no decay,
+which is the regime already known to diverge, so it could not be carried over to the current
+configuration. It was nearly used as grounds to reject the rewrite.
+
+The same instability was then found independently on the current code, at a far larger
+magnitude, and is recorded in D-038. The agent's conclusion was right; its evidence was not
+transferable, and the difference matters.

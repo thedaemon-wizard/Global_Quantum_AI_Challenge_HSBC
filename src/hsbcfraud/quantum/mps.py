@@ -83,11 +83,20 @@ class MPSConfig:
     # the majority class; this is the study's documented class-imbalance handling for this arm.
     positive_weight: float = 8.0
     init_scale: float = 3e-3
-    # Sites folded into one reduction tree before the running vector is renormalised.  None
-    # means measure it: the best width depends on the bond dimension and on the device, and a
-    # table baked from one GPU is a number that silently stops being true on another.  1 is
-    # the original sequential fold.  See MPSClassifier.forward.
-    contraction_chunk: int | None = None
+    # Sites folded into one reduction tree before the running vector is renormalised.
+    #
+    # The default is 1, the original sequential fold, and that is a scientific choice rather
+    # than a conservative one.  Reassociating the contraction changes the floating-point
+    # order by about 1e-6 per step, and at 431 sites that compounds: measured at chi=16 over
+    # 21,000 steps it moved test average precision from 0.246 to 0.056.  The first batch is
+    # bit-identical -- the divergence is accumulated, not an error -- but a default that
+    # silently reproduces a different number than the committed table is not acceptable in a
+    # pre-registered study.  See D-037.
+    #
+    # None asks fit_mps to measure the fastest width and use it, which is 6 to 12 times
+    # faster and appropriate for exploration, for seed sweeps, and for any run whose result
+    # is reported with an interval rather than as a point.
+    contraction_chunk: int | None = 1
     seed: int = 20260828
     device: str = "cuda"
 
@@ -175,8 +184,8 @@ class MPSClassifier(torch.nn.Module):
         )
 
         # Held on the model rather than read from the config at call time, so predict_proba
-        # contracts the same way the fit did.  A model that was never tuned falls back to the
-        # sequential fold, which is correct everywhere and fastest at large bond dimensions.
+        # contracts the same way the fit did.  A model constructed with the tuning sentinel
+        # starts on the sequential fold and fit_mps overwrites it once it has measured.
         self.contraction_chunk = config.contraction_chunk or 1
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
