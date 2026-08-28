@@ -347,3 +347,45 @@ to decide how much recalibration headroom to hold.
 The alpha = 1e-3 temporal cell passing is consistent rather than anomalous: at that level the
 threshold sits far enough into the tail that the drift in the bulk of the score distribution
 moves it comparatively little.
+
+### D-020 Correction to D-019: the headline ratio is 1.44, not 1.49
+
+D-019 quoted "1.49x nominal" for the temporal breach at alpha = 1e-2 and 5e-3. That figure was
+computed on a single seed and is the **maximum** across seeds, not the central estimate. The
+error was in the direction that flatters the finding, which is the direction that matters.
+
+Re-measured across all five seeds (`results/tables/coverage_by_arm_seeds.csv`), realised over
+nominal false-decline rate:
+
+| arm | alpha | mean | sd | min | max | inside exact band | breached |
+|---|---|---|---|---|---|---|---|
+| temporal | 1e-2 | **1.44** | 0.055 | 1.35 | 1.49 | 0/5 | 5/5 |
+| temporal | 5e-3 | **1.46** | 0.036 | 1.42 | 1.49 | 0/5 | 5/5 |
+| temporal | 2e-3 | 1.31 | 0.067 | 1.21 | 1.38 | 1/5 | 4/5 |
+| temporal | 1e-3 | 0.94 | 0.020 | 0.92 | 0.98 | 5/5 | 0/5 |
+| stratified | 1e-2 | 1.01 | 0.038 | 0.95 | 1.06 | 5/5 | 0/5 |
+| stratified | 5e-3 | 1.04 | 0.037 | 0.99 | 1.08 | 5/5 | 0/5 |
+| stratified | 2e-3 | 1.02 | 0.071 | 0.94 | 1.13 | 5/5 | 0/5 |
+| stratified | 1e-3 | 0.96 | 0.140 | 0.80 | 1.16 | 5/5 | 0/5 |
+| card-disjoint | 1e-2 | 0.92 | 0.133 | 0.79 | 1.08 | 3/5 | 0/5 |
+| card-disjoint | 5e-3 | 0.92 | 0.055 | 0.85 | 0.99 | 5/5 | 0/5 |
+| card-disjoint | 2e-3 | 0.90 | 0.157 | 0.78 | 1.17 | 5/5 | 0/5 |
+| card-disjoint | 1e-3 | 0.88 | 0.362 | 0.65 | 1.52 | 4/5 | 1/5 |
+
+**The finding survives, and is stronger for being properly quantified.** The temporal breach is
+5/5 seeds at alpha = 1e-2 and 5e-3, and 4/5 at 2e-3. No seed of either control arm breaches at
+those levels.
+
+**Two claims in D-019 were also too strong and are narrowed.**
+
+D-019 said the card-disjoint arm "passes". At alpha = 1e-2 only 3 of 5 seeds land inside the
+exact band — the other two fall *below* it, which is over-coverage rather than breach, but
+"passes" implied a cleaner result than the data shows. At alpha = 1e-3 one seed breaches, with a
+across-seed standard deviation of 0.362. The correct statement is that the card-disjoint arm
+does not breach at the levels where the temporal arm does, and is noisy at the tightest level.
+
+**A methodological note that belongs with the numbers.** The temporal split is deterministic, so
+across-seed variation in that arm comes only from the model, not from the split. Its standard
+deviations are correspondingly the smallest in the table (0.020-0.067). The two control arms
+resample their blocks per seed, so their variation compounds split and model randomness. The
+arms are therefore not directly comparable on spread, only on level and on breach count.
