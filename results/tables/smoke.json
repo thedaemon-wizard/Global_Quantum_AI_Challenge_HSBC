@@ -5,7 +5,7 @@
     "subject": "dependency resolution"
   },
   "S1": {
-    "detail": "28q statevector in 2.75s; Aer reports device=GPU cuStateVec=True; device memory 629 -> 5565 MiB (+4936, 4096 expected)",
+    "detail": "28q statevector in 2.97s; Aer reports device=GPU cuStateVec=True; device memory 629 -> 5565 MiB (+4936, 4096 expected)",
     "status": "PASS",
     "subject": "Aer GPU on sm_120"
   },
@@ -20,7 +20,7 @@
     "subject": "SHAP TreeExplainer"
   },
   "S4": {
-    "detail": "braket_sv ran offline with no credentials; Bell counts {'00': 118, '11': 138}",
+    "detail": "braket_sv ran offline with no credentials; Bell counts {'11': 136, '00': 120}",
     "status": "PASS",
     "subject": "Braket LocalSimulator offline"
   },

@@ -114,7 +114,9 @@ def entity_overlap(frame: pd.DataFrame, blocks: Blocks, key: str) -> dict[str, f
         "n_entities_train": float(len(train)),
         "n_entities_test": float(len(test_values)),
         "n_shared": float(shared),
-        "fraction_test_entities_seen_in_train": shared / len(test_values) if len(test_values) else 0.0,
+        "fraction_test_entities_seen_in_train": (
+            shared / len(test_values) if len(test_values) else 0.0
+        ),
     }
 
 

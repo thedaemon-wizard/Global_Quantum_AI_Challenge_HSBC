@@ -156,19 +156,14 @@ def s1_aer_gpu() -> str:
     sim = AerSimulator(method="statevector", device="GPU", cuStateVec_enable=True)
     tqc = transpile(qc, sim)
 
-    # Two independent witnesses, because either alone is weak.  Aer's own result metadata
-    # names the device it actually dispatched to, which is authoritative but is a
-    # self-report.  Device memory is external corroboration, but sampling it can miss a
-    # short kernel -- an earlier version of this check polled only between job.done()
-    # calls, never sampled during execution, and wrongly reported a CPU fallback.  So the
-    # sampler runs on its own thread for the whole call, and only the metadata can fail
-    # the check; the memory figure is reported as evidence.
-    # The memory witness must live OUTSIDE this interpreter.  Aer holds the GIL for the
-    # duration of the C++ execution: a Python sampler thread polling every 2 ms was
-    # measured to get exactly two ticks across a 2.7 s run, and therefore reported a peak
-    # of 1188 MiB for an allocation that a 1 Hz external sampler had already observed at
-    # 5399 MiB.  An in-process witness cannot see this, so a streaming nvidia-smi is used,
-    # started before the run and terminated after, with no per-sample spawn cost.
+    # Two independent witnesses, because either alone is weak.  Aer's result metadata names
+    # the device it actually dispatched to, which is authoritative but self-reported.
+    # Device memory is external corroboration -- and it must be collected from OUTSIDE this
+    # interpreter.  Aer holds the GIL for the duration of the C++ execution: a Python
+    # sampler thread polling every 2 ms was measured to receive exactly two ticks across a
+    # 2.7 s run, reporting a peak of 1188 MiB for an allocation an external 1 Hz sampler had
+    # already observed at 5399 MiB.  So a streaming nvidia-smi runs alongside, with no
+    # per-sample spawn cost.
     baseline = _device_memory_mib()
     sampler = subprocess.Popen(
         ["nvidia-smi", "--query-gpu=memory.used", "--format=csv,noheader,nounits", "-lms", "100"],
@@ -200,7 +195,9 @@ def s1_aer_gpu() -> str:
             "'GPU' timing downstream would actually be a CPU timing."
         )
     if not meta.get("cuStateVec_enable"):
-        raise SmokeFailure("Aer ran on GPU but without cuStateVec; the requested path was not taken")
+        raise SmokeFailure(
+            "Aer ran on GPU but without cuStateVec; the requested path was not taken"
+        )
 
     rise = peak - baseline
     expected_mib = (2**n * 16) / (1024 * 1024)  # complex128 statevector
@@ -240,7 +237,6 @@ def s2_xgboost_cuda() -> str:
     error.  Agreement with the CPU fit is checked too: a GPU that runs but computes
     something different is worse than one that refuses.
     """
-    import numpy as np
     import xgboost as xgb
     from sklearn.datasets import make_classification
     from sklearn.metrics import roc_auc_score
@@ -411,7 +407,7 @@ def s6_pandas_chained_assignment() -> str:
         warnings.simplefilter("ignore")
         try:
             df["a"][df["b"] > 20] = 999
-        except Exception:  # noqa: BLE001 -- pandas may raise instead; both are safe
+        except Exception:
             silent_noop = False
         else:
             silent_noop = df["a"].tolist() == before
@@ -423,7 +419,9 @@ def s6_pandas_chained_assignment() -> str:
     if _has_chained_assignment(good):
         raise SmokeFailure(f"the AST gate flagged correct code: {good}")
 
-    verdict = "silent no-op confirmed" if silent_noop else "pandas raised instead of silently passing"
+    verdict = (
+        "silent no-op confirmed" if silent_noop else "pandas raised rather than silently passing"
+    )
     return f"pandas {pd.__version__}: {verdict}; AST gate flags bad and passes good"
 
 
@@ -443,9 +441,12 @@ def _has_chained_assignment(source: str) -> bool:
                 inner = target.value
                 if isinstance(inner, ast.Subscript):
                     return True
-                if isinstance(inner, ast.Attribute) and inner.attr in {"loc", "iloc", "at", "iat"}:
-                    if isinstance(inner.value, ast.Subscript):
-                        return True
+                if (
+                    isinstance(inner, ast.Attribute)
+                    and inner.attr in {"loc", "iloc", "at", "iat"}
+                    and isinstance(inner.value, ast.Subscript)
+                ):
+                    return True
     return False
 
 
@@ -482,7 +483,10 @@ def s7_ulb_temporal_feasible() -> str:
 
 
 def _find_ulb() -> Path | None:
-    for candidate in (REPO / "datasets" / "creditcard.csv", REPO / "datasets" / "ulb" / "creditcard.csv"):
+    for candidate in (
+        REPO / "datasets" / "creditcard.csv",
+        REPO / "datasets" / "ulb" / "creditcard.csv",
+    ):
         if candidate.exists():
             return candidate
     return None
@@ -518,9 +522,9 @@ def s8_mapie_quantile() -> str:
                 if level > 1.0
                 else float(np.quantile(scores, level, method="higher"))
             )
-            if not (math.isinf(reference) and math.isinf(mapie_like)):
-                if abs(reference - mapie_like) > 1e-12:
-                    disagreements.append((n, alpha, reference, mapie_like))
+            both_infinite = math.isinf(reference) and math.isinf(mapie_like)
+            if not both_infinite and abs(reference - mapie_like) > 1e-12:
+                disagreements.append((n, alpha, reference, mapie_like))
 
     conservative = all(m > r for _, _, r, m in disagreements)
     note = "all conservative" if conservative else "SOME ANTI-CONSERVATIVE -- investigate"
@@ -578,7 +582,7 @@ def main(argv: list[str] | None = None) -> int:
         except SmokeFailure as exc:
             failed.append(check.ident)
             status, detail = "FAIL", str(exc)
-        except Exception as exc:  # noqa: BLE001 -- an unexpected error is still a failure
+        except Exception as exc:
             failed.append(check.ident)
             status, detail = "FAIL", f"{type(exc).__name__}: {exc}"
         else:
@@ -595,7 +599,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if failed:
         print(f"\n{len(failed)} check(s) failed: {', '.join(failed)}", file=sys.stderr)
-        print("Fix the environment or change the design; do not proceed past a red smoke.", file=sys.stderr)
+        print(
+            "Fix the environment or change the design; do not proceed past a red smoke.",
+            file=sys.stderr,
+        )
         return 1
     print(f"\nAll {len(selected)} check(s) accounted for. Record: {args.out.relative_to(REPO)}")
     return 0
