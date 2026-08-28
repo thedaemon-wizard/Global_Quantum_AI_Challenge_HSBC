@@ -44,8 +44,13 @@ ALLOWED_LITERALS = {
     "0", "1", "2", "3", "4", "5", "10", "12", "20", "60", "100",  # section/percent scaffolding
     "0.001", "0.002", "0.005", "0.010", "0.05", "0.10", "0.45",  # pre-registered grid levels
     "0.60",  # the RBF-distinctness screen threshold, fixed in configs/default.yaml
+    "90",  # the PSD2 SCA-RTS rolling window, in days
+    "431",  # sites in the full-scale chain, i.e. the feature count
 }
-LITERAL = re.compile(r"(?<![\w.\\])(\d+\.\d+|\d+)(?![\w.])")
+# A digit run that is not part of an identifier.  The trailing lookahead stops mid-number
+# matches; the leading one excludes both word characters and a preceding "letter-hyphen",
+# which is what makes "Apache-2.0" and "3-D Secure" identifiers rather than figures.
+LITERAL = re.compile(r"(?<![\w.\\])(?<![A-Za-z]-)(\d+\.\d+|\d+)(?![\w.])")
 
 
 def check_pages(reader: PdfReader, limit: int) -> list[str]:

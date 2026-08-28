@@ -1,0 +1,38 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{Reproduction}
+
+\begin{verbatim}
+make venv     # python3.12; torch from the cu130 index, which the default build lacks
+make smoke    # S0-S8 environment assertions; any failure stops the build
+make reproduce
+make check    # rebuilds the PDFs, then the claim, citation and manifest gates
+\end{verbatim}
+
+\paragraph{Environment traps that cost real time.} \texttt{qiskit-aer} and
+\texttt{qiskit-aer-gpu-cu11} are distinct distributions installing the \emph{same} package, so
+whichever pip unpacks last wins. Resolved together, the CPU build can land second and Aer then
+reports devices \texttt{('CPU',)} with no error anywhere --- a GPU cross-check silently becomes
+a second CPU run. The GPU wheel is reinstalled last and a smoke check asserts the device by
+reading \texttt{nvidia-smi}. Separately, chained assignment is a silent no-op under pandas
+copy-on-write now that \texttt{SettingWithCopyWarning} has been removed; a smoke check confirms
+the behaviour on the host and a syntactic gate forbids the pattern repository-wide.
+
+\paragraph{Measuring the simulator's memory needed a witness outside the process.} An
+in-process sampler under-reported peak usage more than fourfold, because Aer holds the GIL and
+the sampling thread got two scheduling ticks across the whole run. The measurement now streams from an
+\texttt{nvidia-smi} subprocess and is cross-checked against Aer's own result metadata.
+
+\paragraph{Every number in both documents is generated.} \texttt{docs/claims.yaml} binds each
+quoted figure to a table row; \texttt{scripts/check\_claims.py} recomputes all of them from
+\texttt{results/tables/*.csv}; \texttt{scripts/make\_tex.py} emits them as macros and renders
+the results tables from the same CSVs. \texttt{scripts/check\_pdf.py} then asserts page count,
+paper size and font floor against the built PDF and scans the sources for numeric literals, so
+a typed number is a defect review can see.
+
+\paragraph{Licensing.} Code is Apache-2.0 with an SPDX header on every file, enforced by test.
+Raw data is never committed: IEEE-CIS is distributed under Kaggle competition rules rather
+than an open licence, and the ULB database carries ODbL share-alike terms on the database
+itself. \texttt{cuquantum-cu11} arrives under NVIDIA's proprietary SLA and is therefore not
+installed by the default target; it has its own \texttt{make venv-gpu} and its own NOTICE
+entry. The conformal implementation was written from the published papers rather than adapted
+from an unlicensed repository, and that decision is recorded with its date.

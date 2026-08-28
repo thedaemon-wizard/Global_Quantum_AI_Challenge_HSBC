@@ -19,7 +19,9 @@
 #   source     path relative to the repository root
 #   select     column -> value filters identifying the row; omit for single-row tables
 #   column     column to read
-#   tolerance  absolute tolerance for the comparison; set from the printed precision
+#   scale      multiply the table value by this before comparing; use 100 to state a stored
+#              fraction as a percentage.  The table stays the source of truth either way.
+#   tolerance  absolute tolerance for the comparison, in the units of `value` after scaling
 #   note       why this number matters, for a reviewer who does not know the study
 
 claims:
@@ -231,6 +233,30 @@ claims:
       Smallest distance between a certified lambda and the upper band edge.  It must be
       strictly positive: at band_hi the flagged set is empty by construction and the risk is
       structurally zero, which is what made an earlier certificate vacuous.
+
+  # -------------------------------------------------------------- regulation (amendment A2)
+  - key: BandValueFraudRate
+    value: 5.554
+    scale: 100
+    source: results/tables/splits.csv
+    select: {arm: temporal, block: band}
+    column: value_fraud_rate
+    tolerance: 0.0005
+    note: >
+      Value-weighted fraud rate on D_band.  Quoted as 5.554 % in the appendix.  It is roughly
+      forty times the loosest PSD2 SCA-RTS ceiling, which is why those ceilings cannot select
+      a decline threshold on this file.
+
+  - key: PsdDeclineRate
+    value: 94.74
+    scale: 100
+    source: results/tables/envelope.csv
+    select: {etv_eur: 500}
+    column: decline_rate
+    tolerance: 0.005
+    note: >
+      Fraction of traffic that must be declined to meet the strictest PSD2 ceiling on this
+      benchmark.  Reported to show the category error, not as an operating point.
 
   # ----------------------------------------------------------------------------- power
   - key: PowerSeWithinFamily

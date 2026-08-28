@@ -126,6 +126,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  MALFORMED   {key:32s} missing field {error}")
             continue
 
+        actual *= float(claim.get("scale", 1.0))
         stated = float(claim["value"])
         tolerance = float(claim.get("tolerance", 0.0))
         # Round to the stated precision before comparing.  A claim of 1.494 against a

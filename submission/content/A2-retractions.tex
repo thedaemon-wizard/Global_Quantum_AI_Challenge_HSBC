@@ -1,0 +1,55 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{What we got wrong}
+
+The decision log records thirty-one entries. These are the ones that changed a result, listed
+because a study that reports only its surviving claims gives a reviewer no way to judge how
+hard the others were pushed.
+
+\paragraph{A certificate that appeared to work was vacuous.} An early run certified a large
+set of configurations. Every selected $\lambda$ sat exactly at the upper band edge --- where
+band membership is $f(x) < \tauhi$ and the in-band rule is $g(x) \ge \lambda$, so the flagged
+set is empty by construction and the risk is structurally zero. It was the only grid point
+that could clear the Holm level, and it certified nothing. The decision grid now excludes the
+upper endpoint, and the body reports the smallest margin below $\tauhi$ (\ClaimCertificateMargin)
+so the property is visible rather than assumed.
+
+\paragraph{The same certificate rested on an invalid $p$-value.} The risk was formulated as
+$\max(0,\ \text{floor} - \text{recall})/\text{floor}$. Hoeffding--Bentkus bounds a mean of
+per-observation losses; that expression is a nonlinear transform of a mean, so the quantities
+it produced were not $p$-values and nothing resting on them was a certificate.
+
+\paragraph{The central result was narrowed twice.} A single seed's maximum was first reported
+as a central estimate of the temporal inflation. Re-running across seeds
+gave a smaller figure with a real interval; re-running across five rolling calibration origins
+then showed the deviation is \emph{origin-dependent}, with the earliest origin conservative.
+The clean headline did not survive, and the body reports the range instead.
+
+\paragraph{A power gate that could not fail.} The pre-registration requires the minimum
+detectable effect \emph{before} the quantum comparison. The calculation had no caller at all,
+so H4 was going to be observed rather than tested. The fix estimated noise from the baseline
+against itself --- correct reasoning, wrong quantity, because H4 compares model \emph{families}
+and their measured standard error (\ClaimMpsStandardErrorBestChi) is about eightfold larger
+than the seed-to-seed figure. The gate passed a comparison it should have flagged. It now
+computes a cross-family proxy and binds on the larger, and H4 is reported as underpowered.
+
+\paragraph{A claim asserted from theory and withdrawn when measured.} We stated that ignoring
+cluster structure makes intervals too narrow by roughly the square root of the cluster size.
+That is the classical result for a sample mean. Average precision is a rank statistic; on a
+fixture with cluster-level risk the clustered interval came out \emph{narrower} than the
+row-level one, at a width ratio of 0.89. The row-level interval is invalid under this
+dependence, but the sign of its error is statistic-dependent, and we no longer claim otherwise.
+
+\paragraph{Four source files were absent from every pushed commit.} A \texttt{.gitignore}
+pattern without a leading slash matches at any depth, so \texttt{data/} excluded
+\texttt{src/hsbcfraud/data/} --- the loader, the split, the test-fold guard and the label
+audit. \texttt{git add} does not warn when it skips an ignored path and \texttt{git status}
+does not list it, so the omission was invisible locally and total for anyone cloning. A
+hygiene test now compares the files on disk against \texttt{git ls-files}.
+
+\paragraph{Two silent bugs in the tensor network.} The initialisation placed the identity on
+both physical channels, making the contraction input-independent; logits were bit-identical
+across samples and the AUC was exactly 0.5000. Separately, closing the final bond to
+dimension one made renormalisation map every sample to $\pm 1$. Both produced plausible
+near-chance numbers rather than errors. A third latent hazard was removed while diagnosing a
+non-finite loss at 431 sites: a discarded log-norm was multiplied by zero, and
+$\infty \times 0$ is not zero.
