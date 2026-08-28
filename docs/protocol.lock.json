@@ -2,10 +2,11 @@
   "amendments": [
     "A1",
     "A2",
-    "A3"
+    "A3",
+    "A4"
   ],
-  "decisions_lines": 421,
-  "guarantee_hash": "753ef7529e9425a0274bbcdbaac03de82f9ce6198cb10a7ecf8a7618c5939e34",
+  "decisions_lines": 563,
+  "guarantee_hash": "a8275e8fc7666cb3fa90f46db89c9f698f256849edc173888341f55891a6458d",
   "guarantee_state": {
     "band.budget_grid": [
       0.02,
@@ -14,6 +15,17 @@
       0.1
     ],
     "decline_rate_budget": 0.05,
+    "risk.alpha_band_grid": [
+      0.05,
+      0.1,
+      0.15,
+      0.25
+    ],
+    "risk.alpha_fn_grid": [
+      0.35,
+      0.4,
+      0.45
+    ],
     "risk.alpha_grid": [
       0.01,
       0.005,

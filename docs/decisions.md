@@ -307,7 +307,7 @@ decline threshold. That evaluation is void, not spent.
 entry as the record. The ledger is not reset again: the next `D_test` evaluation is the one
 that counts.
 
-### D-019 The central experimental result: the guarantee breaks, and only under time
+### D-019 [SUPERSEDED by D-020 and D-025] The central experimental result: the guarantee breaks, and only under time
 
 Split conformal calibrated on `D_cal` and applied to `D_test`, identical code and identical
 alpha grid across three split arms. The only difference is how the blocks were formed.
@@ -348,7 +348,7 @@ The alpha = 1e-3 temporal cell passing is consistent rather than anomalous: at t
 threshold sits far enough into the tail that the drift in the bulk of the score distribution
 moves it comparatively little.
 
-### D-020 Correction to D-019: the headline ratio is 1.44, not 1.49
+### D-020 [SUPERSEDED in part by D-025] Correction to D-019: the headline ratio is 1.44, not 1.49
 
 D-019 quoted "1.49x nominal" for the temporal breach at alpha = 1e-2 and 5e-3. That figure was
 computed on a single seed and is the **maximum** across seeds, not the central estimate. The
@@ -561,3 +561,46 @@ regenerated.
 synthetic monotone risk curve with a well-scaled target, so it exercised the procedure and not
 the estimand. A guarantee can be correctly implemented and still certify nothing of interest,
 and a validation that only checks the machinery will not notice.
+
+### D-025 The central claim is narrowed again: the deviation is origin-dependent
+
+D-019 and D-020 stated that "the breach is specifically temporal". An audit pointed out that
+the claim rests on a **single** temporal partition: `temporal_blocks` takes no seed, so the
+five seeds are five refits of the same model on the same cal = days 120-140, test = 141-181
+cut. Five correlated refits are not five samples of the temporal deviation.
+
+A rolling-origin sweep over the frozen score file -- 20-day calibration window, 20-day test
+window, stepped forward, model unchanged -- at `alpha = 1e-2`:
+
+| calibration days | test days | realised / nominal | verdict against the exact 99 % band |
+|---|---|---|---|
+| 101-120 | 121-140 | **0.684** | conservative -- *below* the band |
+| 111-130 | 131-150 | 0.893 | inside |
+| 121-140 | 141-160 | **1.411** | breached |
+| 131-150 | 151-170 | 1.198 | breached |
+| 141-160 | 161-180 | 1.126 | inside |
+
+Two of five origins breach; the ratios span 0.684 to 1.411; and the earliest origin goes the
+**other way**, over-covering rather than under-covering. The pre-registered split sits at the
+most adverse origin in this range, and the 1.44 reported in D-020 is its extreme.
+
+**The corrected claim.** The deviation between realised and nominal false-decline rate is
+origin-dependent. It exceeds the exact 99 % band at two of five rolling origins, reaching
+1.41 times nominal, and reverses to 0.68 at the earliest origin tested. It is not a constant
+temporal penalty.
+
+**Why this is still the useful finding, stated without inflation.** A bank does not need to
+know that a guarantee degrades by a fixed factor; it needs to know that the degradation
+depends on *when* calibration happened and by how much it can vary. A control certified at
+1 % that realises between 0.68 % and 1.41 % depending on the calibration window is a
+recalibration-policy problem with a measured magnitude, which is more actionable than a single
+adverse number presented as characteristic.
+
+**What remains unaffected.** The contrast against the control arms still holds at the fixed
+split: the stratified arm lands inside the band at every alpha and the card-disjoint arm does
+not breach where the temporal arm does. What cannot be claimed is that a temporal split
+*always* breaches, and D-019 and D-020 are superseded on that point.
+
+`docs/protocol.md` section 7 pre-registered "realised risk gap per time window" as a headline
+deliverable, so this measurement was promised rather than added after the fact. It is in
+`results/tables/rolling_origin.csv`.

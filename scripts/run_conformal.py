@@ -32,8 +32,9 @@ from hsbcfraud.conformal import coverage as cov
 from hsbcfraud.conformal.riskcontrol import (
     RiskDefinition,
     band_conditional_false_decline,
+    in_band_grid,
     learn_then_test,
-    recall_shortfall,
+    missed_fraud_rate,
 )
 from hsbcfraud.conformal.split import degeneracy_floor, mondrian_thresholds
 from hsbcfraud.data.splits import TestFoldGuard
@@ -162,19 +163,23 @@ def main(argv: list[str] | None = None) -> int:
         lo, hi = band_edges(s_band, cfg.decline_rate_budget, budget)
         in_band = (s_cal >= lo) & (s_cal < hi)
         n_legit_band = int(((y_cal == 0) & in_band).sum())
-        # The in-band decision grid spans the band, so every candidate is reachable.
-        grid = np.linspace(lo, hi, cfg.risk.n_lambda)
+        # Quantile-spaced over the scores actually present in the band, and excluding the
+        # upper endpoint.  A linear grid closing at `hi` puts a point where the flagged set
+        # is empty by construction -- band membership is `score < hi` and the rule is
+        # `score >= lam` -- so the risk there is structurally zero and it is the only point
+        # that clears the Holm level.  That is what made every earlier certificate vacuous.
+        grid = in_band_grid(s_cal, in_band, cfg.risk.n_lambda)
 
-        for alpha in cfg.risk.alpha_grid:
-          for floor in cfg.risk.recall_floor_grid:
+        for alpha in cfg.risk.alpha_band_grid:
+          for alpha_fn in cfg.risk.alpha_fn_grid:
             risks = [
                 RiskDefinition(
                     "fdr", alpha, band_conditional_false_decline(y_cal, s_cal, in_band)
                 ),
                 RiskDefinition(
-                    "recall_gap",
-                    0.10,
-                    recall_shortfall(y_cal, s_cal, in_band, floor, outer_caught=outer_caught),
+                    "fnr",
+                    alpha_fn,
+                    missed_fraud_rate(y_cal, s_cal, in_band, operating_threshold),
                 ),
             ]
             result = learn_then_test(
@@ -184,7 +189,7 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "budget": budget,
                     "alpha": alpha,
-                    "recall_floor": floor,
+                    "alpha_fn": alpha_fn,
                     "decline_budget": cfg.decline_rate_budget,
                     "band_lo": lo,
                     "band_hi": hi,
@@ -197,7 +202,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             flag = "certified" if result.any_admissible else "not certifiable"
             print(
-                f"  band {budget:5.3f} alpha {alpha:<7g} floor {floor:.2f} "
+                f"  band {budget:5.3f} a_fdr {alpha:<6g} a_fnr {alpha_fn:<5g} "
                 f"n_legit_band {n_legit_band:6,d} -> {flag}"
             )
 
@@ -268,9 +273,9 @@ def main(argv: list[str] | None = None) -> int:
     # The frontier: for each (band budget, alpha) the loosest recall floor that certifies.
     frontier = (
         risk_frame[risk_frame["certified"]]
-        .groupby(["decline_budget", "budget", "alpha"], as_index=False)["recall_floor"]
-        .max()
-        .rename(columns={"recall_floor": "max_certified_recall_floor"})
+        .groupby(["decline_budget", "budget", "alpha"], as_index=False)["alpha_fn"]
+        .min()
+        .rename(columns={"alpha_fn": "tightest_certified_alpha_fn"})
     )
     frontier.to_csv(args.out / "tradeoff.csv", index=False)
     pd.DataFrame(deg_rows).to_csv(args.out / "degeneracy.csv", index=False)

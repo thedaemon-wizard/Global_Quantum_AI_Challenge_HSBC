@@ -481,3 +481,52 @@ traffic immediately beneath the decline threshold, which is what the three-regio
 rule in section 3 actually describes.
 
 **Guarantee integrity.** Derived from `D_band` and `D_cal` only. `D_test` was not consulted.
+
+---
+
+## Amendment A4 — 2026-08-28, estimand scale, the recall loss, and the decision grid
+
+**What changed:** three things, all forced by defects an adversarial audit found in the
+certification, and all documented here because each moves a pre-registered quantity.
+
+**1. The band-conditional risk gets its own alpha scale.** Section 6 pre-registered
+`alpha in {1e-2, 5e-3, 2e-3, 1e-3}` for a quantity described in section 1 as band-conditional.
+Those are two different scales. The unconditional false-decline rate is what a bank's control
+document states and belongs at that order; the band-conditional rate is measured over the
+region where the model is uncertain and is intrinsically percent-scale. Measured on `D_cal` at
+a 5 % band: declining the top decile of the band gives a band-conditional rate of 0.036,
+declining half the band gives 0.241. Requiring that quantity below 1 % admits only the rule
+that declines nobody.
+
+The configuration now carries three grids: `alpha_grid` for the unconditional certificate
+(unchanged), `alpha_band_grid` = {0.05, 0.10, 0.15, 0.25}, and `alpha_fn_grid`.
+
+**2. The recall constraint becomes a false-negative rate.** The previous
+`max(0, floor - recall) / floor` is a nonlinear transform of a mean. Hoeffding-Bentkus bounds
+the mean of independent [0, 1] losses; it says nothing about a function of such a mean, so
+those values were not valid p-values. `missed_fraud_rate` assigns loss 1 to a fraudulent
+transaction approved by both stages and 0 otherwise, averaged over fraudulent transactions.
+Controlling it at `alpha_fn` is equivalent to a recall floor at `1 - alpha_fn`, so the
+commitment is unchanged in substance and now satisfies the theorem's hypotheses.
+
+**3. The decision grid excludes its upper endpoint and follows the score distribution.**
+Band membership is `lo <= score < hi` and the in-band rule is `score >= lambda`, so a grid
+closing at `hi` contains a point where the flagged set is empty **by construction**. Its risk
+is structurally zero whatever the data say, which makes it the only point clearing the
+family-wise level. That single parameterisation artefact is why every certificate issued
+before this amendment selected the rule that declines nobody. `in_band_grid` spaces the grid
+by quantiles of the in-band calibration scores and drops the top quantile.
+
+**Effect, measured.** Before: 32 of 32 certified configurations sat at the band top, declining
+nobody. After: 0 of 5. The certified rules decline between 362 and 1,081 in-band transactions
+and lift recall from 0.561 to between 0.595 and 0.637.
+
+**What is withdrawn.** Amendments A1 and A3 described a guarantee-versus-abstention frontier
+built from the vacuous certificates. A1's arithmetic about sample size and reachable alpha
+remains valid as arithmetic; its framing as a frontier does not. A3's "all 24 combinations
+certify" is withdrawn. `results/tables/riskcontrol.csv` and `tradeoff.csv` are regenerated.
+
+**Guarantee integrity.** The grid change is a reparameterisation over calibration scores,
+which are observed before any risk is evaluated, so the grid remains finite and fixed before
+testing. The alpha and loss changes are stated here before the regenerated certificates were
+read, and `D_test` was not consulted in reaching any of the three.

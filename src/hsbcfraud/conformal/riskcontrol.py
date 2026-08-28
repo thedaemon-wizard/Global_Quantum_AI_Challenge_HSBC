@@ -56,6 +56,7 @@ __all__ = [
     "abstention_rate",
     "band_conditional_false_decline",
     "hoeffding_bentkus_p_value",
+    "in_band_grid",
     "learn_then_test",
     "missed_fraud_rate",
 ]
@@ -169,6 +170,40 @@ def missed_fraud_rate(
         return float(missed.mean()), n_fraud
 
     return evaluate
+
+
+def in_band_grid(score: np.ndarray, in_band: np.ndarray, n_points: int) -> np.ndarray:
+    """Decision thresholds spaced over the scores actually present in the band.
+
+    Two properties matter, and a linear grid over the band edges has neither.
+
+    **The upper endpoint is excluded.**  Band membership is ``lo <= score < hi`` and the
+    in-band rule is ``score >= lambda``, so at ``lambda = hi`` the flagged set is empty by
+    construction: the false-decline risk is structurally zero regardless of the data, and it
+    is the only grid point whose p-value clears the family-wise level.  Every certificate
+    produced before this function existed selected exactly that point and therefore certified
+    a rule that declines nobody.  A grid point whose risk cannot depend on the data is not a
+    candidate decision, it is an artefact of the parameterisation.
+
+    **Spacing follows the score distribution, not the interval.**  Scores in the band are far
+    from uniform, so a linear grid concentrates most of its points where almost no
+    transactions lie and resolves the operating region with two or three.  Quantile spacing
+    puts the grid where the decisions change.
+
+    Learn-then-Test needs the grid to be finite and fixed in advance, not to be evenly
+    spaced; the grid is a function of the calibration scores, which are seen before any risk
+    is evaluated, so this is a change of parameterisation rather than a change of the
+    pre-registered commitment.
+    """
+    if n_points < 2:
+        raise ValueError(f"need at least two grid points, got {n_points}")
+    band_scores = np.asarray(score, dtype=float).ravel()[np.asarray(in_band).astype(bool).ravel()]
+    if band_scores.size == 0:
+        raise ValueError("no calibration rows fall inside the band")
+    # Left-closed quantiles: the lowest is the most aggressive reachable rule (decline the
+    # whole band), and the top quantile is dropped for the reason above.
+    quantiles = np.linspace(0.0, 1.0, n_points + 1)[:-1]
+    return np.unique(np.quantile(band_scores, quantiles))
 
 
 def abstention_rate(in_band: np.ndarray) -> Callable[[float], tuple[float, int]]:

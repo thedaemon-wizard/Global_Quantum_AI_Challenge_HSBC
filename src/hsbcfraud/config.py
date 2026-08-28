@@ -135,7 +135,17 @@ class RiskControlConfig(_Strict):
     tuned.
     """
 
+    # The UNCONDITIONAL false-decline rate: what a bank's control document states, and the
+    # scale at which an issuer operates.
     alpha_grid: list[Probability] = [1e-2, 5e-3, 2e-3, 1e-3]
+    # The BAND-CONDITIONAL rate is a different quantity on a different scale.  The band is by
+    # construction the region where the model is uncertain, so its false-decline rate is
+    # intrinsically percent-scale; requiring it below 1 % admits only the rule that declines
+    # nobody.  See docs/protocol.md amendment A4 and docs/decisions.md D-024.
+    alpha_band_grid: list[Probability] = [0.05, 0.10, 0.15, 0.25]
+    # False-negative rate of the composite rule.  Equivalent to a recall floor at 1 - alpha,
+    # but expressed as a mean of per-observation [0,1] losses so Hoeffding-Bentkus applies.
+    alpha_fn_grid: list[Probability] = [0.35, 0.40, 0.45]
     # Decision-threshold grid size.  Holm corrects over (grid points x risks), so a larger
     # grid costs power directly: 41 points needs a ~30 % larger band budget than 11 points
     # to certify the same alpha.  Eleven is the smallest grid that still resolves the

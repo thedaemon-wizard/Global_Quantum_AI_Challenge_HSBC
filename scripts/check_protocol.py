@@ -16,7 +16,8 @@ the error rate the procedure is supposed to bound.  The non-exchangeable variant
 requires ``rho`` to be fixed rather than fitted.  So the fields below are the ones whose
 silent movement would void a guarantee, and they are hashed:
 
-* the alpha grid, delta, the decision-grid size, the FWER method, rho
+* every alpha grid (unconditional, band-conditional, false-negative), delta, the
+  decision-grid size, the FWER method, rho
 * the band traffic-budget grid and the recall-floor grid
 * the split fractions and the decline budget
 
@@ -26,7 +27,7 @@ annoying enough to be bypassed, and a bypassed gate protects nothing.
 
 Amendments are legitimate
 -------------------------
-Three protocol amendments were made during this study, each derived from block sizes or from
+Four protocol amendments were made during this study, each derived from block sizes or from
 ``D_band`` alone, never from ``D_cal`` risks or from ``D_test``.  The gate therefore does not
 forbid change; it forbids **undocumented** change.  A new hash is accepted once
 ``docs/protocol.md`` contains a matching amendment heading and ``docs/decisions.md`` has grown.
@@ -46,7 +47,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from hsbcfraud.config import load_config  # noqa: E402
+from hsbcfraud.config import load_config
 
 REPO = Path(__file__).resolve().parents[1]
 LEDGER = REPO / "docs" / "protocol.lock.json"
@@ -58,6 +59,8 @@ GUARANTEE_FIELDS = (
     ("risk", "n_lambda"),
     ("risk", "fwer_method"),
     ("risk", "rho"),
+    ("risk", "alpha_band_grid"),
+    ("risk", "alpha_fn_grid"),
     ("risk", "recall_floor_grid"),
     ("risk", "coverage_band_level"),
     ("band", "budget_grid"),
