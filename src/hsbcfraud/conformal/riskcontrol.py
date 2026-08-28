@@ -51,8 +51,8 @@ import numpy as np
 from scipy import stats
 
 __all__ = [
-    "RiskDefinition",
     "RiskControlResult",
+    "RiskDefinition",
     "abstention_rate",
     "band_conditional_false_decline",
     "hoeffding_bentkus_p_value",

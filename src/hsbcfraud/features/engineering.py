@@ -4,19 +4,34 @@
 Causality
 ---------
 Per-entity aggregates are computed over **strictly past** transactions using an expanding
-window.  Computing them over the whole frame is the single most common leakage route in
-fraud modelling: a "mean transaction amount for this card" that includes the transaction
-being scored, and includes transactions that happen after it, encodes the future.  The
-non-causal variant is built anyway and reported as an ablation, because the size of the gap
-is the evidence that the causal version was necessary.
+window.  Computing them over the whole frame is a standard leakage route in fraud modelling:
+a "mean transaction amount for this card" that includes the transaction being scored, and
+transactions after it, encodes the future.
+
+The non-causal variant is built and reported as an ablation (``scripts/run_ablations.py``).
+**Measured on this split, the gap is null**: non-causal aggregates give AP 0.5135 against
+0.5081 for causal, a difference of +0.0054 against a per-seed standard deviation of 0.0053.
+Removing the aggregates entirely costs 0.0037 AUC.
+
+So the causal construction is retained because it is the correct thing to do and costs
+nothing, not because a leak was demonstrated here.  Saying otherwise would be citing a
+motivation the data does not support.  A larger effect has been observed on other datasets
+with stronger per-entity signal; that is not evidence about this one.
 
 The UID feature is deliberately absent
 --------------------------------------
 The IEEE-CIS competition was won by reconstructing a client identifier,
 ``card1_addr1 + floor(day - D1)``, and aggregating over it; published analysis puts its
-contribution at about +0.011 AUC.  It is not used here, and the ablation is reported.
+contribution at about +0.011 AUC under time-based GroupKFold cross-validation.  It is not
+used here, and the ablation is reported.
 
-The reason is not modesty.  The label rule propagates a chargeback across transactions
+**Measured under this study's forward holdout the feature is worth nothing**: AP 0.5095 with
+it against 0.5081 without, a difference of +0.0015 against a per-seed standard deviation of
+0.0029.  The published +0.011 was obtained under cross-validation on the training file, where
+a client seen in one fold recurs in another; across a 40-day forward gap that recurrence has
+largely decayed.  The contrast is itself evidence for the study's framing.
+
+The reason for excluding it is not modesty.  The label rule propagates a chargeback across transactions
 linked by account, email or billing address, so a reconstructed client key is partly a
 reconstruction of the labelling mechanism itself.  More practically: an issuer already holds
 the true client identifier natively.  Recovering it from de-identified columns measures the

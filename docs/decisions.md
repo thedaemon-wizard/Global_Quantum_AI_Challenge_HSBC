@@ -389,3 +389,33 @@ across-seed variation in that arm comes only from the model, not from the split.
 deviations are correspondingly the smallest in the table (0.020-0.067). The two control arms
 resample their blocks per seed, so their variation compounds split and model randomness. The
 arms are therefore not directly comparable on spread, only on level and on breach count.
+
+### D-021 The leakage ablations return a null result, and one motivation is withdrawn
+
+`scripts/run_ablations.py`, three seeds, temporal arm, mean over seeds against the reported
+configuration (causal aggregates, no UID):
+
+| variant | AUC | delta | AP | delta |
+|---|---|---|---|---|
+| reported: causal, no UID | 0.8854 | — | 0.5081 | — |
+| non-causal aggregates | 0.8846 | -0.0008 | 0.5135 | +0.0054 |
+| causal + UID | 0.8850 | -0.0003 | 0.5095 | +0.0015 |
+| no aggregates at all | 0.8817 | -0.0037 | 0.5074 | -0.0007 |
+
+Every delta sits within the per-seed standard deviation (0.0015-0.0053). Two things follow.
+
+**A motivation is withdrawn.** The docstring in `features/engineering.py` previously said the
+non-causal variant was reported "because the size of the gap is the evidence that the causal
+version was necessary". On this split there is no gap. The causal construction is kept because
+it is correct and costs nothing, not because a leak was demonstrated here. A larger causal-vs-
+non-causal effect has been measured on other datasets with stronger per-entity signal; citing
+that as if it applied to IEEE-CIS would be importing a result across datasets, which is
+precisely what this study criticises elsewhere.
+
+**The UID null is a positive finding, not an absence.** Published analysis puts the UID
+feature at about +0.011 AUC under time-based GroupKFold cross-validation on the training file.
+Under this study's forward holdout it is worth +0.0015 AP, inside noise. The reason is
+mechanical: cross-validation lets a client recur across folds, and across a 40-day forward gap
+that recurrence has largely decayed. The contrast is independent evidence for the same point
+the split-arm comparison makes — that numbers obtained under cross-validation on this dataset
+family do not transfer to a forward holdout.

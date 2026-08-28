@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """E3 -- classical baselines on the temporal split, with two leakage ablations.
 
-Writes ``results/tables/baselines.csv`` (one row per model, arm and seed),
-``results/tables/ablations.csv`` (the causal and UID contrasts), and the frozen score
-interface ``results/runs/scores_<arm>_<seed>.parquet`` that every downstream stage consumes.
+Writes ``results/tables/baselines.csv`` (one row per model, arm and seed) and the frozen
+score interface ``results/runs/scores_<arm>_<seed>.parquet`` that every downstream stage
+consumes.  The leakage ablations live in ``scripts/run_ablations.py``.
 
 The score interface is what keeps the conformal layer independent of how a score was
 produced: it carries the row index, the block, the label, the amount and the entity key,
@@ -115,7 +115,7 @@ def evaluate(frame: pd.DataFrame, blocks: Blocks, features: list[str], model_nam
     """Fit on train, score band/cal/test, and report at a provisional 0.5 threshold.
 
     The threshold here is provisional and exists only so the confusion matrix is defined;
-    the operating point that matters is chosen in E4 from the PSD2 constraint, and the
+    the operating point that matters is chosen in E4 from the decline budget, and the
     certified one in E5.  Reporting a metric at 0.5 and calling it the result would be
     reporting a number nobody would deploy.
     """
