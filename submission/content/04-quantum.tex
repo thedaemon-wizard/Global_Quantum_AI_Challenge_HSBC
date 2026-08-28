@@ -14,6 +14,14 @@ this data is, to within measurement, a classical RBF in disguise --- which is wh
 dequantisation literature predicts, and which we would not have known had we reported a
 downstream accuracy instead.
 
+The closest published comparator agrees. A controlled benchmark of quantum kernel methods on
+real card-transaction data \Cited{(Faryad, arXiv:2608.15718, August 2026)} reports no robust
+quantum advantage, with \Cited{all effect sizes below 0.013 ARI}, the sign of the difference dependent on
+register size, and additional qubits degrading performance through kernel concentration. Its
+methodological finding is the more useful one for us: a search-budget ablation turned that
+paper's one significant advantage into a procedural artefact. Matching search budgets and
+fixing the screens in advance is what stops the same thing happening here.
+
 \paragraph{The tensor network ran, and did not win.} A matrix-product-state classifier
 contracts $f(\mathbf{x}) = \sum_{\{s\}} A^{s_1} \cdots A^{s_N} \prod_j \phi^{s_j}(x_j)$ with
 $\phi(x) = [\cos\frac{\pi x}{2}, \sin\frac{\pi x}{2}]$, sweeping the bond dimension $\chi$

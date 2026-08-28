@@ -13,10 +13,12 @@ kernel arm, so the three candidates -- MPS, quantum kernel, gradient boosting --
 comparable.  The quantum kernel was rejected by its a-priori screens, so the honest question
 is what a quantum-inspired model does in the place the kernel could not be used.
 
-**At full scale.**  All features, no band, against the tuned gradient-boosted baseline. This
-comparison appears to be absent from the 2025-2026 literature for tabular fraud data, and it
-is only affordable because an MPS has no qubit ceiling: 439 sites is a long chain, not an
-intractable state space.
+**At full scale.**  All features, no band, against the tuned gradient-boosted baseline.  A
+literature check on 2026-08-28 found published matrix-product-state work on tabular data to be
+largely *generative* -- synthetic-data modelling scored on fidelity and privacy -- rather than
+discriminative against a tuned gradient-boosted baseline on imbalanced payment data.  That is
+a statement about what was found, not about what exists.  The arm is affordable because an MPS
+has no qubit ceiling: 431 sites is a long chain, not an intractable state space.
 
 Both sweep the bond dimension rather than tuning it, so the capacity dependence is measured.
 

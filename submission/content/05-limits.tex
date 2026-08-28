@@ -17,6 +17,13 @@ makes the guarantee bind the component we care about, and it is also what leaves
 \ClaimBandLegitCalMin{} legitimate rows to certify with. A larger $\Dcal$, or a wider band, buys tighter $\alpha$ ---
 nothing about the method needs to change.
 
+\textbf{The tensor-network comparison is narrower than it looks.} Published work applying
+matrix product states to tabular data is largely \emph{generative} --- synthetic-data
+modelling benchmarked on fidelity and privacy. We found no directly comparable discriminative
+benchmark against a tuned gradient-boosted baseline on imbalanced payment data, which is why
+this arm was run; but "we did not find one" is a weaker statement than "none exists", and the
+body claims only the former.
+
 \textbf{What would change the quantum conclusion.} The screens rejected every kernel we could
 build because each was reproducible by a tuned RBF. An encoding whose Gram matrix is
 demonstrably outside the RBF family, at a bandwidth that does not concentrate, would pass the

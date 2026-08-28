@@ -189,7 +189,18 @@ Shot noise makes the nonconformity score a random variable, so a naive conformal
 around a shot-based quantum kernel is not automatically valid. This study's Phase I response
 is an exact statevector simulator with a fixed configuration.
 
-**[QM-10]** Spencer, Nicholls and Caprio. "Adaptive Conformal Prediction for Quantum Machine
+**[QM-10]** Faryad, M. "Quantum Kernel k-Means for Credit-Card Fraud Detection: A Controlled
+Benchmark on Real Transaction Data". arXiv:2608.15718, 16 August 2026.
+The closest published comparator to this study's kernel arm, and it agrees with it. Reports
+no robust quantum advantage on real card-transaction data: all effect sizes below 0.013 ARI,
+the sign of the difference dependent on register size, and additional qubits degrading
+performance through kernel concentration rather than improving it. The methodological point
+matters as much as the result -- a search-budget ablation converted the one statistically
+significant advantage into a procedural artefact, which is the same failure mode this study's
+pre-registered screens and matched budgets exist to prevent. Retrieved and read 2026-08-28;
+cited as corroboration, not as a source for any implementation here.
+
+**[QM-11]** Spencer, Nicholls and Caprio. "Adaptive Conformal Prediction for Quantum Machine
 Learning". *Transactions on Machine Learning Research*, May 2026. arXiv:2511.18225.
 Time-varying hardware noise undermines conformal guarantees even when the data are
 exchangeable. Named as the Phase II hardware mitigation path.

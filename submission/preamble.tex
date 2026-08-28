@@ -25,6 +25,12 @@
 % the body is a defect: it means a figure was typed rather than measured.
 \input{generated/claims}
 
+% Figures that belong to someone else's paper.  They cannot be bound to a table in this
+% repository, so they are declared rather than checked: scripts/check_pdf.py skips the
+% contents of \Cited{} when it scans for unaccounted numeric literals.  Wrapping is the
+% point -- it makes "this number is not ours" visible in the source.
+\newcommand{\Cited}[1]{#1}
+
 \newcommand{\Dtrain}{\mathcal{D}_{\mathrm{train}}}
 \newcommand{\Dband}{\mathcal{D}_{\mathrm{band}}}
 \newcommand{\Dcal}{\mathcal{D}_{\mathrm{cal}}}

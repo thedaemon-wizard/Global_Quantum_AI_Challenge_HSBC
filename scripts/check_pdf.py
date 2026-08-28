@@ -177,9 +177,14 @@ def check_literals(sources: list[Path]) -> list[str]:
             stripped = line.strip()
             if stripped.startswith("%"):
                 continue
-            # Strip LaTeX control sequences first: \ClaimFoo, \section, lengths like 10mm,
+            # Numbers belonging to a cited paper -- an arXiv identifier, a year, a figure
+            # quoted from someone else's results -- cannot resolve to a table here.  They are
+            # declared with \Cited{} in the source and removed before scanning, so the check
+            # stays strict about our own numbers without forbidding citation.
+            cleaned = re.sub(r"\\Cited\{[^}]*\}", " ", stripped)
+            # Then strip LaTeX control sequences: \ClaimFoo, \section, lengths like 10mm,
             # and label/ref arguments all legitimately contain digits.
-            cleaned = re.sub(r"\\[A-Za-z]+", " ", stripped)
+            cleaned = re.sub(r"\\[A-Za-z]+", " ", cleaned)
             cleaned = re.sub(r"\d+(mm|pt|cm|em|ex|in|\\%)", " ", cleaned)
             for match in LITERAL.finditer(cleaned):
                 if match.group(1) not in ALLOWED_LITERALS:
