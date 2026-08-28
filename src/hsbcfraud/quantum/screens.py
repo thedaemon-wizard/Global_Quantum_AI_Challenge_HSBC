@@ -83,7 +83,9 @@ def top_eigenvalue_share(gram: np.ndarray) -> float:
     return float(eig[-1] / total) if total > 0 else float("nan")
 
 
-def rbf_correlation(gram: np.ndarray, x: np.ndarray, gammas: np.ndarray | None = None) -> tuple[float, float]:
+def rbf_correlation(
+    gram: np.ndarray, x: np.ndarray, gammas: np.ndarray | None = None
+) -> tuple[float, float]:
     """Largest absolute off-diagonal correlation with any RBF kernel on the same points.
 
     Returns ``(correlation, gamma)``.  The search over ``gamma`` is what makes this a fair
@@ -110,7 +112,9 @@ def rbf_correlation(gram: np.ndarray, x: np.ndarray, gammas: np.ndarray | None =
     return best
 
 
-def geometric_difference(k_classical: np.ndarray, k_quantum: np.ndarray, *, reg: float = 1e-6) -> float:
+def geometric_difference(
+    k_classical: np.ndarray, k_quantum: np.ndarray, *, reg: float = 1e-6
+) -> float:
     """Huang et al.'s geometric difference ``g(K_C || K_Q)``.
 
     From "Power of data in quantum machine learning", *Nature Communications* 12:2631, 2021:
@@ -160,7 +164,10 @@ class ScreenResult:
         if not self.passes_conditioning:
             reason = f" (effective rank {self.effective_rank:.3f} outside the usable band)"
         elif not self.passes_distinctness:
-            reason = f" (correlation {self.rbf_correlation:.3f} with RBF gamma={self.rbf_gamma:.3g})"
+            reason = (
+                f" (correlation {self.rbf_correlation:.3f} with RBF gamma="
+                f"{self.rbf_gamma:.3g})"
+            )
         return f"{verdict}{reason}"
 
 

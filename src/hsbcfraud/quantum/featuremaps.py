@@ -74,10 +74,8 @@ def build_feature_map(
     """
     if n_features < 1:
         raise ValueError(f"need at least one feature, got {n_features}")
-    if name == "dense_angle":
-        n_qubits = (n_features + 1) // 2
-    else:
-        n_qubits = n_features
+    # Dense angle encoding packs two features per qubit; every other map is one-to-one.
+    n_qubits = (n_features + 1) // 2 if name == "dense_angle" else n_features
 
     params = ParameterVector("x", n_features)
     circuit = QuantumCircuit(n_qubits, name=f"{name}_r{reps}_{entanglement}")

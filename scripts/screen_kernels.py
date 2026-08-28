@@ -60,7 +60,8 @@ def band_features(
     y = band["y"].to_numpy()
 
     numeric = frame.iloc[rows].select_dtypes(include=[np.number])
-    numeric = numeric.drop(columns=[c for c in ("isFraud", "day", "TransactionDT", "TransactionID") if c in numeric])
+    dropped = ("isFraud", "day", "TransactionDT", "TransactionID")
+    numeric = numeric.drop(columns=[c for c in dropped if c in numeric])
     filled = numeric.fillna(numeric.median(numeric_only=True)).fillna(0.0)
 
     rng = np.random.default_rng(seed)
@@ -72,7 +73,7 @@ def band_features(
 
     fraud_idx = np.flatnonzero(y == 1)
     legit_idx = np.flatnonzero(y == 0)
-    n_fraud = max(1, int(round(n_samples * len(fraud_idx) / len(y))))
+    n_fraud = max(1, round(n_samples * len(fraud_idx) / len(y)))
     take = np.concatenate(
         [
             rng.choice(fraud_idx, size=min(n_fraud, len(fraud_idx)), replace=False),
@@ -124,7 +125,12 @@ def main(argv: list[str] | None = None) -> int:
 
     for n_qubits in cfg.quantum.qubits:
         n_feat = n_qubits
-        x, y, chosen = band_features(frame, scores, cfg, n_feat, args.n_screen, seed)
+        # Labels are deliberately discarded.  Both screens -- effective rank and the
+        # correlation against a tuned RBF -- are functions of the Gram matrix alone, and the
+        # geometric difference of Huang et al. is likewise label-free.  A screen that saw the
+        # labels would not be a-priori, and its verdict could not be quoted as a decision made
+        # before the arm ran.
+        x, _labels, chosen = band_features(frame, scores, cfg, n_feat, args.n_screen, seed)
         classical = rbf_kernel(x, gamma=1.0 / n_feat)
         for name, ent, bw in itertools.product(
             cfg.quantum.feature_maps, cfg.quantum.entanglement, cfg.quantum.bandwidths

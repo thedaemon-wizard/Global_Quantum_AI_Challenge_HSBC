@@ -40,6 +40,7 @@ an entity cannot appear on both sides.
 
 from __future__ import annotations
 
+import itertools
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -96,9 +97,9 @@ class Blocks:
 
 
 def _cut_points(n: int, cfg: SplitConfig) -> list[int]:
-    train = int(round(cfg.train * n))
-    band = int(round(cfg.band * n))
-    cal = int(round(cfg.cal * n))
+    train = round(cfg.train * n)
+    band = round(cfg.band * n)
+    cal = round(cfg.cal * n)
     return [0, train, train + band, train + band + cal, n]
 
 
@@ -130,7 +131,7 @@ def temporal_blocks(day: pd.Series, cfg: SplitConfig) -> Blocks:
     else:
         cuts = raw
 
-    if any(b <= a for a, b in zip(cuts[:-1], cuts[1:], strict=True)):
+    if any(b <= a for a, b in itertools.pairwise(cuts)):
         raise SplitError(f"snapping produced an empty block; cut points {cuts}")
 
     index = np.arange(n)

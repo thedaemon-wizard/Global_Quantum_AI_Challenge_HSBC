@@ -147,7 +147,10 @@ def audit_label_censoring(
     # One-sided: censorship can only depress the trailing rate, so only that direction is
     # evidence for it.  Fisher's exact rather than a normal approximation because the
     # question deserves an exact answer and the table is small enough to afford one.
-    table = [[trailing_fraud, trailing_n - trailing_fraud], [earlier_fraud, earlier_n - earlier_fraud]]
+    table = [
+        [trailing_fraud, trailing_n - trailing_fraud],
+        [earlier_fraud, earlier_n - earlier_fraud],
+    ]
     two_proportion_p = float(stats.fisher_exact(table, alternative="less").pvalue)
 
     # Both witnesses must point the same way before censorship is declared.  A single
