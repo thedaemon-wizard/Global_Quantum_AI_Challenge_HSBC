@@ -75,3 +75,20 @@ tables:
       - {from: ratio, header: Ratio, format: "{:.3f}"}
       - {from: observed, header: Errors, format: "{:.0f}"}
       - {derived: interval_verdict_rolling, header: Verdict (interval)}
+
+  - key: mpsfull
+    source: results/tables/mps_full.csv
+    caption: >
+      The tensor network at full scale: all 431 features, no band, trained on
+      $\Dtrain$ and scored once on $\Dtest$.  The tuned gradient-boosted baseline reaches
+      0.8837--0.8884 ROC AUC and 0.5055--0.5114 average precision on the same split.  Fit
+      time is flat across the bond dimension because a 431-site chain is bound by the launch
+      overhead of its sequential contractions, not by their arithmetic.
+    label: tab:mpsfull
+    align: rrrrr
+    columns:
+      - {from: bond_dimension, header: '$\chi$', format: "{:.0f}"}
+      - {from: roc_auc, header: ROC AUC, format: "{:.4f}"}
+      - {from: average_precision, header: AP, format: "{:.4f}"}
+      - {from: final_loss, header: Final loss, format: "{:.4f}"}
+      - {from: fit_seconds, header: Fit (s), format: "{:.0f}"}

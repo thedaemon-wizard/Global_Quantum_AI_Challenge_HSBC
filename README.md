@@ -18,7 +18,9 @@ in the body, with the evidence that produced them.
 | C2 | Split-conformal coverage holds under a stratified and a card-disjoint split, and **fails** under a temporal split | Supported | [`coverage_by_arm.csv`](results/tables/coverage_by_arm.csv) |
 | C3 | The size of the temporal breach is **origin-dependent**, not a fixed property of the data | Supported; this narrows C2 | [`rolling_origin.csv`](results/tables/rolling_origin.csv) |
 | C4 | A fidelity quantum kernel is **rejected before being run** by two a-priori screens | Supported | [`screens.csv`](results/tables/screens.csv), [D-019](docs/decisions.md) |
-| C5 | A matrix-product-state classifier does not beat a tuned GBDT in the band | Weaker than a null result: **underpowered** against the pre-registered ceiling. What survives is a non-superiority bound of about +0.02 AP | [`mps_h4.csv`](results/tables/mps_h4.csv), [`power.csv`](results/tables/power.csv), [D-030](docs/decisions.md) |
+| C5 | A matrix-product-state classifier does not beat a tuned GBDT in the band | Weaker than a null result: **underpowered** against the pre-registered ceiling (MDE 0.0461 against 0.023). What survives is a non-superiority bound of about +0.02 AP | [`mps_h4.csv`](results/tables/mps_h4.csv), [`power.csv`](results/tables/power.csv), [D-030](docs/decisions.md) |
+| C6 | At **full scale** the same classifier loses by roughly a factor of two in average precision | Supported | [`mps_full.csv`](results/tables/mps_full.csv) |
+| C7 | The bond-dimension sweep is **launch-bound**, not governed by $\chi$ | Supported; this is what makes C6 affordable | [`mps_full.csv`](results/tables/mps_full.csv), [D-032](docs/decisions.md) |
 
 **Not claimed.** No quantum advantage of any kind. No portfolio-level PSD2 compliance
 figure (see [amendment A2](docs/protocol.md)). No claim that the certificate binds the
@@ -200,6 +202,26 @@ What survives is narrower than a null result and is stated as such: **any improv
 the tensor network is bounded above by roughly +0.02 AP** at 95 % confidence. That is a
 non-superiority bound. It is not evidence of equivalence, and it is not evidence that the
 tensor network is worse.
+
+### 3.6 At full scale, the margin is not close
+
+All 431 features, trained on $D_{\mathrm{train}}$ and scored once on $D_{\mathrm{test}}$:
+
+| $\chi$ | ROC AUC | AP | Final loss | Fit (s) |
+|---|---|---|---|---|
+| 4 | 0.8074 | 0.2149 | 0.3456 | 2765 |
+| 8 | 0.7989 | 0.1789 | 0.3075 | 3071 |
+| 16 | 0.7983 | 0.2464 | 0.3120 | 2840 |
+| 32 | 0.7889 | 0.1693 | 0.3652 | 2898 |
+| **tuned GBDT** | **0.8837–0.8884** | **0.5055–0.5114** | — | 16 |
+
+Two things to read here. The tensor network is not competitive — a factor of two in average
+precision, at a fraction of the baseline's speed. And **the fit time is flat across $\chi$**,
+against the sixty-four-fold spread a $\chi^2$ cost model predicts. A 431-site chain is bound
+by the launch overhead of its sequential contractions, not by their arithmetic; the competing
+predictions were written down before the measurement ([D-032](docs/decisions.md)). Capacity
+is nearly free here and depth is the cost, which is the opposite of the intuition carried
+over from short chains.
 
 ---
 

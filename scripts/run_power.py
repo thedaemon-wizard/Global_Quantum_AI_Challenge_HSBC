@@ -180,11 +180,6 @@ def main(argv: list[str] | None = None) -> int:
     mde = minimum_detectable_effect_from_standard_error(standard_error)
     powered = mde <= MDE_CEILING
 
-    print(
-        f"  seed-to-seed AP difference {reference.point:+.4f} "
-        f"[{reference.low:+.4f}, {reference.high:+.4f}] over "
-        f"{reference.n_resamples:,} usable resamples"
-    )
     print(f"  standard error {standard_error:.4f}  ->  MDE {mde:.4f} AP at 80% power, alpha 0.05")
     print(f"  pre-registered ceiling {MDE_CEILING:.4f}: {'PASS' if powered else 'FAIL'}")
     if not powered:

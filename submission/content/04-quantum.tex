@@ -32,6 +32,21 @@ Table~\ref{tab:mps} gives the sweep.
 
 \input{generated/table-mps}
 
+\paragraph{At full scale it loses by a wider margin.} On all 431 features, trained on
+$\Dtrain$ and scored once on $\Dtest$, the tensor network reaches \ClaimMpsFullAucBest{} ROC
+AUC and \ClaimMpsFullApBest{} average precision at best across the sweep, against
+\ClaimGbdtFullAucMin--\ClaimGbdtFullAucMax{} and
+\ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the tuned baseline. The gap is roughly a
+factor of two on average precision, which is the metric that matters at a
+\ClaimTestFraudRate\,\% positive rate.
+
+That comparison is affordable only because a matrix product state has no qubit ceiling, and
+because its cost turns out not to depend on the bond dimension the way the ansatz suggests:
+the four jobs took \ClaimMpsFullSecondsMin{} to \ClaimMpsFullSecondsMax{} seconds against
+the sixty-four-fold spread a $\chi^2$ model predicts. A 431-site chain is bound by the launch
+overhead of its sequential contractions, not by their arithmetic, so capacity is nearly free
+and depth is the cost.
+
 \paragraph{The gate meant to tell us whether that was informative was itself wrong.} The
 pre-registration requires the minimum detectable effect to be computed \emph{before} the
 comparison, and commits to declaring the test underpowered if it exceeds \ClaimPowerCeiling{}
@@ -40,8 +55,11 @@ comparison would have been \emph{observed} rather than tested; the script now re
 start without it. Second, our noise estimate was the seed-to-seed spread of the baseline
 against itself, standard error \ClaimPowerSeWithinFamily. But this comparison is between
 model \emph{families}, whose measured standard error is \ClaimMpsStandardErrorBestChi{} ---
-roughly eightfold larger, so the minimum detectable effect this comparison actually
-supports \emph{exceeds} the pre-registered ceiling.
+\ClaimPowerSeCrossFamily{} once measured against a second classical family --- roughly
+eightfold larger --- so the minimum detectable effect this comparison actually supports is
+\ClaimPowerMde{}, which \emph{exceeds} the pre-registered ceiling of \ClaimPowerCeiling.
+
+\input{generated/table-mpsfull}
 
 \textbf{H4 is therefore reported as underpowered}, which is what the protocol commits to when
 this happens. What survives is weaker than a null result and we state it as such: every

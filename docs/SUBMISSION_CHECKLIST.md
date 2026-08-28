@@ -19,9 +19,13 @@ These are the items whose failure would make the submission wrong rather than in
 |---|---|---|---|
 | `[x]` | Pre-registration hash matches, or differs only with a dated amendment | `.venv/bin/python scripts/check_protocol.py` | exit 0 or 2, never 1 |
 | `[x]` | The H4 power gate was computed **before** the comparison it governs | `scripts/run_mps.py` refuses to start without it | `results/tables/power.csv` |
-| `[!]` | The power gate's noise estimate reflects the comparison it governs | it did not: baseline-vs-itself gave SE 0.0025 against a measured cross-family SE of 0.020 | [D-030](decisions.md) |
+| `[x]` | The power gate's noise estimate reflects the comparison it governs | fixed: the cross-family proxy gives SE 0.0164 against the 0.0199 the comparison produced, where the within-family figure was 0.0025 | [D-030](decisions.md) |
+| `[x]` | H4 is reported as underpowered, since the corrected MDE (0.0461) exceeds the ceiling (0.023) | `scripts/run_power.py` prints FAIL and `run_mps.py` echoes it | `power.csv` |
 | `[x]` | Coverage is judged against the exact Beta-Binomial law, not against `rate <= alpha` | `make conformal` | `coverage_by_arm.csv` column `finite_sample_ok` |
 | `[!]` | Every risk certificate rests on a mean of per-observation 0/1 losses, as Hoeffding-Bentkus requires | **no test exists**; verified only by reading `missed_fraud_rate` | [D-024](decisions.md) |
+| `[x]` | A fit that goes non-finite stops with recoverable parameters and names the step | `pytest tests/test_mps_guards.py` | [D-035](decisions.md) |
+| `[x]` | Long runs report progress, and the log is readable while the run continues | `pytest tests/test_progress.py` | [D-033](decisions.md) |
+| `[x]` | An exploratory run cannot overwrite a pre-registered result table | non-default arguments divert to `results/runs/exploratory/` | [D-034](decisions.md) |
 | `[x]` | No certified configuration sits at the half-open band boundary, where the flagged set is empty by construction | inspect `selected_lambda` against `band_hi` | `riskcontrol.csv` |
 | `[ ]` | `D_test` was evaluated once, for one configuration | read the counter | `results/tables/test_access.json` |
 | `[ ]` | Every number in the proposal prose resolves to a table | `make claims` | `docs/claims.yaml` |
@@ -37,7 +41,7 @@ Checked by reading, because no script can catch a sentence that was never measur
 | `[x]` | A portfolio-level PSD2 compliance rate | Category error: the SCA-RTS ceilings govern exemption eligibility on a whole portfolio, not a decline threshold on a fraud-enriched benchmark. [Amendment A2](protocol.md). |
 | `[x]` | "Temporal splits inflate the false-decline rate by 1.4×" as a fixed quantity | Origin-dependent: 0.684 / 0.893 / 1.411 / 1.198 / 1.126 across five origins. [D-025](decisions.md). |
 | `[x]` | That the certificate binds the **unconditional** false-decline rate | It binds the band-conditional rate. The unconditional rate is dominated by `tau_hi`. |
-| `[ ]` | A broad claim about MPS versus GBDT "on tabular payment-fraud data" | Only supportable if `mps_full.csv` exists. Without it the claim is limited to the in-band comparison. |
+| `[x]` | A broad claim about MPS versus GBDT "on tabular payment-fraud data" | `mps_full.csv` now exists, so the full-scale comparison is reported. The claim is still narrowed: a 2026-08-28 literature check found published MPS work on tabular data to be largely generative, and "we did not find a comparable benchmark" is what the body says rather than "none exists". |
 
 ---
 
@@ -91,7 +95,6 @@ Recorded here rather than omitted, so the gap is visible to whoever picks this u
 |---|---|
 | The proposal LaTeX body and appendix — the scored artifact | **Yes** |
 | 15 Makefile-referenced scripts not yet written (`test_makefile_scripts_exist` xfails with the list) | **Yes** for `make reproduce` end to end |
-| `mps_full.csv` — the full-scale appendix arm | Limits the MPS claim to the band; does not invalidate it |
 | `PROVENANCE.md`, `REGULATORY_SOURCES.md`, `guarantee.md`, `claims.yaml`, `tables.yaml`, `REFERENCE_CROSSCHECK.md` | Needed for `make claims` and `make check` |
 | `configs/default.yaml` frozen hash re-verified after the A1–A4 amendments | Yes, before the final freeze |
 | Portal URLs re-verified in a browser immediately before submission | Yes |

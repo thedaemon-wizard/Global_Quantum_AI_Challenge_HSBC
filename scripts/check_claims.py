@@ -59,6 +59,14 @@ def resolve(claim: dict[str, Any]) -> float:
 
     reduce_spec = claim.get("reduce")
     if reduce_spec is not None:
+        # A reduction may be restricted to a subset of rows.  Without it a range over a
+        # multi-arm table silently mixes arms, which is the kind of quiet category error this
+        # file exists to prevent.
+        where = reduce_spec.get("where_equals")
+        if where:
+            frame = select_rows(frame, where)
+            if frame.empty:
+                raise ClaimError(f"no rows match {where}")
         op = reduce_spec["op"]
         if op == "sum":
             return float(frame[reduce_spec["column"]].astype(bool).sum())
@@ -96,6 +104,41 @@ def resolve(claim: dict[str, Any]) -> float:
     return float(rows.iloc[0][column])
 
 
+def apply_updates(path: Path, updates: list[tuple[str, object, float]]) -> str:
+    """Rewrite only the ``value:`` lines that changed, leaving the rest of the file alone.
+
+    Not a YAML round-trip.  ``yaml.safe_dump`` emits the data and discards everything else,
+    which on the first version of this flag deleted all twenty-five comment lines explaining
+    what the file is for and reformatted the remainder -- a convenience that silently damaged
+    the artefact it exists to maintain.  The file is edited as text instead: find the block
+    for a key, find its ``value:`` line, replace the number.
+
+    Raises if a key or its value line cannot be located rather than writing a file that is
+    partly updated, because a half-applied edit is worse than a refused one.
+    """
+    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    for key, _old, new in updates:
+        start = next(
+            (i for i, line in enumerate(lines) if line.strip() == f"- key: {key}"), None
+        )
+        if start is None:
+            raise SystemExit(f"cannot locate a block for claim {key!r} in {path}")
+        offset = next(
+            (
+                i
+                for i in range(start + 1, len(lines))
+                if lines[i].lstrip().startswith("value:")
+                or lines[i].lstrip().startswith("- key:")
+            ),
+            None,
+        )
+        if offset is None or lines[offset].lstrip().startswith("- key:"):
+            raise SystemExit(f"claim {key!r} has no value line to update")
+        indent = lines[offset][: len(lines[offset]) - len(lines[offset].lstrip())]
+        lines[offset] = f"{indent}value: {new}\n"
+    return "".join(lines)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--claims", type=Path, default=REPO / "docs" / "claims.yaml")
@@ -110,6 +153,7 @@ def main(argv: list[str] | None = None) -> int:
     claims = document["claims"]
 
     failures: list[str] = []
+    pending: list[tuple[str, object, float]] = []
     updated = 0
     print(f"{len(claims)} claims in {args.claims.relative_to(REPO)}\n")
 
@@ -135,9 +179,15 @@ def main(argv: list[str] | None = None) -> int:
         agrees = abs(round(actual, _decimals(claim["value"])) - stated) <= tolerance
 
         if args.update and not agrees:
-            claim["value"] = round(actual, _decimals(claim["value"]))
+            # Formatted to the SAME number of decimals as the value it replaces.  Plain
+            # rounding writes 0.02 where the claim said 0.0222, and _decimals then reads two
+            # places instead of four on the next run, so every update would quietly loosen
+            # the precision the claim is checked at.
+            places = _decimals(claim["value"])
+            replacement = f"{actual:.{places}f}" if places else f"{round(actual):d}"
+            pending.append((key, claim["value"], replacement))
             updated += 1
-            print(f"  UPDATED     {key:32s} {stated} -> {claim['value']}")
+            print(f"  UPDATED     {key:32s} {claim['value']} -> {replacement}")
         elif agrees:
             print(f"  ok          {key:32s} {stated}")
         else:
@@ -145,11 +195,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  MISMATCH    {key:32s} prose {stated}  table {actual}")
 
     if args.update:
-        args.claims.write_text(
-            yaml.safe_dump(document, sort_keys=False, allow_unicode=True, width=100),
-            encoding="utf-8",
-        )
-        print(f"\nRewrote {updated} value(s) into {args.claims.relative_to(REPO)}.")
+        if pending:
+            args.claims.write_text(apply_updates(args.claims, pending), encoding="utf-8")
+        print(f"\nRewrote {updated} value(s) in {args.claims.relative_to(REPO)}.")
         print("Review the diff: an updated claim means the prose around it may also be stale.")
         return 0
 

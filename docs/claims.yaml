@@ -149,7 +149,7 @@ claims:
 
   # ----------------------------------------------------------------------- tensor network
   - key: MpsApBestChi
-    value: 0.1228
+    value: 0.1235
     source: results/tables/mps_band.csv
     select: {model: mps, bond_dimension: 32}
     column: average_precision
@@ -165,7 +165,7 @@ claims:
     note: The tuned baseline on identical rows and features.
 
   - key: MpsDeltaApBestChi
-    value: -0.0179
+    value: -0.0172
     source: results/tables/mps_h4.csv
     select: {bond_dimension: 32}
     column: ap_difference
@@ -173,7 +173,7 @@ claims:
     note: Paired difference, MPS minus GBDT, at the largest bond dimension.
 
   - key: MpsCiHighBestChi
-    value: 0.0222
+    value: 0.0200
     source: results/tables/mps_h4.csv
     select: {bond_dimension: 32}
     column: ci_high
@@ -183,7 +183,7 @@ claims:
       study actually establishes: any MPS improvement is under roughly +0.02 AP.
 
   - key: MpsStandardErrorBestChi
-    value: 0.0204
+    value: 0.0199
     source: results/tables/mps_h4.csv
     select: {bond_dimension: 32}
     column: standard_error
@@ -233,6 +233,109 @@ claims:
       Smallest distance between a certified lambda and the upper band edge.  It must be
       strictly positive: at band_hi the flagged set is empty by construction and the risk is
       structurally zero, which is what made an earlier certificate vacuous.
+
+  # ------------------------------------------------------ tensor network, full scale
+  - key: MpsFullAucBest
+    value: 0.8074
+    source: results/tables/mps_full.csv
+    select: {bond_dimension: 4}
+    column: roc_auc
+    tolerance: 0.00005
+    note: >
+      Best full-scale MPS ROC AUC across the bond-dimension sweep, on all 431 features
+      against the held-out test block.  The tuned gradient-boosted baseline reaches
+      0.8837-0.8884 on the same split.
+
+  - key: MpsFullApBest
+    value: 0.2464
+    source: results/tables/mps_full.csv
+    select: {bond_dimension: 16}
+    column: average_precision
+    tolerance: 0.00005
+    note: >
+      Best full-scale MPS average precision.  The baseline reaches 0.5055-0.5114, so the gap
+      is roughly a factor of two on the metric that matters at this class balance.
+
+  - key: MpsFullSecondsMin
+    value: 2765
+    source: results/tables/mps_full.csv
+    reduce: {op: min, column: fit_seconds}
+    tolerance: 0.5
+    note: >
+      Fastest full-scale job.  With MpsFullSecondsMax this is the evidence that the sweep is
+      launch-bound rather than governed by the bond dimension: a chi^2 cost model predicts
+      the chi=32 job to cost sixty-four times the chi=4 job.  See D-032.
+
+  - key: MpsFullSecondsMax
+    value: 3071
+    source: results/tables/mps_full.csv
+    reduce: {op: max, column: fit_seconds}
+    tolerance: 0.5
+    note: Slowest full-scale job, 1.11 times the fastest against a predicted 64.
+
+  - key: GbdtFullAucMin
+    value: 0.8837
+    source: results/tables/baselines.csv
+    reduce: {op: min, column: roc_auc, where_equals: {arm: temporal, block: test}}
+    tolerance: 0.00005
+    note: >
+      Lowest tuned gradient-boosted ROC AUC across seeds on the temporal test block.  With
+      GbdtFullAucMax this is the interval the full-scale tensor network is compared against.
+
+  - key: GbdtFullAucMax
+    value: 0.8884
+    source: results/tables/baselines.csv
+    reduce: {op: max, column: roc_auc, where_equals: {arm: temporal, block: test}}
+    tolerance: 0.00005
+    note: Highest tuned baseline ROC AUC across seeds, temporal test block.
+
+  - key: GbdtFullApMin
+    value: 0.5055
+    source: results/tables/baselines.csv
+    reduce: {op: min, column: average_precision, where_equals: {arm: temporal, block: test}}
+    tolerance: 0.00005
+    note: >
+      Lowest tuned baseline average precision on the temporal test block.  The full-scale
+      tensor network reaches MpsFullApBest, roughly half of this.
+
+  - key: GbdtFullApMax
+    value: 0.5114
+    source: results/tables/baselines.csv
+    reduce: {op: max, column: average_precision, where_equals: {arm: temporal, block: test}}
+    tolerance: 0.00005
+    note: Highest tuned baseline average precision across seeds, temporal test block.
+
+  - key: TestFraudRate
+    value: 3.412
+    scale: 100
+    source: results/tables/splits.csv
+    select: {arm: temporal, block: test}
+    column: count_fraud_rate
+    tolerance: 0.0005
+    note: >
+      Count-weighted fraud rate on the test block, as a percentage.  Quoted where the choice
+      of average precision over ROC AUC is justified by the class balance.
+
+  # ----------------------------------------------------------------------------- power grid
+  - key: PowerSeCrossFamily
+    value: 0.0164
+    source: results/tables/power.csv
+    column: se_cross_family
+    tolerance: 0.00005
+    note: >
+      Cross-family noise proxy, a regularised logistic model against gradient boosting on
+      identical rows.  It is the binding one and it lands close to the standard error the
+      tensor-network comparison actually produced, where the within-family figure was
+      eightfold low.
+
+  - key: PowerMde
+    value: 0.0461
+    source: results/tables/power.csv
+    column: minimum_detectable_effect
+    tolerance: 0.00005
+    note: >
+      The minimum detectable effect this comparison actually supports.  It exceeds the
+      pre-registered ceiling, so H4 is reported as underpowered rather than null.
 
   # -------------------------------------------------------------- regulation (amendment A2)
   - key: BandValueFraudRate
