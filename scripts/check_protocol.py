@@ -2,11 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0
 """Enforce the pre-registration, which until now was only asserted.
 
-``docs/protocol.md`` opens by saying that this script hashes the protocol together with the
+``docs/protocol.md`` opened by saying that this script hashes the protocol together with the
 configuration and refuses to run an experiment if either changed without a dated entry in
 ``docs/decisions.md``.  That sentence was written before the script existed, which is exactly
 the kind of documentation-versus-reality gap this project's own discipline is supposed to
-catch.  It now exists.
+catch.  It now exists -- and the sentence has been corrected, because what is hashed is the
+guarantee-bearing configuration, not the protocol's prose.
+
+A second gap of the same kind: both documents named ``configs/default.yaml`` while nothing
+wrote to it and ``load_config(None)`` returned the dataclass defaults.  The hash was always
+taken from those live defaults, so enforcement was real; the file now exists as a readable
+record generated from them, and ``--verify-dump`` fails if it drifts.
 
 What is actually enforced
 -------------------------
@@ -97,10 +103,37 @@ def amendment_headings(protocol: Path) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--config", type=Path, default=None)
-    parser.add_argument("--freeze", action="store_true", help="record the current state as the lock")
+    parser.add_argument(
+        "--freeze", action="store_true", help="record the current state as the lock"
+    )
     parser.add_argument("--protocol", type=Path, default=REPO / "docs" / "protocol.md")
     parser.add_argument("--decisions", type=Path, default=REPO / "docs" / "decisions.md")
+    parser.add_argument(
+        "--verify-dump",
+        action="store_true",
+        help="also check configs/default.yaml still matches the committed defaults",
+    )
     args = parser.parse_args(argv)
+
+    if args.verify_dump:
+        from dump_config import render
+
+        dump = REPO / "configs" / "default.yaml"
+        if not dump.exists():
+            print(
+                f"{dump.relative_to(REPO)} is missing; run scripts/dump_config.py",
+                file=sys.stderr,
+            )
+            return 1
+        if dump.read_text(encoding="utf-8") != render(None):
+            print(
+                f"{dump.relative_to(REPO)} has drifted from the defaults in "
+                "src/hsbcfraud/config.py. The dataclass is the source of truth; regenerate "
+                "with scripts/dump_config.py.",
+                file=sys.stderr,
+            )
+            return 1
+        print(f"{dump.relative_to(REPO)} matches the committed defaults.")
 
     state = guarantee_state(args.config)
     state_hash = digest(state)

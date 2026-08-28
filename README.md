@@ -239,9 +239,14 @@ make check       # rebuild PDFs, then the claim, citation and manifest gates
 ```
 
 The pre-registration is enforced in code. [`scripts/check_protocol.py`](scripts/check_protocol.py)
-hashes [`docs/protocol.md`](docs/protocol.md) with [`configs/default.yaml`](configs/default.yaml)
-and exits 1 on an undocumented change to any quantity a guarantee depends on; exit 2 means
-changed *with* an amendment. The test-fold loader persists an access counter to
+hashes the **guarantee-bearing parameters** — every $\alpha$ grid, $\delta$, $\rho$, the
+decision-grid size, the FWER method, the band budget and recall-floor grids, the split
+fractions and the decline budget — and exits 1 on an undocumented change to any of them; exit
+2 means changed *with* an amendment. It does not hash the protocol's prose, so a corrected
+figure does not require an amendment. [`configs/default.yaml`](configs/default.yaml) is a
+readable record generated from the committed defaults, and `--verify-dump` fails if it drifts.
+
+The test-fold loader persists an access counter to
 `results/tables/test_access.json` and raises on a second distinct configuration — the
 single-evaluation rule is a mechanism, not a promise.
 
