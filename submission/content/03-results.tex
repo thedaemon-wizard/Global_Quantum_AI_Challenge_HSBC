@@ -8,6 +8,15 @@ breaches at three of four levels.
 
 \input{generated/table-coverage}
 
+\begin{figure}[t]\centering
+\includegraphics[width=\textwidth]{../results/figures/coverage_by_arm.pdf}
+\caption{The same data as Table~\ref{tab:coverage}, with the Beta-Binomial interval drawn to
+scale.  The interval widens sharply as $\alpha$ tightens, which is why the temporal arm's
+apparent compliance at $\alpha = 0.001$ is weak evidence rather than a pass: at that level the
+law admits almost anything.}
+\label{fig:coverage}
+\end{figure}
+
 The three-arm design exists to decompose degradation into a temporal component and a
 sampling component. It does: the controls pass, so the breach is temporal.
 

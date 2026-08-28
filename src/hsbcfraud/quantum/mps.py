@@ -53,7 +53,7 @@ import torch
 __all__ = ["LEARNING_RATE_SCALE", "MPSClassifier", "MPSConfig", "local_feature_map"]
 
 # Numerator of the depth-scaled learning rate; see MPSConfig.learning_rate.
-LEARNING_RATE_SCALE = 0.15
+LEARNING_RATE_SCALE = 0.05
 
 
 @dataclass(frozen=True)
@@ -68,8 +68,10 @@ class MPSConfig:
     # five epochs, 3e-3 trains a 24-site chain but leaves a 431-site chain at its initial loss
     # (0.7113 -> 0.6899), while 3e-4 takes the same 431-site chain to 0.3573.  The gradient
     # passes through one einsum per site, so the effective step compounds with depth.
-    # LEARNING_RATE_SCALE / n_features reproduces the measured stable rates: 7.5e-4 at 200
-    # sites, 3.5e-4 at 431.  Pass a float to override.
+    # LEARNING_RATE_SCALE / n_features sets the initial rate, which then decays; the numerator
+    # comes from a 30,000-row probe at 431 sites where 1e-4 reached loss 0.199 against 0.308
+    # at 3.5e-4, so lower is both more stable and better at this depth.  Pass a float to
+    # override.
     learning_rate: float | None = None
     weight_decay: float = 1e-5
     # Positive-class weight in the loss.  At a 3.5 % base rate an unweighted fit collapses to
@@ -236,9 +238,21 @@ def fit_mps(
     optimiser = torch.optim.Adam(
         model.parameters(), lr=learning_rate, weight_decay=config.weight_decay
     )
+    n = len(xt)
+    steps = max(1, config.epochs * ((n + config.batch_size - 1) // config.batch_size))
+    # Cosine decay to zero.  A fixed rate that is stable for a few hundred steps is not
+    # necessarily stable for tens of thousands: the in-band arm (2,916 rows, 30 epochs, ~180
+    # steps) trains at any rate tried, while the full-scale arm (356,216 rows, 30 epochs,
+    # ~21,000 steps) trained for twenty minutes and then went non-finite at the same rate.
+    # The failure is step-count dependent, not configuration dependent -- a 30,000-row probe
+    # at 431 sites survived twelve epochs at every learning rate and clipping threshold
+    # tested, including the one the full run died at.  Decaying the step is the standard
+    # remedy for "trains well, then diverges", and unlike per-core renormalisation it does
+    # not hurt the loss: that alternative was measured and left the probe at 0.588 against
+    # 0.307 for the unmodified run.
+    schedule = torch.optim.lr_scheduler.CosineAnnealingLR(optimiser, T_max=steps)
 
     history: list[float] = []
-    n = len(xt)
     generator = torch.Generator(device="cpu").manual_seed(config.seed)
     for _ in range(config.epochs):
         model.train()
@@ -250,13 +264,15 @@ def fit_mps(
             loss = loss_fn(model(xt[idx]), yt[idx])
             if not torch.isfinite(loss):
                 raise RuntimeError(
-                    f"MPS loss became non-finite at {x_train.shape[1]} sites with learning "
-                    f"rate {learning_rate:.2e} and initialisation scale {config.init_scale:.2e}. "
-                    "The usable learning rate falls with chain length; see MPSConfig."
+                    f"MPS loss became non-finite at {x_train.shape[1]} sites with initial "
+                    f"learning rate {learning_rate:.2e} and initialisation scale "
+                    f"{config.init_scale:.2e}. The usable rate falls with both chain length "
+                    "and step count; see MPSConfig."
                 )
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimiser.step()
+            schedule.step()
             epoch_loss += float(loss.detach()) * len(idx)
         history.append(epoch_loss / n)
     return model, history
