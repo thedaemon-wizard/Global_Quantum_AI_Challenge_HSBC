@@ -1,0 +1,4 @@
+arm,cal_vs_test_two_sample_auc,cal_vs_test_two_sample_auc_with_entity,entity_key,n_entities_train,n_entities_test,n_shared,fraction_test_entities_seen_in_train
+temporal,0.5525466877028941,0.5608005859602042,card1,11757.0,7029.0,5972.0,0.8496229904680609
+stratified,0.5100196057314947,0.49981210058564546,card1,11839.0,8109.0,7167.0,0.8838327783943766
+card_disjoint,0.655415325441792,0.968492641953075,card1,8726.0,2578.0,0.0,0.0

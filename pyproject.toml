@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hsbcfraud"
+version = "0.1.0"
+description = "Risk-controlled false-decline certification for card-not-present fraud detection, with a screened quantum-kernel re-ranking stage"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Amon Koike" }]
+
+# Exact pins for every dependency that can move a reported number.  Each version below was
+# checked against the PyPI JSON API on 2026-08-28 for (a) being the current release, (b)
+# publishing a cp312 x86_64 manylinux wheel, and (c) declaring a compatible requires-python.
+# docs/decisions.md records the check and the six pins that were stale when inherited from
+# the sibling Airbus project.
+dependencies = [
+    # Quantum: qiskit-machine-learning supplies FidelityStatevectorKernel, which is pure
+    # numpy over Statevector objects.  It needs no Aer and no NVIDIA binary, which is why
+    # it -- not Aer -- is the production path for the kernel.  See docs/decisions.md D-006.
+    "qiskit==2.5.2",
+    "qiskit-machine-learning==0.9.1",
+    "amazon-braket-sdk==1.126.0",
+    "amazon-braket-default-simulator==1.40.1",
+    # Conformal prediction.  MAPIE supplies Learn-then-Test risk control and Venn-Abers;
+    # crepes supplies Mondrian class-conditional p-values, which MAPIE v1 dropped.
+    "mapie==1.5.0",
+    "crepes==0.9.1",
+    # Classical baselines.  XGBoost's default Linux wheel is a CUDA 13 build whose
+    # CMAKE_CUDA_ARCHITECTURES includes 120, so sm_120 is first-class; LightGBM's PyPI
+    # wheel is OpenCL-only and its CUDA backend has no Blackwell validation, so it runs
+    # on CPU.  See docs/decisions.md D-008.
+    "xgboost==3.4.1",
+    "lightgbm==4.7.0",
+    "scikit-learn==1.9.0",
+    # SHAP is named explicitly by the challenge statement's explainability section.
+    # TreeExplainer was broken against XGBoost>=3.0 for roughly eight months; 0.52.0 is
+    # the release carrying the fix.  smoke S3 exercises the pair rather than assuming it.
+    "shap==0.52.0",
+    # Numerics and IO.
+    "numpy==2.5.2",
+    "scipy==1.18.1",
+    "pandas==3.0.5",
+    "pyarrow==21.0.0",
+    "matplotlib==3.11.1",
+    "pydantic==2.13.4",
+    "pyyaml==6.0.3",
+    "kagglehub==1.0.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "pytest-timeout==2.4.0",
+    "ruff==0.16.5",
+    # Required by scripts/check_pdf.py and by the PDF branch of scripts/check_claims.py.
+    "pypdf==6.16.2",
+]
+
+# Aer is a cross-check, not a dependency of any reported number.  It is isolated here for
+# two reasons.  First, qiskit-aer 0.17.2 declares an unbounded `qiskit>=1.1.0` while its
+# release notes claim validation only to Qiskit 2.1, so pip will happily build a
+# combination nobody has tested -- smoke S5 exercises it.  Second, and decisively,
+# qiskit-aer-gpu-cu11 depends on `cuquantum-cu11`, whose cuStateVec binary is NVIDIA
+# proprietary under the NVIDIA Software License Agreement.  Installing the GPU extra
+# therefore changes this project's licence surface; NOTICE records what it adds.
+gpu-crosscheck = [
+    "qiskit-aer==0.17.2",
+    "qiskit-aer-gpu-cu11==0.17.2",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+timeout = 1800
+markers = [
+    "cuda: requires a CUDA device",
+    "slow: takes more than ~30 s",
+    "data: requires the downloaded datasets",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+# RUF001 flags "ambiguous" Unicode.  scripts/check_claims.py matches those characters on
+# purpose -- the proposal is typeset prose and writes multiplication signs and superscripts.
+ignore = ["RUF001"]

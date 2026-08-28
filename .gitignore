@@ -1,0 +1,28 @@
+# Raw data is never committed.  IEEE-CIS is distributed under Kaggle competition rules
+# rather than an open licence, and the ULB database carries ODbL share-alike terms on the
+# database itself.  scripts/fetch_data.py reconstructs everything from a token.
+datasets/
+data/
+
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Intermediate run artefacts.  results/tables/*.csv and results/figures/* ARE committed:
+# they are the source of every number in the documents and are hashed in the manifest.
+results/runs/
+*.parquet
+*.joblib
+*.ubj
+
+# latexmk output.  The built PDFs are committed; their scaffolding is not.
+submission/*.aux
+submission/*.log
+submission/*.out
+submission/*.fls
+submission/*.fdb_latexmk
+submission/*.synctex.gz
+submission/portal/

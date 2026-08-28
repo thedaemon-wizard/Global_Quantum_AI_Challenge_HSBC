@@ -1,0 +1,151 @@
+hsbcfraud
+Copyright 2026 Amon Koike
+
+This product includes software developed by Amon Koike.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+except in compliance with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+
+------------------------------------------------------------------------------------------
+1. Code derived from the author's other repositories
+------------------------------------------------------------------------------------------
+
+Engineering patterns in this repository -- the claim-gating mechanism, the configuration
+model, the LaTeX build and its format assertions, the SHA-256 manifest, the portal staging
+script, and the tensor-network primitives -- are derived from the following repositories.
+All are sole-authored by Amon Koike, and each is redistributed here under terms compatible
+with Apache-2.0. docs/PROVENANCE.md records the file-level mapping and the upstream commit.
+
+  Global_Quantum_AI_Challenge_Airbus       Apache-2.0   claim gate, config model, LaTeX
+                                                        build, manifest, portal staging,
+                                                        MPS/MPO primitives
+  qml_benckmark_qiskit_v2                  MIT          backend factories, Qiskit 2.x
+                                                        feature-map construction
+  QSMPC-QKD-QHE-AI-Hybrid                  Apache-2.0   imbalanced-classification metrics,
+                                                        calibration, exact linear SHAP
+
+The MIT-licensed material above carries the following notice:
+
+    MIT License
+    Copyright (c) 2025 Amon Koike
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this
+    software and associated documentation files (the "Software"), to deal in the Software
+    without restriction, including without limitation the rights to use, copy, modify,
+    merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+    permit persons to whom the Software is furnished to do so, subject to the following
+    conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies
+    or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+    INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+    PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+    CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+------------------------------------------------------------------------------------------
+2. Code deliberately NOT derived from a fourth repository
+------------------------------------------------------------------------------------------
+
+The conformal-prediction and statistics modules in src/hsbcfraud/conformal/ and
+src/hsbcfraud/stats.py are INDEPENDENT IMPLEMENTATIONS written from the primary literature.
+They are not derived from, and contain no code from, the QIntern 2026 Team A repository
+(github.com/owaisnoe/qintern-project-12-team-A), which implements comparable procedures but
+publishes no licence and has multiple contributors. Absent a licence grant, that material is
+all-rights-reserved and cannot be redistributed here.
+
+Each module's docstring names the paper whose formula it implements:
+
+  split-conformal threshold          Vovk, Gammerman & Shafer, "Algorithmic Learning in a
+                                     Random World", Springer
+  exact coverage law                 Vovk, "Conditional Validity of Inductive Conformal
+                                     Predictors", PMLR 25:475-490, 2012 (arXiv:1209.2673)
+  Mondrian construction              Vovk, Lindsay, Nouretdinov & Gammerman, "Mondrian
+                                     Confidence Machine", Royal Holloway TR, 2003
+  class-conditional degeneracy floor Ding, Angelopoulos, Bates, Jordan & Tibshirani,
+                                     NeurIPS 36:64555-64576, 2023 (arXiv:2306.09335)
+  non-exchangeable weighted quantile Barber, Candes, Ramdas & Tibshirani, Annals of
+                                     Statistics 51(2):816-845, 2023, eq. (11)
+  Learn-then-Test risk control       Angelopoulos, Bates, Candes, Jordan & Lei, Annals of
+                                     Applied Statistics 19(2):1641-1662, 2025
+                                     (used via the MAPIE implementation)
+
+
+------------------------------------------------------------------------------------------
+3. Third-party runtime dependencies
+------------------------------------------------------------------------------------------
+
+Every pinned dependency and its licence. All are compatible with redistribution of this
+work under Apache-2.0. Versions were checked against the PyPI JSON API on 2026-08-28.
+
+  qiskit                        2.5.2     Apache-2.0
+  qiskit-machine-learning       0.9.1     Apache-2.0
+  amazon-braket-sdk             1.126.0   Apache-2.0
+  amazon-braket-default-simulator 1.40.1  Apache-2.0
+  mapie                         1.5.0     BSD-3-Clause
+  crepes                        0.9.1     BSD-3-Clause
+  xgboost                       3.4.1     Apache-2.0
+  lightgbm                      4.7.0     MIT
+  scikit-learn                  1.9.0     BSD-3-Clause
+  shap                          0.52.0    MIT
+  numpy                         2.5.2     BSD-3-Clause
+  scipy                         1.18.1    BSD-3-Clause
+  pandas                        3.0.5     BSD-3-Clause
+  pyarrow                       21.0.0    Apache-2.0
+  matplotlib                    3.11.1    Matplotlib licence (BSD-compatible)
+  pydantic                      2.13.4    MIT
+  pyyaml                        6.0.3     MIT
+  kagglehub                     1.0.2     Apache-2.0
+  torch                         2.13.0    BSD-3-Clause
+  pytest / pytest-timeout / ruff / pypdf  MIT / MIT / MIT / BSD-3-Clause
+
+
+------------------------------------------------------------------------------------------
+4. Optional dependency that changes the licence surface
+------------------------------------------------------------------------------------------
+
+The `gpu-crosscheck` extra is NOT installed by `make venv` and is not required to reproduce
+any reported number. It exists only for the four-way simulator agreement check (E11).
+
+Installing it adds:
+
+  qiskit-aer                    0.17.2    Apache-2.0
+  qiskit-aer-gpu-cu11           0.17.2    Apache-2.0
+  cuquantum-cu11 (transitive)             NVIDIA Software License Agreement -- PROPRIETARY
+
+qiskit-aer-gpu-cu11 declares a dependency on `cuquantum-cu11`, so installing the extra
+brings NVIDIA's cuStateVec binary into the environment. That binary is not open source. The
+NVIDIA Software License Agreement grants a royalty-free licence to install, use and
+distribute the software, and permits commercial use; it prohibits reverse engineering,
+modification and derivative works, prohibits use in a manner that would subject the software
+to an open-source licence, excludes life-critical applications absent a separate agreement,
+and caps NVIDIA's cumulative liability at USD 10.00.
+
+This project therefore does not describe cuQuantum as open source, does not redistribute the
+binary, and keeps it off the path that produces reported results. See docs/decisions.md
+D-006 for why the production kernel path uses qiskit-machine-learning's
+FidelityStatevectorKernel -- pure numpy, no Aer, no NVIDIA binary -- instead.
+
+
+------------------------------------------------------------------------------------------
+5. Data
+------------------------------------------------------------------------------------------
+
+No dataset is redistributed in this repository. scripts/fetch_data.py obtains each from its
+original source under the terms below; docs/PROVENANCE.md records the licence check date.
+
+  IEEE-CIS Fraud Detection      Kaggle competition rules (not an open licence). Rules must
+                                be accepted through the Kaggle web interface before the
+                                data can be downloaded. Provided by Vesta Corporation.
+  European Cardholder (ULB)     Two-layer: the database is licensed under the Open Database
+                                License (ODbL), and its contents under the Database Contents
+                                License (DbCL) v1.0. Machine Learning Group, Universite
+                                Libre de Bruxelles.
+  Sparkov synthetic             CC0 1.0 Universal (public domain dedication).

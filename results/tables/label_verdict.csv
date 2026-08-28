@@ -1,0 +1,2 @@
+trailing_days,n_buckets_trailing,mann_kendall_tau,mann_kendall_p,trailing_rate,earlier_rate,two_proportion_p,censoring_detected
+120,8,-0.2857142857142857,0.39875992063492066,0.03665993265993266,0.03281399294113059,0.9999999999999999,False
