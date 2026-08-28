@@ -478,3 +478,86 @@ Measured on 24 uniform points, 4 qubits, ZZ map: effective-rank ratio 0.861 with
 entanglement against 0.658 without, and off-diagonal mean 0.0757 against 0.1301. The
 entangling layer materially changes the kernel, which is what makes the ablation worth running
 rather than a formality.
+
+---
+
+## Round 5 — Retraction of the certification frontier (2026-08-28)
+
+### D-024 The certificate was vacuous and one of its p-values was invalid. Both are retracted.
+
+An adversarial audit of this repository found two defects in the central deliverable. Both
+reproduce. Both are fatal to the claim as it stood, and the results in `riskcontrol.csv` and
+`tradeoff.csv` as committed are withdrawn.
+
+**Defect 1: every certified configuration certified the empty intervention.**
+
+All 32 certified rows selected `lambda == band_hi`, the top of the band. At that value the
+in-band rule declines nobody: the band-conditional false-decline rate is exactly 0, which
+satisfies any target trivially, and the in-band scorer has no effect on any decision.
+
+The certificate therefore certified a rule that ignores the band entirely. This is precisely
+the objection an earlier design review raised against certifying the *unconditional* rate --
+that the certificate would be unchanged if the in-band scorer were a coin flip -- and
+conditioning on the band did not fix it. Conditioning changed the estimand; it did not stop
+the optimiser from selecting the no-op.
+
+The cause is a scale error. The pre-registered grid `alpha in {1e-3 ... 1e-2}` is the right
+scale for the **unconditional** false-decline rate, which is what a bank's control document
+states. The **band-conditional** rate is a different quantity: the band is by construction the
+region where the model is uncertain, so its false-decline rate is intrinsically in the percent
+range. Measured on the calibration block at a 5 % band:
+
+| in-band threshold | in-band declines | band-conditional FDR | total recall |
+|---|---|---|---|
+| top of band | 0 | 0.0000 | 0.561 |
+| 90th percentile | 81 | 0.0359 | 0.567 |
+| 75th | 204 | 0.0903 | 0.584 |
+| 50th | 544 | 0.2408 | 0.610 |
+| bottom of band | 2,259 | 1.0000 | 0.692 |
+
+Requiring this quantity to sit below 1 % admits only the first row.
+
+**Defect 2: the recall p-value was not a p-value.**
+
+`recall_shortfall` returned `max(0, floor - recall) / floor`. Recall is itself a mean, so this
+is a nonlinear transform of a mean. The Hoeffding-Bentkus bound (Bates, Angelopoulos, Lei,
+Malik and Jordan, 2021) bounds the mean of `n` independent losses in [0, 1]; it says nothing
+about a nonlinear function of such a mean. The values fed into the family-wise correction on
+that axis were therefore not valid p-values, and the two-sided certificate had one valid side.
+
+The false-decline risk was unaffected: `band_conditional_false_decline` returns the mean of
+per-row 0/1 indicators over legitimate band transactions, which is exactly what the bound
+requires.
+
+**The repair.**
+
+`recall_shortfall` is replaced by `missed_fraud_rate`, the false-negative rate: loss 1 when a
+fraudulent transaction is approved by both stages, 0 when either declines it, averaged over
+fraudulent transactions. Controlling it at `alpha_fn` is equivalent to a recall floor at
+`1 - alpha_fn`, so nothing is given up, and the quantity is now a mean of [0, 1] losses.
+
+With a valid loss and an `alpha` scale matched to the estimand, the certificates are
+non-degenerate:
+
+| band | alpha FDR | alpha FNR | band FDR achieved | recall | in-band declines |
+|---|---|---|---|---|---|
+| 0.10 | 0.10 | 0.45 | 0.0749 | 0.595 | 362 |
+| 0.10 | 0.25 | 0.40 | 0.2238 | 0.637 | 1,081 |
+| 0.05 | 0.25 | 0.45 | 0.1784 | 0.600 | 403 |
+
+The in-band rule now declines hundreds of transactions and lifts recall from 0.561 to between
+0.595 and 0.637, which is an intervention a certificate can meaningfully license.
+
+**What this costs, stated plainly.** Protocol amendments A1 and A3, and decision entries
+D-018 and the frontier discussion, were built on the withdrawn numbers. A1's conclusion that
+the reachable `alpha` is capped by band size remains true as arithmetic about sample sizes,
+but its framing as a guarantee-versus-abstention frontier described a frontier of vacuous
+certificates. A3's "all 24 combinations certify" is withdrawn on the same grounds. A fourth
+amendment, restating the estimand scale and the recall loss, is required before the
+certification is re-run, and `results/tables/riskcontrol.csv` and `tradeoff.csv` must be
+regenerated.
+
+**Why this was not caught earlier.** The simulation that validated `learn_then_test` used a
+synthetic monotone risk curve with a well-scaled target, so it exercised the procedure and not
+the estimand. A guarantee can be correctly implemented and still certify nothing of interest,
+and a validation that only checks the machinery will not notice.

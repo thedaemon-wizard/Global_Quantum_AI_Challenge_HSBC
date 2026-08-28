@@ -165,11 +165,11 @@ class QuantumConfig(_Strict):
     either near-rank-one or near-uniform.
     """
 
-    qubits: list[Qubits] = [4, 6, 8]
+    qubits: list[Qubits] = [2, 4, 6, 8]
     feature_maps: list[Literal["zz", "z", "dense_angle"]] = ["zz", "z", "dense_angle"]
     reps: int = 2
     entanglement: list[Literal["linear", "full", "none"]] = ["linear", "none"]
-    bandwidths: list[float] = [1.0, 0.5, 0.25, 0.125, 0.0625]
+    bandwidths: list[float] = [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125]
     # Classical controls evaluated under kernel-swap discipline: identical features,
     # identical solver, identical hyperparameter budget, only the kernel changes.
     classical_kernels: list[Literal["rbf", "laplacian", "poly"]] = ["rbf", "laplacian", "poly"]

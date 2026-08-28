@@ -57,7 +57,7 @@ __all__ = [
     "band_conditional_false_decline",
     "hoeffding_bentkus_p_value",
     "learn_then_test",
-    "recall_shortfall",
+    "missed_fraud_rate",
 ]
 
 
@@ -128,30 +128,45 @@ def band_conditional_false_decline(
     return evaluate
 
 
-def recall_shortfall(
-    y: np.ndarray, score: np.ndarray, in_band: np.ndarray, floor: float, outer_caught: int = 0
+def missed_fraud_rate(
+    y: np.ndarray, score: np.ndarray, in_band: np.ndarray, outer_threshold: float
 ) -> Callable[[float], tuple[float, int]]:
-    """Shortfall below a recall floor, expressed as a loss in [0, 1].
+    """False-negative rate: the fraction of fraud the composite rule lets through.
 
-    LTT controls a loss, so a floor on recall is turned into a loss by taking
-    ``max(0, floor - recall)`` and normalising by the floor.  The transformation is monotone
-    in the same direction as the threshold, which is what keeps the grid search meaningful.
+    A **mean of per-observation 0/1 losses**, which is what Hoeffding-Bentkus requires.
 
-    ``outer_caught`` is the number of frauds already declined by the outer threshold; they
-    count toward recall regardless of what the in-band scorer does, so omitting them would
-    understate recall and make the constraint spuriously binding.
+    This replaces an earlier ``recall_shortfall`` that returned
+    ``max(0, floor - recall) / floor``.  That quantity is a nonlinear transform of a mean,
+    not a mean of losses, and the Hoeffding-Bentkus bound (Bates, Angelopoulos, Lei, Malik
+    and Jordan, 2021) applies only to the latter.  The p-values it produced were therefore
+    not valid p-values, and any certificate resting on them was not a certificate.  See
+    ``docs/decisions.md`` D-024.
+
+    Controlling the false-negative rate at ``alpha_fn`` is equivalent to placing a recall
+    floor at ``1 - alpha_fn``, so nothing is lost by the reformulation -- but now the loss
+    really is ``1`` when a fraudulent transaction is approved and ``0`` when it is declined,
+    averaged over fraudulent transactions.
+
+    A fraud is caught when the outer threshold declines it, or when it is inside the band and
+    the in-band rule declines it.  Fraud below the band is approved by both stages and counts
+    as missed, which is correct: the composite rule really does let it through.
     """
-    fraud_band = (y == 1) & in_band
-    n_fraud_total = int((y == 1).sum())
-    band_scores = score[fraud_band]
+    y = np.asarray(y).ravel()
+    score = np.asarray(score, dtype=float).ravel()
+    in_band = np.asarray(in_band).astype(bool).ravel()
+
+    fraud = y == 1
+    n_fraud = int(fraud.sum())
+    fraud_scores = score[fraud]
+    fraud_in_band = in_band[fraud]
+    caught_by_outer = fraud_scores >= outer_threshold
 
     def evaluate(lam: float) -> tuple[float, int]:
-        if n_fraud_total == 0:
+        if n_fraud == 0:
             return float("nan"), 0
-        caught = outer_caught + int((band_scores >= lam).sum())
-        recall = caught / n_fraud_total
-        loss = max(0.0, floor - recall) / floor if floor > 0 else 0.0
-        return float(loss), n_fraud_total
+        caught_in_band = fraud_in_band & (fraud_scores >= lam)
+        missed = ~(caught_by_outer | caught_in_band)
+        return float(missed.mean()), n_fraud
 
     return evaluate
 
