@@ -869,3 +869,37 @@ have quietly acquired numbers from a smoke test.
 compares its arguments against the parser defaults and diverts a non-default run to
 `results/runs/exploratory/`, saying so on stdout. Verified by re-running the same command and
 confirming the committed table's hash is unchanged.
+
+### D-035 The non-finite check was one step too late, and the loss cannot be the trigger
+
+`fit_mps` guarded on `torch.isfinite(loss)`. That check fires one optimiser step after the
+damage, and by then the model is unrecoverable.
+
+The mechanism, verified on a 64-site chain. When a single gradient element becomes
+non-finite, `clip_grad_norm_` returns a total norm of `inf`. Its clip coefficient is then
+`max_norm / inf = 0`, so every gradient is multiplied by zero -- except the offending
+element, where `inf * 0` is `nan`. Adam writes that `nan` into a parameter, and the *next*
+forward pass is the first thing the loss check can see.
+
+At the moment the norm goes non-finite:
+
+| | |
+|---|---|
+| loss | 0.5927, entirely plausible |
+| non-finite gradient elements | 1 of 8,096 |
+| non-finite parameters | 0 of 8,096 |
+| next forward pass | non-finite |
+
+So the loss is not merely a late signal, it is an unusable one: at the step that matters it
+reads as a healthy run. The guard now tests the gradient norm **before** `optimiser.step()`
+and raises there, naming the step and the loss at that step. Verified against a run with one
+gradient element poisoned at step 40: it raises at step 39 with the loss at 0.4564, zero
+non-finite parameters, and a forward pass on the raised model still finite. The failure is
+therefore recoverable -- the model can be inspected or checkpointed -- and the reported step
+is the one where the fault occurred rather than the one after.
+
+This was found by an independent design review rather than by the implementation, and the
+claim was re-derived here before being acted on. One detail of the review's account did not
+survive checking: it stated that the `nan` propagates to every parameter, whereas the clip
+coefficient of zero means the others receive a zero update and stay finite. The consequence
+is the same and the fix is the same, but the mechanism is recorded as measured.
