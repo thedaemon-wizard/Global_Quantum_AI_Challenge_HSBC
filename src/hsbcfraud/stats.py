@@ -39,6 +39,8 @@ from dataclasses import dataclass
 import numpy as np
 from scipy import stats
 
+from hsbcfraud.progress import ProgressReporter
+
 __all__ = [
     "BootstrapResult",
     "McNemarResult",
@@ -50,6 +52,11 @@ __all__ = [
     "minimum_detectable_effect_from_standard_error",
     "tost_equivalence",
 ]
+
+
+# Resamples between progress ticks.  One tick per resample would dominate the loop at small
+# sizes, where a resample costs about 1.5 ms; a hundred keeps the reporting under a percent.
+REPORT_EVERY = 100
 
 
 @dataclass(frozen=True)
@@ -90,6 +97,7 @@ def clustered_bootstrap_difference(
     n_resamples: int = 2000,
     level: float = 0.95,
     seed: int = 0,
+    reporter: ProgressReporter | None = None,
 ) -> BootstrapResult:
     """Paired difference ``metric(a) - metric(b)`` with a cluster bootstrap interval.
 
@@ -101,6 +109,13 @@ def clustered_bootstrap_difference(
     Resamples whose draw contains a single class are skipped rather than counted as zero:
     average precision is undefined without both classes, and silently substituting a value
     would bias the interval toward whatever was substituted.
+
+    ``reporter`` is optional and receives one tick per hundred resamples.  It exists because
+    this is not a fast function at the sizes the scripts use: measured on this host, 2,000
+    resamples take 3.0 s over 2,537 rows, 13.2 s over 20,000, and 87.6 s over the full
+    115,534-row test block.  Ninety seconds of silence in the middle of a script reads as a
+    hang, and the ticks also expose the usable-resample count as it accumulates, which is the
+    quantity that decides whether the interval is trustworthy at all.
     """
     y = np.asarray(y_true).ravel()
     a = np.asarray(score_a, dtype=float).ravel()
@@ -115,12 +130,18 @@ def clustered_bootstrap_difference(
 
     rng = np.random.default_rng(seed)
     deltas: list[float] = []
-    for _ in range(n_resamples):
+    for draw in range(n_resamples):
         picked = rng.integers(0, len(members), size=len(members))
         rows = np.concatenate([members[i] for i in picked])
         if np.unique(y[rows]).size < 2:
             continue
         deltas.append(metric(y[rows], a[rows]) - metric(y[rows], b[rows]))
+        if reporter is not None and (draw + 1) % REPORT_EVERY == 0:
+            reporter.tick(
+                draw + 1,
+                usable=len(deltas),
+                median=float(np.median(deltas)) if deltas else float("nan"),
+            )
 
     if len(deltas) < 0.5 * n_resamples:
         raise ValueError(

@@ -252,3 +252,43 @@ def test_trace_rows_go_to_the_log_and_not_to_the_stream(tmp_path) -> None:
     assert sum(r.get("event") == "trace" for r in records) == 3
     assert "non-finite" in stream.getvalue()
     assert "trace" not in stream.getvalue()
+
+
+def test_estimate_is_correct_when_ticking_at_a_stride() -> None:
+    """A caller may tick every hundredth unit; the estimate must still be in units.
+
+    The clustered bootstrap ticks once per hundred resamples because one tick per resample
+    would dominate a loop whose body costs about 1.5 ms. Before this was handled, the reporter
+    multiplied a per-hundred duration by the number of remaining *resamples* and predicted
+    1m11s for work that finished in one second -- an estimate wrong by two orders of magnitude
+    at exactly the point a reader decides whether to wait.
+    """
+    reporter = ProgressReporter("strided", 1000)
+    ticks = []
+    for index in range(100, 1001, 100):
+        reporter._last -= 0.1  # a tenth of a second per hundred units
+        ticks.append(reporter.tick(index))
+    # Nine hundred units remain after the first tick at a millisecond each, so about 0.9 s.
+    assert ticks[0].remaining < 2.0, f"estimated {ticks[0].remaining:.1f}s for about 0.9s of work"
+    assert ticks[-1].remaining == pytest.approx(0.0, abs=1e-6)
+
+
+def test_run_log_captures_progress_and_warnings_in_one_file(tmp_path) -> None:
+    """A run that warns and then behaves oddly is read most easily as one interleaved file."""
+    import warnings
+
+    from hsbcfraud.progress import run_log
+
+    with run_log("unit", directory=tmp_path, stream=None) as run:
+        reporter = run.reporter("phase", 2)
+        reporter.tick(loss=0.5)
+        reporter.tick(loss=0.4)
+        reporter.close()
+        warnings.warn("something to record", RuntimeWarning, stacklevel=1)
+
+    text = run.path.read_text(encoding="utf-8")
+    assert "phase 1/2" in text and "phase 2/2" in text
+    assert "loss 0.5" in text
+    assert "something to record" in text
+    # The machine-readable record sits beside the human one, not inside it.
+    assert (tmp_path / "unit-phase.jsonl").exists()

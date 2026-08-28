@@ -33,6 +33,7 @@ Two conventions this module obeys, both taken from the surrounding code rather t
 from __future__ import annotations
 
 import json
+import logging
 import math
 import statistics
 import sys
@@ -48,9 +49,11 @@ __all__ = [
     "DivergenceWarning",
     "DivergenceWatch",
     "ProgressReporter",
+    "RunLog",
     "SweepTimer",
     "Tick",
     "format_duration",
+    "run_log",
 ]
 
 # Ticks ignored when estimating the rate.  The first pass through a CUDA model pays kernel
@@ -174,6 +177,7 @@ class ProgressReporter:
         *,
         stream: TextIO | None = None,
         log_path: Path | None = None,
+        logger: logging.Logger | None = None,
         context: Mapping[str, object] | None = None,
         label_width: int = 0,
         every: int = 1,
@@ -188,11 +192,13 @@ class ProgressReporter:
         self.every = every
         self.context = dict(context or {})
         self._stream = stream
+        self._logger = logger
         self._label_width = label_width
         self._start = time.perf_counter()
         self._last = self._start
         self._durations: deque[float] = deque(maxlen=RATE_WINDOW)
         self._ticks = 0
+        self._last_index = 0
         self._interactive = bool(stream is not None and stream.isatty())
 
         self._log: TextIO | None = None
@@ -209,11 +215,18 @@ class ProgressReporter:
         self._ticks += 1
         index = self._ticks if index is None else index
 
+        # Cost per UNIT, not per tick.  A caller that ticks every hundredth resample advances
+        # the index by a hundred each time, and dividing by that stride is what keeps the
+        # estimate right: without it the bootstrap predicted 1m11s for work that took one
+        # second, because it multiplied a per-hundred duration by the number of remaining
+        # resamples rather than the number of remaining ticks.
+        advanced = max(1, index - self._last_index)
+        self._last_index = index
         # Warmup ticks are timed and recorded but excluded from the rate, so the estimate is
         # not poisoned by kernel compilation on the first pass.
         if self._ticks > WARMUP_TICKS:
-            self._durations.append(duration)
-        per_unit = statistics.median(self._durations) if self._durations else duration
+            self._durations.append(duration / advanced)
+        per_unit = statistics.median(self._durations) if self._durations else duration / advanced
         remaining = per_unit * max(0, self.total - index)
 
         tick = Tick(
@@ -244,6 +257,8 @@ class ProgressReporter:
                 **{key: _plain(value) for key, value in fields.items()},
             }
         )
+        if self._logger is not None:
+            self._logger.warning(message)
         if self._stream is not None:
             prefix = "\n" if self._interactive else ""
             self._stream.write(f"{prefix}  {message}\n")
@@ -283,9 +298,13 @@ class ProgressReporter:
         self.close()
 
     def _emit(self, tick: Tick) -> None:
+        line = tick.summary(width=self._label_width)
+        if self._logger is not None:
+            # Timestamped and durable, and it lands in the same file as any warning the run
+            # emits, so a post-mortem reads one file rather than correlating two.
+            self._logger.info(line)
         if self._stream is None:
             return
-        line = tick.summary(width=self._label_width)
         if self._interactive:
             self._stream.write(f"\r{line}\x1b[K")
         else:
@@ -503,6 +522,86 @@ class DivergenceWatch:
             f"loss rose from {earlier:.4g} to {later:.4g} across the last "
             f"{self.loss_window} steps, ending at step {self._observations}"
         )
+
+
+@dataclass
+class RunLog:
+    """A named run with one durable text log and a place to put per-task telemetry.
+
+    The text log is the thing a person tails; the JSONL files beside it are the thing a
+    post-mortem parses.  Both live under ``results/runs/``, which is gitignored, because
+    ``scripts/freeze.py`` requires everything under ``results/tables/`` to be bit-identical
+    across runs and a timestamped log never is.
+    """
+
+    name: str
+    directory: Path
+    logger: logging.Logger
+    stream: TextIO | None = None
+
+    @property
+    def path(self) -> Path:
+        return self.directory / f"{self.name}.log"
+
+    def reporter(self, task: str, total: int, **kwargs: object) -> ProgressReporter:
+        """A reporter wired to this run: stdout, the text log, and its own JSONL."""
+        return ProgressReporter(
+            task,
+            total,
+            stream=self.stream,
+            logger=self.logger,
+            log_path=self.directory / f"{self.name}-{task.replace(' ', '_')}.jsonl",
+            **kwargs,  # type: ignore[arg-type]
+        )
+
+    def info(self, message: str) -> None:
+        self.logger.info(message)
+        if self.stream is not None:
+            self.stream.write(f"{message}\n")
+            self.stream.flush()
+
+
+@contextmanager
+def run_log(
+    name: str,
+    *,
+    directory: Path | None = None,
+    stream: TextIO | None = sys.stdout,
+) -> Iterator[RunLog]:
+    """Give a script one durable log file, in one line.
+
+    The reason this exists is narrow and was measured.  Progress reporting was added to the
+    training loop and then not used: a seed sweep called ``fit_mps`` without a reporter and
+    ran silently for between 350 and 2,765 seconds per seed, which is the same defect the
+    telemetry was written to fix, reintroduced at the call site.  A helper that makes the
+    wired-up path shorter than the silent one is the only version of this that holds.
+
+    Warnings are captured into the same file.  A run that emits a ``PerformanceWarning`` and
+    then behaves oddly is much easier to read when the two are interleaved in one place.
+    """
+    directory = directory or Path.cwd() / "results" / "runs"
+    directory.mkdir(parents=True, exist_ok=True)
+    logger = logging.getLogger(f"hsbcfraud.run.{name}")
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    handler = logging.FileHandler(directory / f"{name}.log", mode="w", encoding="utf-8")
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-7s %(message)s",
+                                           datefmt="%H:%M:%S"))
+    logger.addHandler(handler)
+    logging.captureWarnings(True)
+    warnings_logger = logging.getLogger("py.warnings")
+    warnings_logger.addHandler(handler)
+
+    record = RunLog(name=name, directory=directory, logger=logger, stream=stream)
+    record.info(f"run {name} started; log at {record.path}")
+    try:
+        yield record
+    finally:
+        record.info(f"run {name} finished")
+        logger.removeHandler(handler)
+        warnings_logger.removeHandler(handler)
+        handler.close()
 
 
 @contextmanager
