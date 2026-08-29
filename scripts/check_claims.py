@@ -83,6 +83,11 @@ def resolve(claim: dict[str, Any]) -> float:
             subset = frame[frame[reduce_spec["where"]].astype(bool)]
             left, right = reduce_spec["columns"]
             return float((subset[left] - subset[right]).min())
+        if op == "median":
+            return float(frame[reduce_spec["column"]].median())
+        if op == "max_ratio":
+            left, right = reduce_spec["columns"]
+            return float((frame[left] / frame[right]).max())
         if op == "range":
             # Max minus min. The comparison that motivates it -- seed spread against
             # across-configuration spread -- is a statement about two ranges, so the range

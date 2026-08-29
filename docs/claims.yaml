@@ -118,6 +118,34 @@ claims:
       magnitude wider than the temporal arm's 0.020.  It is why that arm's single breach
       there reads as noise rather than a systematic failure.
 
+  # ------------------------------------------------------- H5, the held-out validation
+  - key: HFiveConfigsHolding
+    value: 5
+    source: results/tables/h5_validation.csv
+    reduce: {op: sum, column: holds_at_alpha}
+    tolerance: 0
+    note: >
+      Certified configurations whose realised band-conditional false-decline rate on D_test
+      is at or below the alpha they were certified at.  Until this table existed the study's
+      headline deliverable had no held-out evidence at all.
+
+  - key: HFiveConfigsTotal
+    value: 5
+    source: results/tables/h5_validation.csv
+    reduce: {op: count}
+    tolerance: 0
+    note: Certified configurations validated.
+
+  - key: HFiveWorstRatio
+    value: 0.856
+    source: results/tables/h5_validation.csv
+    reduce: {op: max_ratio, columns: [realised_risk, alpha]}
+    tolerance: 0.0005
+    note: >
+      The tightest case: realised risk as a fraction of the alpha it was certified at.  Below
+      one means the certificate held; 0.856 means it held with little margin at the one
+      configuration certified at alpha = 0.10.
+
   # ------------------------------------------------------------------------- coverage
   - key: TemporalRatioAlphaOnePct
     value: 1.494
@@ -188,6 +216,23 @@ claims:
     reduce: {op: sum, column: passes_conditioning}
     tolerance: 0
     note: Configurations that are not exponentially concentrated.
+
+  - key: ScreenMedianRbf
+    value: 0.9740
+    source: results/tables/screens.csv
+    reduce: {op: median, column: rbf_correlation}
+    tolerance: 0.00005
+    note: >
+      Median correlation against a tuned RBF across all screened configurations.  Quoting only
+      the minimum, as an earlier draft did, gave the weakest available version of the finding:
+      the typical configuration is a near-perfect RBF, not a marginal one.
+
+  - key: ScreenMaxRbf
+    value: 1.0000
+    source: results/tables/screens.csv
+    reduce: {op: max, column: rbf_correlation}
+    tolerance: 0.00005
+    note: Highest correlation. Some configurations are indistinguishable from an RBF.
 
   - key: ScreenMinRbfCorrelation
     value: 0.6291

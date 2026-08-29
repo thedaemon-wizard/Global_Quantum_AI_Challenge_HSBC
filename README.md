@@ -149,7 +149,29 @@ classifier the card-disjoint arm is the *most* distinguishable of the three (0.6
 the temporal arm's 0.5525). What the data supports is that the breach appears only in the arm
 ordered by time, on every seed, and that neither control reproduces it.
 
-### 3.3 What the certificate actually reaches
+### 3.3 The certificate holds on held-out data
+
+All five certified configurations, applied unchanged to $D_{\mathrm{test}}$:
+
+| Band budget | $\alpha$ | $n$ legit in band | Declined | Realised | Fraction of budget |
+|---|---|---|---|---|---|
+| 0.035 | 0.25 | 3,314 | 580 | 0.1750 | 0.70 |
+| 0.050 | 0.25 | 4,835 | 830 | 0.1717 | 0.69 |
+| 0.100 | 0.10 | 10,021 | 858 | 0.0856 | **0.86** |
+| 0.100 | 0.15 | 10,021 | 858 | 0.0856 | 0.57 |
+| 0.100 | 0.25 | 10,021 | 1,762 | 0.1758 | 0.70 |
+
+**Five of five hold.** This is H5, and it had never been run — the study's headline deliverable
+had no held-out evidence behind it until now.
+
+Read it for what it is. That the machinery transfers to unseen data is a real check. That it
+transfers while holding a ceiling of 0.10 to 0.25 is a weak one, because those ceilings are
+loose, which [amendment A1](docs/protocol.md) predicted from the band's sample size before the
+arm ran. The pre-registered test was also specified for the wrong mechanism — Beta-Binomial
+suits split conformal, not Learn-then-Test — so both it and the correct binomial tail are
+reported ([amendment A5](docs/protocol.md)).
+
+### 3.4 What the certificate actually reaches
 
 Five of 48 configurations certify. All five sit **strictly inside** the band — the smallest
 margin below $\tau_{\mathrm{hi}}$ is 0.0136 — which is the property an earlier version failed:
@@ -171,7 +193,7 @@ appears only once the band budget is widened enough to put a few thousand legiti
 $D_{\mathrm{cal}}$. That is [amendment A1](docs/protocol.md) showing up in the measurement
 exactly where it was predicted to.
 
-### 3.4 The breach is origin-dependent
+### 3.5 The breach is origin-dependent
 
 Re-running the same procedure at five rolling calibration origins:
 
@@ -189,7 +211,7 @@ calibration window is placed, and a single origin cannot establish its magnitude
 narrowing is recorded in [D-025](docs/decisions.md); an earlier draft quoted 1.49× from a
 single seed's maximum, which was an overclaim.
 
-### 3.5 Quantum kernel: rejected by the screens, before it ran
+### 3.6 Quantum kernel: rejected by the screens, before it ran
 
 Two a-priori gates over 120 configurations (encoding × qubits × bandwidth × entanglement):
 
@@ -203,7 +225,7 @@ closest any configuration came was $\rho_{\mathrm{RBF}} = 0.6291$ against a 0.60
 The kernel arm was therefore not run on the decision task. Reporting a screen that rejects
 its own headline method is the point of pre-registering it.
 
-### 3.6 Tensor network: it ran, and it lost
+### 3.7 Tensor network: it ran, and it lost
 
 The matrix-product-state classifier (Stoudenmire & Schwab, NeurIPS 29:4799, 2016) contracts
 
@@ -222,7 +244,7 @@ against a tuned GBDT — see [`mps_band.csv`](results/tables/mps_band.csv) and
 
 Every interval contains zero, so the correct reading is **not** "the MPS is worse" — it is
 that the comparison cannot separate them. Note also that AP does **not** increase with $\chi$:
-the ordering here is 0.1202, 0.1173, 0.1183, 0.1235, and §3.7 shows why no ordering should be
+the ordering here is 0.1202, 0.1173, 0.1183, 0.1235, and §3.8 shows why no ordering should be
 read from a single seed per configuration.
 
 Every interval contains zero, so the correct reading is **not** "the MPS is worse" — it is
@@ -242,7 +264,7 @@ the tensor network is bounded above by roughly +0.02 AP** at 95 % confidence. Th
 non-superiority bound. It is not evidence of equivalence, and it is not evidence that the
 tensor network is worse.
 
-### 3.7 At full scale, the margin is not close
+### 3.8 At full scale, the margin is not close
 
 All 431 features, trained on $D_{\mathrm{train}}$ and scored once on $D_{\mathrm{test}}$:
 

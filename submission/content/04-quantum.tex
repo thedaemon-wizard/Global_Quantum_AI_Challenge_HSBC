@@ -2,7 +2,7 @@
 \section{Two quantum arms, both negative}
 
 \paragraph{The kernel never reached the task.} Before running a fidelity quantum kernel we
-pre-registered two gates over \ClaimScreenConfigs{} configurations (encoding $\times$ qubits $\times$ bandwidth
+pre-registered screens over \ClaimScreenConfigs{} configurations and gated on two of them (encoding $\times$ qubits $\times$ bandwidth
 $\times$ entanglement). A kernel is usable only if it is not exponentially concentrated ---
 effective rank $r_{\mathrm{eff}} = (\sum_i \sigma_i)^2 / (n \sum_i \sigma_i^2)$ inside a
 usable band --- \emph{and} not reproducible by a tuned RBF, $\rho_{\mathrm{RBF}} < 0.60$.
@@ -10,9 +10,18 @@ usable band --- \emph{and} not reproducible by a tuned RBF, $\rho_{\mathrm{RBF}}
 \ClaimScreenPassConditioning{} of \ClaimScreenConfigs{} pass conditioning. \textbf{\ClaimScreenPassBoth{} pass
 both.} The closest any configuration came to distinctness was
 $\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$. Every kernel we could construct on
-this data is, to within measurement, a classical RBF in disguise --- which is what the
-dequantisation literature predicts, and which we would not have known had we reported a
-downstream accuracy instead.
+this data is, to within measurement, a classical RBF in disguise: the median correlation is
+\ClaimScreenMedianRbf{} and the maximum is \ClaimScreenMaxRbf{}, indistinguishable to
+floating point. We would not have known had we reported a downstream accuracy instead.
+
+\textbf{One pre-registered screen was not gated, and it is the one that would have helped.}
+The protocol names the Huang geometric difference first; the implementation gates on the
+conditioning and distinctness screens and computes the geometric difference without
+consulting it. Huang treats a \emph{large} difference as favourable, so gating on it would
+have made this rejection less decisive rather than more. It was found in an audit rather than
+decided, and amendment~A6 records it. The screens are also computed on
+\ClaimScreenSamples{} stratified rows with at most eight features, which bounds how far
+"every kernel we could construct" reaches.
 
 The closest published comparator agrees. A controlled benchmark of quantum kernel methods on
 real card-transaction data \Cited{(Faryad, arXiv:2608.15718, August 2026)} reports no robust

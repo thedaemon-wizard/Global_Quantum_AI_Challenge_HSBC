@@ -559,3 +559,52 @@ certify" is withdrawn. `results/tables/riskcontrol.csv` and `tradeoff.csv` are r
 which are observed before any risk is evaluated, so the grid remains finite and fixed before
 testing. The alpha and loss changes are stated here before the regenerated certificates were
 read, and `D_test` was not consulted in reaching any of the three.
+
+## Amendment A5 — the pre-registered test for H5 was specified for the wrong mechanism
+
+**Dated 2026-08-29, after the certificate was produced and before it was validated.**
+
+§8 pre-registers H5 as an "exact Beta-Binomial tail probability". That law is correct for
+**split conformal**: the threshold there is the `k`-th order statistic of the calibration
+scores, coverage is `Beta(n+1-k, k)` distributed, and the test-error count is therefore
+Beta-Binomial.
+
+Learn-then-Test does not select `lambda` that way. It tests a null hypothesis per grid point
+under family-wise error control and returns the admissible set; the guarantee is
+`P(R(lambda_hat) > alpha) <= delta`. Conditional on `lambda_hat` — which depends only on
+`D_cal` — the declines among in-band legitimate test rows are independent Bernoulli draws, so
+the count is **Binomial**, and under the certificate its rate is at most `alpha`. The valid
+and conservative test is `P(Bin(m, alpha) >= observed)`.
+
+`scripts/validate_certificate.py` reports **both**. The binomial tail is the operative
+statistic; the Beta-Binomial is carried alongside because it was pre-registered, and dropping
+it silently would conceal that the pre-registration named a test for a mechanism the estimand
+does not have. On this data the two agree on the verdict at every certified configuration, so
+nothing turns on the correction — but that is luck, not licence.
+
+The amendment does not touch a guarantee-bearing parameter, so the protocol hash is unchanged.
+
+## Amendment A6 — the geometric-difference screen was pre-registered and never gated
+
+**Dated 2026-08-29, recorded on discovery rather than on decision.**
+
+§9 pre-registers two a-priori screens, the first being the Huang geometric difference
+`g(K_classical || K_quantum)` above a threshold, with the effective-rank-versus-RBF-correlation
+diagnostic listed third. What `scripts/screen_kernels.py` actually gates on is the second
+screen and the third diagnostic. `results/tables/screens.csv` computes
+`geometric_difference` — it ranges from 1.15 to 364.05 with a mean of 57.6 — and **no
+`passes_*` column consults it**.
+
+This was not decided; it was discovered during an audit of the submission. The screen was
+dropped in implementation and the protocol was never amended, which is the failure the
+pre-registration exists to prevent.
+
+The consequence must be stated plainly. Huang's criterion treats a *large* geometric
+difference as the favourable direction, so this is the screen most configurations would have
+cleared. Gating on it would have made the kernel arm's rejection *less* decisive, not more.
+Reporting the rejection while silently omitting the screen that would have weakened it is the
+direction of error that flatters the finding.
+
+The rejection stands on the two screens that were applied — 28 of 120 configurations pass
+conditioning, 0 pass distinctness, and the median RBF correlation is 0.974 with a maximum of
+exactly 1.000 — but the body now says which screens were gated and which was not.
