@@ -1,12 +1,34 @@
 % SPDX-License-Identifier: Apache-2.0
 \section{Results}\label{sec:results}
 
-\paragraph{Coverage holds under two control splits and fails under time.}
-Table~\ref{tab:coverage} calibrates on $\Dcal$ and reports on $\Dtest$. The stratified and
-card-disjoint arms sit inside the Beta-Binomial interval at every $\alpha$. The temporal arm
-breaches at three of four levels.
+\paragraph{What a random split buys you, measured.} Before any conformal machinery, the
+split itself. Table~\ref{tab:splitarm} runs one gradient-boosted model at fixed
+hyperparameters over five seeds on three splits of the same file. A stratified random split
+reports \ClaimSplitApInflation{} more average precision than a forward holdout ---
+\ClaimSplitApStratified{} against \ClaimSplitApTemporal{} --- with ranges that do not
+overlap across seeds.
 
-\input{generated/table-coverage}
+That is the single largest effect in this study, it is larger than anything either quantum
+arm could have contributed, and it requires no quantum method to observe. It is also why the
+rest of this section reports a temporal split even though a random one would flatter every
+number in it.
+
+\input{generated/table-splitarm}
+
+\paragraph{Coverage fails under time, on every seed, and the controls do not reproduce it.}
+Table~\ref{tab:coverageseeds} calibrates on $\Dcal$ and reports on $\Dtest$, five seeds per
+arm and level, each judged against the exact Beta-Binomial interval. The temporal arm falls
+outside on \emph{every} seed at the two loosest levels and on four of five at the third; the
+stratified arm falls outside on none, at any level.
+
+The card-disjoint arm is not clean, and saying so matters: it is outside on two of five seeds
+at $\alpha = 0.01$ and on one of five at $\alpha = 0.001$, where its seed-to-seed spread
+(sd \ClaimCardDisjointSdTightest) is an order of magnitude wider than the temporal arm's. An earlier draft of this
+paragraph said both controls sat inside at every level, which the five-seed data does not
+support. What the controls establish is narrower and still sufficient: neither reproduces the
+temporal arm's systematic, every-seed breach at the levels where it occurs.
+
+\input{generated/table-coverageseeds}
 
 \begin{figure}[t]\centering
 \includegraphics[width=\textwidth]{../results/figures/coverage_by_arm.pdf}
@@ -17,8 +39,12 @@ law admits almost anything.}
 \label{fig:coverage}
 \end{figure}
 
-The three-arm design exists to decompose degradation into a temporal component and a
-sampling component. It does: the controls pass, so the breach is temporal.
+The three-arm design exists to decompose degradation into a temporal component and a sampling
+component. The decomposition it supports is this: the breach appears in the arm that orders
+blocks in time, on every seed, and neither control reproduces it. That is weaker than "the
+breach is temporal" --- the arms differ in more than time, and the card-disjoint arm is in
+fact the most distinguishable of the three by a two-sample classifier --- but it is what three
+non-randomised conditions can carry.
 
 \paragraph{But the breach is origin-dependent, and this narrows the claim.} Re-running at
 five rolling calibration origins gives Table~\ref{tab:rolling}: the ratio ranges from

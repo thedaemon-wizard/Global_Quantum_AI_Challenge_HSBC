@@ -88,34 +88,68 @@ method. This is [amendment A1](docs/protocol.md), recorded before the arm ran.
 
 ## 3. Results
 
-### 3.1 Coverage by split arm
+### 3.1 What a random split buys you
+
+Before any conformal machinery. One gradient-boosted model, fixed hyperparameters, five
+seeds, three splits of the same file:
+
+| Split | ROC AUC | AP | AP vs forward holdout |
+|---|---|---|---|
+| stratified random | 0.9658 | 0.8254 | **+0.3164** |
+| temporal (forward holdout) | 0.8851 | 0.5090 | — |
+| card-disjoint | 0.8509 | 0.5394 | +0.0304 |
+
+Ranges do not overlap across seeds (stratified AP 0.8171–0.8356 against temporal
+0.5055–0.5114). **A random split reports 62 % more average precision than a forward holdout
+on identical data and an identical model.**
+
+That is the largest effect in this study. It is larger than anything either quantum arm could
+have contributed, and observing it required no quantum method — only the discipline of
+running the control. It is also why every number below comes from a temporal split, though a
+random one would flatter all of them.
+
+### 3.2 Coverage by split arm
 
 Nominal versus empirical false-decline rate on $D_{\mathrm{test}}$, calibrated on
 $D_{\mathrm{cal}}$. `finite_sample_ok` is the Beta-Binomial verdict.
 
-| Arm | $\alpha$ | Empirical | Ratio | Errors | Beta-Binomial band | Verdict |
-|---|---|---|---|---|---|---|
-| temporal | 0.010 | 0.01494 | 1.494 | 1667 | [973, 1266] | **breached** |
-| temporal | 0.005 | 0.00746 | 1.493 | 833 | [458, 665] | **breached** |
-| temporal | 0.002 | 0.00264 | 1.322 | 295 | [161, 292] | **breached** |
-| temporal | 0.001 | 0.00098 | 0.977 | 109 | [69, 162] | inside |
-| stratified | 0.010 | 0.00952 | 0.952 | 1085 | [993, 1292] | inside |
-| stratified | 0.001 | 0.00116 | 1.158 | 132 | [70, 164] | inside |
-| card-disjoint | 0.010 | 0.00896 | 0.896 | 990 | [960, 1256] | inside |
-| card-disjoint | 0.001 | 0.00076 | 0.760 | 84 | [67, 161] | inside |
+| Arm | $\\alpha$ | Ratio (mean) | sd | Range | Seeds outside the interval |
+|---|---|---|---|---|---|
+| temporal | 0.010 | 1.436 | 0.055 | [1.349, 1.494] | **5 of 5** |
+| temporal | 0.005 | 1.456 | 0.036 | [1.421, 1.493] | **5 of 5** |
+| temporal | 0.002 | 1.314 | 0.067 | [1.205, 1.385] | **4 of 5** |
+| temporal | 0.001 | 0.943 | 0.020 | [0.923, 0.977] | **0 of 5** |
+| stratified | 0.010 | 1.008 | 0.038 | [0.952, 1.056] | **0 of 5** |
+| stratified | 0.005 | 1.039 | 0.037 | [0.990, 1.084] | **0 of 5** |
+| stratified | 0.002 | 1.019 | 0.071 | [0.943, 1.127] | **0 of 5** |
+| stratified | 0.001 | 0.962 | 0.140 | [0.798, 1.158] | **0 of 5** |
+| card-disjoint | 0.010 | 0.916 | 0.133 | [0.785, 1.076] | **2 of 5** |
+| card-disjoint | 0.005 | 0.917 | 0.055 | [0.851, 0.993] | **0 of 5** |
+| card-disjoint | 0.002 | 0.904 | 0.157 | [0.783, 1.166] | **0 of 5** |
+| card-disjoint | 0.001 | 0.882 | 0.362 | [0.650, 1.525] | **1 of 5** |
 
-The stratified and card-disjoint arms sit inside the band at **all four** $\alpha$; the two
-rows each shown here are the endpoints of that grid. The temporal arm breaches at three of
-four — and **not** at the tightest level, $\alpha = 0.001$, where it lands at 0.977. That
-exception is kept in the table rather than dropped: an arm that fails at loose levels and
-passes at the tightest is not behaving like a simple upward bias, and at $\alpha = 0.001$
-the Beta-Binomial band is wide enough (69–162 errors) that it has little power to detect one.
+Five seeds per arm and level, each judged against the exact Beta-Binomial interval rather than
+against $\\alpha$.
 
-The breach is therefore **temporal** rather than a sampling artefact — which is the
-decomposition the three-arm design exists to produce — but its size is not constant across
-$\alpha$, and §3.3 shows it is not constant across calibration origins either.
+**The temporal arm breaches on every seed** at the two loosest levels and on four of five at
+the third. **The stratified arm breaches on none, at any level.** That contrast is the result
+the three-arm design was built to produce.
 
-### 3.2 What the certificate actually reaches
+The card-disjoint arm is not clean, and the earlier version of this section was wrong to say
+it was: it is outside on two of five seeds at $\\alpha = 0.01$ and one of five at
+$\\alpha = 0.001$, where its spread (sd 0.362) is an order of magnitude wider than the
+temporal arm's. Its 0.001 row is a single seed at ratio 1.525 against four between 0.65 and
+0.76 — noise, not a systematic breach, but not a pass either.
+
+Two further cautions. The temporal arm does **not** breach at the tightest level: at
+$\\alpha = 0.001$ its mean ratio is 0.943 with every seed inside, and the Beta-Binomial band
+there is wide enough to have little power. And "the breach is temporal" is stronger than three
+non-randomised arms can carry — the arms differ in more than time, and by a two-sample
+classifier the card-disjoint arm is the *most* distinguishable of the three (0.6554 against
+the temporal arm's 0.5525). What the data supports is that the breach appears only in the arm
+ordered by time, on every seed, and that neither control reproduces it.
+
+### 3.3 What the certificate actually reaches
 
 Five of 48 configurations certify. All five sit **strictly inside** the band — the smallest
 margin below $\tau_{\mathrm{hi}}$ is 0.0136 — which is the property an earlier version failed:
@@ -137,7 +171,7 @@ appears only once the band budget is widened enough to put a few thousand legiti
 $D_{\mathrm{cal}}$. That is [amendment A1](docs/protocol.md) showing up in the measurement
 exactly where it was predicted to.
 
-### 3.3 The breach is origin-dependent
+### 3.4 The breach is origin-dependent
 
 Re-running the same procedure at five rolling calibration origins:
 
@@ -155,7 +189,7 @@ calibration window is placed, and a single origin cannot establish its magnitude
 narrowing is recorded in [D-025](docs/decisions.md); an earlier draft quoted 1.49× from a
 single seed's maximum, which was an overclaim.
 
-### 3.4 Quantum kernel: rejected by the screens, before it ran
+### 3.5 Quantum kernel: rejected by the screens, before it ran
 
 Two a-priori gates over 120 configurations (encoding × qubits × bandwidth × entanglement):
 
@@ -169,7 +203,7 @@ closest any configuration came was $\rho_{\mathrm{RBF}} = 0.6291$ against a 0.60
 The kernel arm was therefore not run on the decision task. Reporting a screen that rejects
 its own headline method is the point of pre-registering it.
 
-### 3.5 Tensor network: it ran, and it lost
+### 3.6 Tensor network: it ran, and it lost
 
 The matrix-product-state classifier (Stoudenmire & Schwab, NeurIPS 29:4799, 2016) contracts
 
@@ -181,10 +215,15 @@ against a tuned GBDT — see [`mps_band.csv`](results/tables/mps_band.csv) and
 
 | $\chi$ | AP (MPS) | AP (GBDT) | $\Delta$AP | 95 % clustered CI | $p$ | Holm |
 |---|---|---|---|---|---|---|
-| 4 | 0.1185 | 0.1407 | −0.0222 | [−0.0597, +0.0136] | 0.888 | not rejected |
-| 8 | 0.1200 | 0.1407 | −0.0207 | [−0.0599, +0.0147] | 0.860 | not rejected |
-| 16 | 0.1215 | 0.1407 | −0.0192 | [−0.0614, +0.0159] | 0.835 | not rejected |
-| 32 | 0.1228 | 0.1407 | −0.0179 | [−0.0574, +0.0222] | 0.810 | not rejected |
+| 4 | 0.1202 | 0.1407 | -0.0205 | [-0.0593, +0.0149] | 0.864 | not rejected |
+| 8 | 0.1173 | 0.1407 | -0.0234 | [-0.0630, +0.0122] | 0.895 | not rejected |
+| 16 | 0.1183 | 0.1407 | -0.0225 | [-0.0613, +0.0136] | 0.884 | not rejected |
+| 32 | 0.1235 | 0.1407 | -0.0172 | [-0.0582, +0.0200] | 0.806 | not rejected |
+
+Every interval contains zero, so the correct reading is **not** "the MPS is worse" — it is
+that the comparison cannot separate them. Note also that AP does **not** increase with $\chi$:
+the ordering here is 0.1202, 0.1173, 0.1183, 0.1235, and §3.7 shows why no ordering should be
+read from a single seed per configuration.
 
 Every interval contains zero, so the correct reading is **not** "the MPS is worse" — it is
 that the comparison cannot separate them.
@@ -203,7 +242,7 @@ the tensor network is bounded above by roughly +0.02 AP** at 95 % confidence. Th
 non-superiority bound. It is not evidence of equivalence, and it is not evidence that the
 tensor network is worse.
 
-### 3.6 At full scale, the margin is not close
+### 3.7 At full scale, the margin is not close
 
 All 431 features, trained on $D_{\mathrm{train}}$ and scored once on $D_{\mathrm{test}}$:
 
@@ -244,7 +283,7 @@ contradicts a claim an earlier draft had already written down.
   sat at $\lambda = \tau_{\mathrm{hi}}$, where the flagged set is empty by construction, and
   it rested on an invalid p-value besides ([D-024](docs/decisions.md)).
 
-[`docs/decisions.md`](docs/decisions.md) carries all 29 entries including the retractions —
+[`docs/decisions.md`](docs/decisions.md) carries all 38 entries including the retractions —
 a memory-bandwidth witness retracted twice, a clustered-bootstrap width claim asserted from
 theory and withdrawn when measured (0.89×, the opposite direction), and a `.gitignore`
 pattern that silently excluded four source files from three pushed commits.
@@ -268,9 +307,10 @@ fractions and the decline budget — and exits 1 on an undocumented change to an
 figure does not require an amendment. [`configs/default.yaml`](configs/default.yaml) is a
 readable record generated from the committed defaults, and `--verify-dump` fails if it drifts.
 
-The test-fold loader persists an access counter to
-`results/tables/test_access.json` and raises on a second distinct configuration — the
-single-evaluation rule is a mechanism, not a promise.
+The test-fold loader keeps a persisted ledger in
+[`results/tables/test_access.json`](results/tables/test_access.json) — the authorised
+configuration hash and how many times it has been requested — and raises on a second distinct
+configuration. The single-evaluation rule is a mechanism, not a promise.
 
 `scripts/run_mps.py` refuses to run the H4 comparison until `power.csv` exists, because a
 power gate that can be computed afterwards is not a gate.
@@ -284,7 +324,7 @@ power gate that can be computed afterwards is not a gate.
 | Path | Contents |
 |---|---|
 | [`docs/protocol.md`](docs/protocol.md) | Pre-registration, frozen before any model was fitted. Estimand, split, decision rule, band freezing, null hypotheses H1–H5, screens, out-of-scope claims, and four dated amendments (A1–A4) |
-| [`docs/decisions.md`](docs/decisions.md) | D-001…D-029, including every retraction and the reason for it |
+| [`docs/decisions.md`](docs/decisions.md) | Every entry, including the retractions and the reason for each |
 | [`docs/REFERENCES.md`](docs/REFERENCES.md) | Conformal theory (CP-1…CP-13), fraud prior art (FR-1…FR-6), quantum ML evidence (QM-1…QM-10), datasets (DS-1…DS-5), regulation (RG-1…RG-6), software (SW-1…SW-9), and sources deliberately **not** relied upon |
 | [`NOTICE`](NOTICE) | Third-party licences, including why `cuquantum-cu11` is not installed by default |
 

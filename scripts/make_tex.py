@@ -65,6 +65,11 @@ def derive(name: str, row: pd.Series) -> str:
         # for the breaches.  Normalise rather than trusting the casing.
         verdict = str(row["verdict"]).lower()
         return f"{verdict} ($[{row['band_low']:.0f},{row['band_high']:.0f}]$)"
+    if name == "ap_inflation":
+        value = float(row["ap_inflation_vs_temporal"])
+        return "---" if abs(value) < 1e-9 else f"${value:+.4f}$"
+    if name == "seeds_outside":
+        return f"{int(row['n_outside'])} of {int(row['n_seeds'])}"
     if name == "confidence_interval":
         return f"$[{row['ci_low']:+.4f}, {row['ci_high']:+.4f}]$"
     raise SystemExit(f"unknown derived column {name!r}")

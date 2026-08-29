@@ -1,0 +1,14 @@
+% Generated from split_arm_baselines.csv by scripts/make_tex.py. Do not edit.
+\begin{table}[t]\centering
+\caption{The same gradient-boosted model, the same hyperparameters, five seeds, evaluated on the test block of three different splits.  A stratified random split inflates average precision by 0.316 over a forward holdout, with non-overlapping ranges.  This is the cleanest evidence in the study for why a temporal split is the only honest evaluation of a fraud model, and it costs nothing to obtain -- it is the control arm of the split design, not an extra experiment.}
+\label{tab:splitarm}
+\begin{tabular}{lrrr}
+\toprule
+Split & ROC AUC & AP & AP vs forward holdout \\
+\midrule
+stratified & 0.9658 & 0.8254 & $+0.3164$ \\
+temporal & 0.8851 & 0.5090 & --- \\
+card-disjoint & 0.8509 & 0.5394 & $+0.0304$ \\
+\bottomrule
+\end{tabular}
+\end{table}

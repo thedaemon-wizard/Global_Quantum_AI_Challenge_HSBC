@@ -1,0 +1,49 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{Team}
+
+\textbf{Amon Koike} --- Quantum Research Engineer, registered sole proprietor in Japan,
+working remote-first. B.S.\ Physics, Tokyo Denki University. IBM Qiskit Advocate \Record{(2026)}.
+Portfolio and code: \texttt{thedaemon-wizard.github.io/portfolio-quantum-research-engineer},
+\texttt{github.com/thedaemon-wizard}. Single-person team.
+
+\textbf{The statistical machinery in this proposal is not new to the author.} As part of
+\Record{QIntern 2026 Project 12} (QWorld), Team A, he owns the statistical-guarantee proposition of the
+team's paper: the calibration rule, the coverage-verification harness, the exchangeability
+audit and the significance protocol for a quantum-classical intrusion detector. That work
+calibrated a false-alarm rate by split conformal prediction, demonstrated coverage inside the
+exact Beta-Binomial band across five seeds, established significance by exact McNemar with
+Holm correction, and froze its results under a SHA-256 manifest behind \Record{135} automated checks.
+Every one of those techniques appears in this submission. \emph{That paper is in preparation
+and not yet public, so this is a statement of work rather than a citation --- a reviewer
+cannot read it today.}
+
+\textbf{Directly relevant prior results}, each independently verifiable:
+
+\begin{itemize}
+\item \textbf{Tensor networks.} \Record{Yale Peaked Hackathon 2026, \#13 of 550}: \Record{nine of ten}
+  peaked-circuit challenges up to \Record{69} qubits, solved by a matrix-product-state marginal attack.
+  The tensor-network arm here is not a first attempt at the method.
+\item \textbf{Quantum kernels.} \Record{QPoland 2025}, runner-up: quantum graph kernels against
+  Weisfeiler--Lehman and shortest-path baselines with nested cross-validation. The habit of
+  running the classical kernel controls comes from there.
+\item \textbf{Quantum-versus-classical benchmarking.} Q-volution (Quandela), third: a residual
+  quantum reservoir model benchmarked across four architectures and three noise models,
+  reported against the classical baseline it narrowly beat rather than against a weak one.
+\item \textbf{Upstream contributions.} \Record{unitaryHACK 2026}, merged into NVIDIA CUDA-Q and QuEST:
+  recursive Quantum Shannon decomposition, and a GPU backend change cutting allocation and
+  host-device copies by roughly two thirds. Reviewed by the maintainers of the libraries.
+\item \textbf{Reproducible quantum-safe systems.} Two Apache-2.0 public deployments
+  (\texttt{qsmpc-qkd-qhe-ai-hybrid.daemons.jp}, \texttt{pqc-qkd-hybrid.daemons.jp}) built to
+  \Record{ETSI GS QKD 014} and NIST PQC, with published verification checklists.
+\end{itemize}
+
+\textbf{Infrastructure.} An \Record{RTX~6000 PRO Blackwell (96\,GB), CUDA 13, Python 3.12} workstation
+--- the machine every number in this submission was measured on, documented in the repository
+down to why torch must be installed from the \Record{CUDA 13.0} index before anything else.
+
+\textbf{What this submission itself demonstrates.} A pre-registration frozen and hashed before
+any model was fitted. A decision log of \ClaimDecisionEntries{} entries carrying every
+retraction, including four that removed a headline result. An environment verified to the
+point of catching a simulator that had silently demoted itself to CPU. Those are the working
+habits a Phase~II sprint would inherit, and they are visible in the artefact rather than
+asserted in this paragraph.

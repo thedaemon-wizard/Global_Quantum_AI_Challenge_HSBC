@@ -215,19 +215,42 @@ class TestFoldGuard:
     worthless if nothing checks it, and it is very easy to violate by accident -- a sweep
     that "just peeks" at test is the most common way a held-out fold stops being held out.
 
-    The counter is persisted, so it survives process restarts and a reviewer can read it.
+    The ledger is persisted, so it survives process restarts and a reviewer can read it.
     Requesting the test fold for a configuration that has already been evaluated is fine
     (re-running the same thing changes nothing); requesting it for a *different* one raises.
+
+    Each entry records the authorised configuration hash **and how many times it has been
+    requested**.  The count exists because the documents claimed a reviewer could read one and
+    an earlier version stored only the hash, so the file said nothing about how often the fold
+    had been touched.  A repeat request for the same configuration is legitimate and is
+    counted rather than suppressed: it is the number a reader wants when asking whether a
+    held-out fold stayed held out.
     """
 
     def __init__(self, ledger: Path) -> None:
         self.ledger = ledger
-        self._seen: dict[str, str] = {}
+        self._seen: dict[str, dict[str, object]] = {}
         if ledger.exists():
-            self._seen = json.loads(ledger.read_text(encoding="utf-8"))
+            raw = json.loads(ledger.read_text(encoding="utf-8"))
+            # Migrate the hash-only form written before the count existed.  Its evaluation
+            # count is unknown, not zero, and is recorded as such rather than invented.
+            self._seen = {
+                dataset: (
+                    entry
+                    if isinstance(entry, dict)
+                    else {"configuration": entry, "evaluations": None}
+                )
+                for dataset, entry in raw.items()
+            }
+
+    def evaluations(self, dataset: str) -> int | None:
+        """How many times this fold has been authorised, or None if written before counting."""
+        entry = self._seen.get(dataset)
+        return None if entry is None else entry.get("evaluations")
 
     def authorise(self, dataset: str, configuration_hash: str) -> None:
-        previous = self._seen.get(dataset)
+        entry = self._seen.get(dataset)
+        previous = None if entry is None else entry.get("configuration")
         if previous is not None and previous != configuration_hash:
             raise SplitError(
                 f"the {dataset} test fold has already been evaluated for configuration "
@@ -236,6 +259,10 @@ class TestFoldGuard:
                 f"2.2) permits one. Run sweeps on D_band or D_cal. To start a genuinely new "
                 f"campaign, delete {self.ledger} and record why in docs/decisions.md."
             )
-        self._seen[dataset] = configuration_hash
+        count = None if entry is None else entry.get("evaluations")
+        self._seen[dataset] = {
+            "configuration": configuration_hash,
+            "evaluations": 1 if count is None else int(count) + 1,
+        }
         self.ledger.parent.mkdir(parents=True, exist_ok=True)
         self.ledger.write_text(json.dumps(self._seen, indent=2, sort_keys=True) + "\n", "utf-8")

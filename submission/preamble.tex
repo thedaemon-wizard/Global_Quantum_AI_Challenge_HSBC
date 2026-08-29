@@ -31,6 +31,12 @@
 % point -- it makes "this number is not ours" visible in the source.
 \newcommand{\Cited}[1]{#1}
 
+% Biographical and external-record facts -- dates, competition placements, prior-work figures.
+% They are the author's record rather than this study's measurements, so no results table can
+% carry them and binding them to one would be a fiction.  Wrapping declares that, and
+% scripts/check_pdf.py skips the contents exactly as it does for \Cited.
+\newcommand{\Record}[1]{#1}
+
 \newcommand{\Dtrain}{\mathcal{D}_{\mathrm{train}}}
 \newcommand{\Dband}{\mathcal{D}_{\mathrm{band}}}
 \newcommand{\Dcal}{\mathcal{D}_{\mathrm{cal}}}

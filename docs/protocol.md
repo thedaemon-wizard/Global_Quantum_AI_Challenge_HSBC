@@ -103,9 +103,15 @@ component and a sampling component, rather than attributing all of it to time.
 `D_band` and certified on `D_cal`. Every sweep, ladder and ablation runs on held-out slices
 of `D_band` or `D_cal`.
 
-This is enforced in code, not by discipline: the test-fold loader increments a counter
-persisted to `results/tables/test_access.json` and raises on the second distinct
-configuration. A reviewer can read the counter.
+This is enforced in code, not by discipline: the test-fold loader keeps a persisted ledger in
+`results/tables/test_access.json` recording the authorised configuration hash and how many
+times it has been requested, and raises on a second **distinct** configuration. A reviewer can
+read the ledger.
+
+An earlier version of this paragraph, and of the appendix, said the loader "increments a
+counter" that "a reviewer can read". It did not: it stored the hash alone, so the file said
+nothing about how often the fold had been touched. The count was added rather than the claim
+withdrawn, because the count is what a reader actually wants.
 
 ---
 
@@ -425,8 +431,16 @@ Measured on `D_band` (58,326 rows), value-weighted, as Article 19 defines it:
 | 50 % | 0.347 % |
 | 60 % | 0.247 % |
 
-Reaching the loosest tier (ETV EUR 100, ceiling 0.13 %) requires declining **94.7 %** of
-traffic; the strictest (EUR 500, 0.01 %) requires **98.2 %**.
+Reaching **any** of the three tiers requires declining **94.74 %** of traffic. The figure is
+the same for all of them, and that is not a transcription slip: the threshold that satisfies
+the loosest ceiling (ETV EUR 100, 0.13 %) already drives the achieved value-weighted rate to
+9.74e-05, below even the strictest (EUR 500, 0.01 %), so one threshold clears the whole ladder
+and `results/tables/envelope.csv` reports one decline rate three times.
+
+An earlier version of this paragraph gave 94.7 % for the loosest tier and **98.2 %** for the
+strictest. The 98.2 % appears in no table and never did; the measurement gives 94.74 % for
+every tier. Corrected here, and `ClaimPsdDeclineRate` is bound to the `etv_eur = 500` row so
+the quoted figure resolves to the strictest ceiling it is used to discuss.
 
 The reason is not that the model is weak. The PSD2 reference rates govern a payment service
 provider's **entire remote card portfolio**, which is overwhelmingly ordinary traffic.

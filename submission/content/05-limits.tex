@@ -34,7 +34,7 @@ longer observation window would supply.
 \medskip\noindent
 \textbf{Reproduction.} \texttt{make smoke \&\& make reproduce \&\& make check}. The
 pre-registration is enforced in code, not by discipline: a gate hashes every
-guarantee-bearing parameter and refuses undocumented change, the test-fold loader persists an
-access counter and raises on a second configuration, and every number in this document is
-generated from a results table rather than typed. The decision log records all thirty-one
-entries, including the four retractions above.
+guarantee-bearing parameter and refuses undocumented change, the test-fold loader keeps a
+persisted ledger of the authorised configuration and its evaluation count, and raises on a
+second distinct configuration. The decision log records \ClaimDecisionEntries{} entries,
+including every retraction above.

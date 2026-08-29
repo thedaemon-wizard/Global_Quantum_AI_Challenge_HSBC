@@ -120,7 +120,7 @@ reproduce: baseline conformal quantum mps explain measure figures freeze
 # Deterministic output so the built PDFs can enter the manifest.
 TEXFLAGS       := -pdf -interaction=nonstopmode -halt-on-error -file-line-error
 DETERMINISTIC  := SOURCE_DATE_EPOCH=1757894400 FORCE_SOURCE_DATE=1
-BODY_PAGES     := 5
+BODY_PAGES     := 6   # the guidelines allow six; five left a page unused
 APPENDIX_PAGES := 3
 TEX_SOURCES    := $(wildcard submission/*.tex submission/content/*.tex)
 PDF_GUARD      := $(addprefix --source ,$(TEX_SOURCES))

@@ -92,3 +92,50 @@ tables:
       - {from: average_precision, header: AP, format: "{:.4f}"}
       - {from: final_loss, header: Final loss, format: "{:.4f}"}
       - {from: fit_seconds, header: Fit (s), format: "{:.0f}"}
+
+  - key: coverageseeds
+    source: results/tables/coverage_seed_summary.csv
+    caption: >
+      Coverage across five seeds per arm and level, judged against the exact Beta-Binomial
+      interval.  This replaces a single-split table whose temporal ratio at $\alpha = 0.01$
+      was the across-seed \emph{maximum} rather than its centre, and which described the
+      card-disjoint arm as inside the interval at every level.  The temporal arm breaches on
+      every seed at the two loosest levels; the stratified arm breaches on none at any level.
+    label: tab:coverageseeds
+    align: lrrrl
+    rows:
+      - {arm: temporal, alpha: 0.01}
+      - {arm: temporal, alpha: 0.005}
+      - {arm: temporal, alpha: 0.002}
+      - {arm: temporal, alpha: 0.001}
+      - {arm: stratified, alpha: 0.01}
+      - {arm: stratified, alpha: 0.001}
+      - {arm: card_disjoint, alpha: 0.01}
+      - {arm: card_disjoint, alpha: 0.001}
+    columns:
+      - {from: arm, header: Arm, format: label}
+      - {from: alpha, header: '$\alpha$', format: "{:.3f}"}
+      - {from: ratio_mean, header: Ratio (mean), format: "{:.3f}"}
+      - {from: ratio_sd, header: sd, format: "{:.3f}"}
+      - {derived: seeds_outside, header: Seeds outside}
+
+  - key: splitarm
+    source: results/tables/split_arm_baselines.csv
+    caption: >
+      The same gradient-boosted model, the same hyperparameters, five seeds, evaluated on the
+      test block of three different splits.  A stratified random split inflates average
+      precision by 0.316 over a forward holdout, with non-overlapping ranges.  This is the
+      cleanest evidence in the study for why a temporal split is the only honest evaluation of
+      a fraud model, and it costs nothing to obtain -- it is the control arm of the split
+      design, not an extra experiment.
+    label: tab:splitarm
+    align: lrrr
+    rows:
+      - {arm: stratified}
+      - {arm: temporal}
+      - {arm: card_disjoint}
+    columns:
+      - {from: arm, header: Split, format: label}
+      - {from: roc_auc_mean, header: ROC AUC, format: "{:.4f}"}
+      - {from: average_precision_mean, header: AP, format: "{:.4f}"}
+      - {derived: ap_inflation, header: AP vs forward holdout}

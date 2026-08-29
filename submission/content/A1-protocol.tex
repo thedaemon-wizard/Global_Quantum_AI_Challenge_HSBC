@@ -40,9 +40,10 @@ never from $\Dcal$ risks or from $\Dtest$.
 \end{enumerate}
 
 \paragraph{The single-evaluation rule is a mechanism.} $\Dtest$ is read once, for the one
-configuration selected on $\Dband$ and certified on $\Dcal$. The loader increments a counter
-persisted to \texttt{results/tables/test\_access.json} and raises on a second distinct
-configuration. A reviewer can read the counter rather than take our word for it.
+configuration selected on $\Dband$ and certified on $\Dcal$. The loader records the authorised
+configuration hash and its evaluation count in
+\texttt{results/tables/test\_access.json} and raises on a second distinct configuration. A
+reviewer can read the ledger rather than take our word for it.
 
 \paragraph{Hypotheses.} H1--H5 were stated in advance with their tests. H4 --- that the
 tensor network does not improve band-conditional average precision over the tuned baseline

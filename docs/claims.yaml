@@ -67,6 +67,57 @@ claims:
       earlier protocol table read 56,993, taken from the stratified arm of a superseded
       split.
 
+  - key: DecisionEntries
+    value: 38
+    source: results/tables/decision_log.csv
+    column: decision_entries
+    tolerance: 0
+    note: >
+      Entries in docs/decisions.md, counted from the file.  It was typed into four places and
+      went stale in all of them -- the README said 29 twice and both PDF sources said
+      thirty-one against an actual 38.  Computing it is the only version that stays true.
+
+  # --------------------------------------------------------------- split arms (D-016)
+  - key: SplitApStratified
+    value: 0.8254
+    source: results/tables/split_arm_baselines.csv
+    select: {arm: stratified}
+    column: average_precision_mean
+    tolerance: 0.00005
+    note: >
+      Average precision of the tuned baseline on a stratified random split, mean of five
+      seeds.  The comparison against SplitApTemporal is the study's cleanest evidence that a
+      random split cannot evaluate a fraud model.
+
+  - key: SplitApTemporal
+    value: 0.5090
+    source: results/tables/split_arm_baselines.csv
+    select: {arm: temporal}
+    column: average_precision_mean
+    tolerance: 0.00005
+    note: The same model on a forward holdout, mean of five seeds.
+
+  - key: SplitApInflation
+    value: 0.3164
+    source: results/tables/split_arm_baselines.csv
+    select: {arm: stratified}
+    column: ap_inflation_vs_temporal
+    tolerance: 0.00005
+    note: >
+      The difference.  Larger than any effect either quantum arm could have produced, and
+      obtainable without a quantum method.
+
+  - key: CardDisjointSdTightest
+    value: 0.362
+    source: results/tables/coverage_seed_summary.csv
+    select: {arm: card_disjoint, alpha: 0.001}
+    column: ratio_sd
+    tolerance: 0.0005
+    note: >
+      Seed-to-seed spread of the card-disjoint arm at the tightest level, an order of
+      magnitude wider than the temporal arm's 0.020.  It is why that arm's single breach
+      there reads as noise rather than a systematic failure.
+
   # ------------------------------------------------------------------------- coverage
   - key: TemporalRatioAlphaOnePct
     value: 1.494
@@ -146,6 +197,15 @@ claims:
     note: >
       Closest any configuration came to distinctness, against a 0.60 threshold.  Every
       kernel tried is reproducible by a tuned RBF.
+
+  - key: ScreenSamples
+    value: 300
+    source: results/tables/screens.csv
+    reduce: {op: max, column: n_samples}
+    tolerance: 0
+    note: >
+      Stratified rows per screened configuration.  The challenge statement makes stating the
+      quantum-execution sample count its only mandatory reporting requirement.
 
   # ----------------------------------------------------------------------- tensor network
   - key: MpsApBestChi

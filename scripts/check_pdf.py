@@ -42,7 +42,7 @@ SMALL_TEXT_SHARE = 0.08
 # Numbers that are structural rather than measured, and so may appear literally.
 ALLOWED_LITERALS = {
     "0", "1", "2", "3", "4", "5", "10", "12", "20", "60", "100",  # section/percent scaffolding
-    "0.001", "0.002", "0.005", "0.010", "0.05", "0.10", "0.45",  # pre-registered grid levels
+    "0.001", "0.002", "0.005", "0.01", "0.010", "0.05", "0.10", "0.45",  # pre-registered levels
     "0.60",  # the RBF-distinctness screen threshold, fixed in configs/default.yaml
     "90",  # the PSD2 SCA-RTS rolling window, in days
     "431",  # sites in the full-scale chain, i.e. the feature count
@@ -177,11 +177,11 @@ def check_literals(sources: list[Path]) -> list[str]:
             stripped = line.strip()
             if stripped.startswith("%"):
                 continue
-            # Numbers belonging to a cited paper -- an arXiv identifier, a year, a figure
-            # quoted from someone else's results -- cannot resolve to a table here.  They are
-            # declared with \Cited{} in the source and removed before scanning, so the check
-            # stays strict about our own numbers without forbidding citation.
-            cleaned = re.sub(r"\\Cited\{[^}]*\}", " ", stripped)
+            # Numbers that cannot resolve to a table in this repository: a cited paper's
+            # results (\Cited) and the author's own biographical record (\Record).  Both are
+            # declared in the source and removed before scanning, so the check stays strict
+            # about this study's measurements without forbidding either.
+            cleaned = re.sub(r"\\(?:Cited|Record)\{[^}]*\}", " ", stripped)
             # Then strip LaTeX control sequences: \ClaimFoo, \section, lengths like 10mm,
             # and label/ref arguments all legitimately contain digits.
             cleaned = re.sub(r"\\[A-Za-z]+", " ", cleaned)
