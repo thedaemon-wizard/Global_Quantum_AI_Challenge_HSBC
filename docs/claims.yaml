@@ -68,7 +68,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 38
+    value: 41
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -468,6 +468,54 @@ claims:
     note: >
       Count-weighted fraud rate on the test block, as a percentage.  Quoted where the choice
       of average precision over ROC AUC is justified by the class balance.
+
+  # ---------------------------------------------- full-scale sweep, seed-replicated (D-040)
+  - key: SweepSeedSpread
+    value: 0.1781
+    source: results/tables/mps_seed_sweep_summary.csv
+    reduce: {op: max, column: ap_seed_spread}
+    tolerance: 0.00005
+    note: >
+      Largest average-precision spread across four seeds at a FIXED bond dimension, over the
+      sixteen-job sweep.  Compare SweepChiSpread.
+
+  - key: SweepChiSpread
+    value: 0.0629
+    source: results/tables/mps_seed_sweep_summary.csv
+    reduce: {op: max, column: ap_across_chi_spread}
+    tolerance: 0.00005
+    note: >
+      Spread of the seed MEANS across bond dimension.  It is 2.8 times smaller than the
+      within-configuration seed spread, so capacity is not resolvable at full scale even with
+      replication -- which settles D-038's withdrawal at every bond dimension rather than one.
+
+  - key: SweepStalled
+    value: 2
+    source: results/tables/mps_seed_sweep_summary.csv
+    reduce: {op: sum_values, column: n_stalled}
+    tolerance: 0
+    note: >
+      Fits that never left chance, out of sixteen.  Both at seed 20260831, at different bond
+      dimensions.  They are on the sequential fold, which is the stable contraction path, so
+      this is a property of the ansatz rather than of the D-036 reduction tree.
+
+  - key: SweepBestAp
+    value: 0.2512
+    source: results/tables/mps_seed_sweep.csv
+    reduce: {op: max, column: average_precision}
+    tolerance: 0.00005
+    note: >
+      The best of sixteen full-scale draws.  Quoted as the ceiling of what the arm achieved,
+      not as a result: the seed spread exceeds the spread across bond dimension, so it is one
+      draw rather than a property of a configuration.
+
+  - key: SweepJobs
+    value: 16
+    source: results/tables/mps_seed_sweep_summary.csv
+    reduce: {op: sum_values, column: n_seeds}
+    tolerance: 0
+    note: >
+      Full-scale fits in the sweep: four bond dimensions at four seeds each.
 
   # ----------------------------------------------------------------------------- power grid
   - key: PowerSeCrossFamily

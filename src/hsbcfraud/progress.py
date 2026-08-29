@@ -411,6 +411,24 @@ class DivergenceWatch:
 
     It warns; it does not stop.  Abandoning a forty-six-minute job is the caller's decision,
     and a watchdog that halts on a heuristic would eventually discard a good run.
+
+    **This has been validated on synthetic traces only, and it does not transfer.**  Measured
+    across sixteen real full-scale fits, two of which failed to train: the detector warned on
+    ten of sixteen, catching one of the two failures and firing on nine of the fourteen healthy
+    runs -- 50 per cent sensitivity at a 64 per cent false-positive rate.
+
+    The cause is not a threshold.  It is the premise.  The design assumes a failing run shows
+    *elevated* gradients; on this model the two that failed had a median gradient norm of 0.81
+    against 10.69 for the healthy ones.  The failure mode is the run going **quiet**, not loud,
+    and no threshold on elevation can detect a signal that moves the other way.
+
+    So the gradient path is retained for the failure it was built against -- a loss growing
+    towards non-finite, which the pre-clip norm does lead -- and is **not** a detector for a
+    fit that stops learning.  What separates those two groups is the evaluation metric: the
+    failed fits had a falling AUC while every healthy one rose.  ``fit_mps`` takes an
+    ``evaluate`` callback for that reason and every long-running caller must pass it.  With two
+    positives in sixteen runs there is not enough evidence to calibrate an early rule, and
+    tuning one on two examples would be fitting noise.  See ``docs/decisions.md`` D-040.
     """
 
     def __init__(

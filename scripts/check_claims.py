@@ -83,6 +83,9 @@ def resolve(claim: dict[str, Any]) -> float:
             subset = frame[frame[reduce_spec["where"]].astype(bool)]
             left, right = reduce_spec["columns"]
             return float((subset[left] - subset[right]).min())
+        if op == "sum_values":
+            # Numeric sum, distinct from "sum" which counts truthy rows.
+            return float(frame[reduce_spec["column"]].sum())
         if op == "median":
             return float(frame[reduce_spec["column"]].median())
         if op == "max_ratio":

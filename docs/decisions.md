@@ -1082,3 +1082,66 @@ Its fit took 3,072 s against the committed 2,765 s, an 11 % inflation from docum
 test runs sharing the device. The metrics are unaffected; the timing is not, which is why
 `require_idle_gpu` refuses to start a fresh sweep against a busy device and why the same
 discipline should apply to anything else running alongside one.
+
+### D-040 The divergence detector watches the wrong direction, and the sweep says why
+
+The seed-replicated sweep -- sixteen full-scale fits, four bond dimensions at four seeds --
+produced the first real test of `DivergenceWatch`. It failed.
+
+| | |
+|---|---|
+| jobs that warned | 10 of 16 |
+| jobs that actually failed to train | 2 of 16 |
+| failures caught | 1 of 2 |
+| healthy runs warned on | 9 of 14 (64 %) |
+
+The synthetic calibration recorded in D-033 -- zero false alarms across forty healthy traces --
+certified something that does not transfer.
+
+**The cause is the premise, not the threshold.** The detector watches for *elevated* gradient
+norms. Measured over these sixteen runs, the two that failed had a median gradient norm of
+**0.81**; the fourteen that trained had **10.69**. The failure mode is a fit going quiet, not
+loud. No threshold on elevation detects a signal that moves the other way, so there is nothing
+to retune.
+
+The gradient path is therefore kept for the failure it was built against -- a loss growing
+towards non-finite, which the pre-clip norm genuinely does lead by about a hundred steps -- and
+is documented as **not** a detector for a fit that stops learning.
+
+**What does separate them is the evaluation metric.** Both failures show a falling AUC
+(0.6521 to 0.4761 at chi=32 seed 20260831, ending below chance; 0.6896 to 0.5451 at chi=8) while
+all fourteen healthy fits rise into 0.77 to 0.82. An epoch-5 rule on the AUC change gives 2 of 2
+sensitivity at 3 of 14 false positives -- better than the gradient rule but not clean, because
+three healthy runs dip early and recover. With two positives in sixteen runs there is not
+enough evidence to calibrate an early-warning rule, and fitting one to two examples would be
+fitting noise. No rule is added.
+
+That the accuracy probe exists at all is D-039: the sweep was first launched without it, and a
+reader asking where the accuracy column was is the only reason the failure mode is visible
+here rather than an unexplained pair of bad rows.
+
+### D-041 Capacity is not resolvable at full scale, and one fit in eight does not train
+
+Sixteen jobs, contraction width 1, all reported:
+
+| chi | ROC AUC (mean) | AP (mean) | AP range across seeds | stalled |
+|---|---|---|---|---|
+| 4 | 0.8023 | 0.1997 | 0.1442--0.2512 | 0 of 4 |
+| 8 | 0.7301 | 0.1493 | 0.0453--0.2092 | 1 of 4 |
+| 16 | 0.7922 | 0.1985 | 0.1740--0.2464 | 0 of 4 |
+| 32 | 0.7103 | 0.1368 | 0.0497--0.2278 | 1 of 4 |
+
+The largest within-configuration seed spread is **0.1781** average precision; the spread of the
+seed means *across* bond dimension is **0.0629**. Seed noise is 2.8 times the capacity signal,
+so the withdrawal in D-038 -- made from four seeds at one bond dimension -- holds at every bond
+dimension. Replication did not rescue the sweep; it confirmed there was nothing to read.
+
+**Two of sixteen fits never left chance**, both at seed 20260831, at chi = 8 and chi = 32. These
+ran on the sequential fold, the contraction path chosen in D-038 precisely because the reduction
+tree destabilised training. So a 12.5 % failure rate is a property of the ansatz on this data,
+not of the D-036 optimisation. D-038 said "at width 128 two of four failed to train", which
+invited the reading that width 1 is safe. It is not; it fails less often.
+
+The arm's conclusion is unchanged and is now better supported. Every one of the sixteen fits,
+including the best draw at 0.2512, sits far below the tuned gradient-boosted baseline's
+0.5055--0.5114. Which draw is reported does not matter.

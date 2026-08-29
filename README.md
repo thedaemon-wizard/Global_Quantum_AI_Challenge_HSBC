@@ -264,12 +264,38 @@ the tensor network is bounded above by roughly +0.02 AP** at 95 % confidence. Th
 non-superiority bound. It is not evidence of equivalence, and it is not evidence that the
 tensor network is worse.
 
-### 3.8 At full scale, the margin is not close
+### 3.8 At full scale: sixteen fits, no readable capacity signal, two failures
 
-All 431 features, trained on $D_{\mathrm{train}}$ and scored once on $D_{\mathrm{test}}$:
+Four bond dimensions at four seeds each, all 431 features, scored once on $D_{\mathrm{test}}$:
 
-| $\chi$ | ROC AUC | AP | Final loss | Fit (s) |
+| $\chi$ | ROC AUC (mean) | AP (mean) | AP range across seeds | Never left chance |
 |---|---|---|---|---|
+| 4 | 0.8023 | 0.1997 | 0.1442–0.2512 | 0 of 4 |
+| 8 | 0.7301 | 0.1493 | 0.0453–0.2092 | 1 of 4 |
+| 16 | 0.7922 | 0.1985 | 0.1740–0.2464 | 0 of 4 |
+| 32 | 0.7103 | 0.1368 | 0.0497–0.2278 | 1 of 4 |
+| **tuned GBDT** | **0.8851** | **0.5090** | 0.5055–0.5114 | 0 of 5 |
+
+Three things to read.
+
+**The margin is not close.** The best of sixteen draws reaches AP 0.2512 against the
+baseline's 0.5055–0.5114. Every draw loses by a factor of two or more, so which one is
+reported does not matter.
+
+**Capacity is not resolvable.** The largest spread across seeds at one bond dimension is
+0.1781 AP; the spread of the seed means across bond dimension is 0.0629. Seed noise is 2.8
+times the capacity signal. This settles [D-038](docs/decisions.md) at every $\chi$ rather than
+at one, and replication is what established it — an earlier draft read the single-seed
+ordering as though it meant something.
+
+**Two of sixteen fits never trained.** Both at seed 20260831, at $\chi = 8$ and $\chi = 32$,
+on the sequential contraction that [D-038](docs/decisions.md) chose *because* the reduction
+tree destabilised training. A one-in-eight failure rate is a property of the ansatz on this
+data, not of the optimisation. The per-epoch AUC shows the shape: 0.6521 at epoch 1, falling
+to 0.4761 by epoch 30 — below chance. A loss-only log would have shown a flat curve and left
+open whether it was slow learning or none ([D-039](docs/decisions.md), [D-040](docs/decisions.md)).
+
+---|---|---|---|---|
 | 4 | 0.8074 | 0.2149 | 0.3456 | 2765 |
 | 8 | 0.7989 | 0.1789 | 0.3075 | 3071 |
 | 16 | 0.7983 | 0.2464 | 0.3120 | 2840 |

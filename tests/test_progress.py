@@ -128,8 +128,13 @@ def test_estimate_excludes_the_warmup_tick() -> None:
     assert ticks[-1].remaining < 30
 
 
-def test_watch_does_not_warn_on_healthy_runs_that_contain_gradient_spikes() -> None:
-    """Measured: 0 of 40 healthy seeds warn.
+def test_watch_does_not_warn_on_healthy_synthetic_runs_with_gradient_spikes() -> None:
+    """Measured on SYNTHETIC traces: 0 of 40 healthy seeds warn.
+
+    The qualifier is load-bearing and was added after this test certified the wrong thing.
+    On sixteen real full-scale fits the same detector fired on nine of fourteen healthy runs.
+    This test pins the synthetic behaviour, which is all it ever established; the real-data
+    result is in DivergenceWatch's docstring and D-040.
 
     The first design compared the latest gradient norm against its running median. On these
     same traces it warned on 40 of 40 healthy runs at multiples of 5, 10 and 20, because

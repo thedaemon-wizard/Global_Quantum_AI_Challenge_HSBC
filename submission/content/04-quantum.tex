@@ -41,20 +41,26 @@ Table~\ref{tab:mps} gives the sweep.
 
 \input{generated/table-mps}
 
-\paragraph{At full scale it loses by a wider margin, and the margin is all the arm supports.}
-On all 431 features, trained on $\Dtrain$ and scored once on $\Dtest$, the tensor network
-lands between \ClaimMpsFullAucSeedMin{} and \ClaimMpsFullAucSeedMax{} ROC AUC and between
-\ClaimMpsFullApSeedMin{} and \ClaimMpsFullApSeedMax{} average precision across four seeds at
-a fixed bond dimension, against \ClaimGbdtFullAucMin--\ClaimGbdtFullAucMax{} and
-\ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the tuned baseline. Every draw loses by a
-factor of two to three on average precision, which is the metric that matters at a
-\ClaimTestFraudRate\,\% positive rate.
+\paragraph{At full scale it loses by a wider margin, and now with replication behind it.}
+On all 431 features, trained on $\Dtrain$ and scored once on $\Dtest$, across
+\ClaimSweepJobs{} fits --- four bond dimensions at four seeds each --- the tensor network's
+best draw reaches \ClaimSweepBestAp{} average precision against
+\ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the tuned baseline. Every one of the
+\ClaimSweepJobs{} loses by a factor of two or more on the metric that matters at a
+\ClaimTestFraudRate\,\% positive rate, so which draw is reported does not change the
+conclusion.
 
-\textbf{We do not report capacity dependence at full scale, because we cannot resolve it.}
-The spread across those four seeds at one bond dimension is \ClaimMpsFullAucSeedSpread{} ROC
-AUC and \ClaimMpsFullApSeedSpread{} average precision. The spread the sweep shows \emph{across} bond dimension is
-\ClaimMpsFullAucChiSpread{} and \ClaimMpsFullApChiSpread{} --- the same size. A per-configuration reading of that sweep would be reading seed noise, and an
-earlier draft of this paragraph did exactly that by quoting the best of four draws.
+\textbf{Capacity is not resolvable, and replication is how we know.} The largest spread
+across seeds at a fixed bond dimension is \ClaimSweepSeedSpread{} average precision; the
+spread of the seed \emph{means} across bond dimension is \ClaimSweepChiSpread. Seed noise is
+nearly three times the capacity signal. An earlier draft quoted the best of four draws as
+though the ordering meant something --- selection on a maximum from a distribution whose
+spread exceeds the quantity reported.
+
+\textbf{And \ClaimSweepStalled{} of \ClaimSweepJobs{} fits never left chance.} Both at one
+seed, at two different bond dimensions, on the sequential contraction --- the stable path. A
+one-in-eight failure to train is a property of this ansatz on this data, and a reader choosing
+a method for a payment system should be told.
 
 The seed sweep is affordable only because a matrix product state has no qubit ceiling, and
 because its cost turns out not to depend on the bond dimension the way the ansatz suggests:
