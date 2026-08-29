@@ -1053,3 +1053,32 @@ The speedup remains useful for exactly the work that produced this entry. A four
 at the reduced width costs twenty minutes against three and a half hours, and reporting a
 range instead of a point is what the arm needed. It is only unsound to use it for the numbers
 the study reports as its own.
+
+### D-039 A thirteen-hour sweep ran without the metric that exists to catch a degenerate fit
+
+`scripts/run_seed_sweep.py` called `fit_mps` without an `evaluate` callback. It logged elapsed
+time, remaining time, loss, learning rate and both gradient-norm summaries, so the log looked
+complete; it carried no ranking metric.
+
+That is the exact failure `fit_mps`'s own docstring is written against. Two silent defects in
+this classifier (D-026, D-027) produced steadily falling loss with a test AUC of exactly
+0.5000, and the docstring says so: *"a falling loss is not evidence of learning."* The sweep
+was launched anyway, for sixteen jobs at roughly fifty minutes each, in a state where a job
+that stopped depending on its input would have looked healthy for thirteen hours.
+
+Found by a reader asking where the accuracy column was, not by any check in the repository.
+
+Fixed, and pinned: `scripts/run_seed_sweep.py` now passes a stratified per-epoch probe, and
+`tests/test_progress.py::test_every_long_fit_script_supplies_an_evaluation_probe` parses every
+`fit_mps` call in `scripts/` and fails on one without `evaluate`. Intent in a docstring did not
+survive the next script; a test does.
+
+One useful thing came out of the interrupted run. Its single completed job returned
+ROC AUC 0.807439921708344 and average precision 0.2149426770600668 against `mps_full.csv`'s
+0.807439921708344 and 0.2149426770600668 for the same bond dimension and seed -- bit-identical,
+which is the reproduction check the sequential-fold default of D-038 was chosen to preserve.
+
+Its fit took 3,072 s against the committed 2,765 s, an 11 % inflation from document builds and
+test runs sharing the device. The metrics are unaffected; the timing is not, which is why
+`require_idle_gpu` refuses to start a fresh sweep against a busy device and why the same
+discipline should apply to anything else running alongside one.

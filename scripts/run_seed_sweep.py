@@ -81,6 +81,51 @@ def require_idle_gpu() -> None:
         )
 
 
+def progress_probe(x_eval: np.ndarray, y_eval: np.ndarray, n_rows: int, seed: int):
+    """A per-epoch ranking metric on a stratified subsample of the evaluation block.
+
+    Not optional decoration.  ``fit_mps`` reports loss, learning rate and gradient norms, and
+    a falling loss is not evidence of learning: two silent defects in this classifier produced
+    steadily decreasing loss with a test AUC of exactly 0.5000, and only a ranking metric
+    distinguishes "training" from "the contraction stopped depending on the input".  A sweep
+    that runs for thirteen hours without one cannot notice a job degenerating until it ends.
+
+    Stratified because average precision on a 3.4 per cent positive rate is unstable under
+    simple random sampling, and drawn once so the number moves between epochs only when the
+    model does.  A subsample rather than the full block because scoring all 115,534 rows every
+    epoch costs about a ninth of the epoch, against roughly two per cent for this.
+    """
+    if len(np.unique(y_eval)) < 2:
+        raise ValueError("the evaluation block has one class; a ranking metric is undefined")
+    if n_rows <= 0 or n_rows >= len(y_eval):
+        rows = np.arange(len(y_eval))
+    else:
+        rng = np.random.default_rng(seed)
+        positive = np.flatnonzero(y_eval == 1)
+        negative = np.flatnonzero(y_eval == 0)
+        take_positive = max(1, round(n_rows * len(positive) / len(y_eval)))
+        rows = np.concatenate(
+            [
+                rng.choice(positive, size=min(take_positive, len(positive)), replace=False),
+                rng.choice(
+                    negative,
+                    size=min(max(1, n_rows - take_positive), len(negative)),
+                    replace=False,
+                ),
+            ]
+        )
+    x_probe, y_probe = x_eval[rows], y_eval[rows]
+
+    def probe(model) -> dict[str, float]:
+        scored = model.predict_proba(x_probe)
+        return {
+            "auc": float(roc_auc_score(y_probe, scored)),
+            "ap": float(average_precision_score(y_probe, scored)),
+        }
+
+    return probe
+
+
 def prepare(frame: pd.DataFrame, rows: np.ndarray, columns: list[str], scaler):
     numeric = frame.iloc[rows][columns]
     filled = (
@@ -105,6 +150,12 @@ def main(argv: list[str] | None = None) -> int:
         "--seeds", type=int, nargs="*", default=[20260828, 20260829, 20260830, 20260831]
     )
     parser.add_argument("--epochs", type=int, default=30)
+    parser.add_argument(
+        "--eval-rows",
+        type=int,
+        default=20_000,
+        help="stratified rows for the per-epoch ranking metric; 0 uses the whole block",
+    )
     args = parser.parse_args(argv)
 
     require_idle_gpu()
@@ -129,6 +180,7 @@ def main(argv: list[str] | None = None) -> int:
     x_test, _ = prepare(frame, test_rows, columns, scaler)
     y_train, y_test = labels[train_rows], labels[test_rows]
 
+    probe = progress_probe(x_test, y_test, args.eval_rows, cfg.split.seeds[0])
     target = args.out / "mps_seed_sweep.csv"
     rows: list[dict] = []
     jobs = [(chi, seed) for chi in args.bonds for seed in args.seeds]
@@ -154,6 +206,7 @@ def main(argv: list[str] | None = None) -> int:
                         contraction_chunk=CONTRACTION_WIDTH,
                     ),
                     reporter=reporter,
+                    evaluate=probe,
                 )
             elapsed = time.perf_counter() - started
             predicted = model.predict_proba(x_test)

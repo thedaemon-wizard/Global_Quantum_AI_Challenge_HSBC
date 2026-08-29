@@ -292,3 +292,42 @@ def test_run_log_captures_progress_and_warnings_in_one_file(tmp_path) -> None:
     assert "something to record" in text
     # The machine-readable record sits beside the human one, not inside it.
     assert (tmp_path / "unit-phase.jsonl").exists()
+
+
+def test_every_long_fit_script_supplies_an_evaluation_probe() -> None:
+    """A training loop that reports only loss cannot see the failure mode it is watched for.
+
+    Two silent defects in this classifier produced steadily falling loss with a test AUC of
+    exactly 0.5000. ``fit_mps`` therefore takes an ``evaluate`` callback, and its docstring
+    says why -- but ``scripts/run_seed_sweep.py`` was written without one and launched a
+    thirteen-hour job that could not have noticed a degenerate fit until it ended. The
+    omission was invisible because the log still looked healthy: elapsed, remaining, loss,
+    learning rate and gradient norms all present.
+
+    This pins the wiring rather than the intent. Any script that calls ``fit_mps`` for a job
+    long enough to matter must pass ``evaluate``.
+    """
+    import re
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[1]
+    offenders = []
+    for path in sorted((repo / "scripts").glob("*.py")):
+        source = path.read_text(encoding="utf-8")
+        for call in re.finditer(r"fit_mps\(", source):
+            # Take the balanced argument list following the call.
+            depth, index = 0, call.end() - 1
+            while index < len(source):
+                depth += source[index] == "("
+                depth -= source[index] == ")"
+                if depth == 0:
+                    break
+                index += 1
+            arguments = source[call.end() : index]
+            if "evaluate=" not in arguments:
+                line = source[: call.start()].count("\n") + 1
+                offenders.append(f"{path.relative_to(repo)}:{line}")
+    assert not offenders, (
+        "these fit_mps calls report loss without a ranking metric, so a fit that stops "
+        f"depending on its input would look healthy: {offenders}"
+    )
