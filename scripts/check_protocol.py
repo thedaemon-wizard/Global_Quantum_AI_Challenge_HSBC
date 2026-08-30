@@ -170,6 +170,26 @@ def main(argv: list[str] | None = None) -> int:
     locked = json.loads(LEDGER.read_text(encoding="utf-8"))
     if locked["guarantee_hash"] == state_hash:
         print(f"Protocol unchanged. Guarantee hash {state_hash[:16]}, amendments {amendments}")
+        # The hash covers the guarantee-bearing fields and nothing else, so an amendment that
+        # changes no grid leaves it identical.  Five amendments and 1,800 decision lines
+        # accumulated behind a matching hash and this file reported "unchanged" every time,
+        # which left the ledger a reviewer reads saying four amendments against an actual nine.
+        # Not a failure -- no guarantee moved -- but not something to keep silent about either.
+        stale = []
+        if locked["amendments"] != amendments:
+            stale.append(f"amendments {locked['amendments']} recorded, {amendments} present")
+        if locked["decisions_lines"] != decisions_lines:
+            stale.append(
+                f"{locked['decisions_lines']} decision lines recorded, {decisions_lines} present"
+            )
+        if stale:
+            print(
+                f"  {display_path(LEDGER)} is behind the documents it records: "
+                + "; ".join(stale)
+                + ".\n  The guarantee has not moved, so this is bookkeeping: re-freeze with "
+                "--freeze.",
+                file=sys.stderr,
+            )
         return 0
 
     # The state moved.  That is allowed, but only alongside a documented amendment.

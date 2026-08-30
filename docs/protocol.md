@@ -473,9 +473,11 @@ the quoted figure resolves to the strictest ceiling it is used to discuss.
 
 The reason is not that the model is weak. The PSD2 reference rates govern a payment service
 provider's **entire remote card portfolio**, which is overwhelmingly ordinary traffic.
-IEEE-CIS is a fraud-detection benchmark assembled by sampling for fraud density: at a
-5.554 % value-weighted fraud rate it sits roughly forty times above the loosest ceiling
-before any model is applied. A portfolio-level threshold cannot be applied to an enriched
+IEEE-CIS is a fraud-detection benchmark assembled by sampling for fraud density: `D_band`,
+the block the table above measures, sits at a 5.554 % value-weighted fraud rate, roughly
+forty times above the loosest ceiling before any model is applied. Over all four temporal
+blocks the file is 3.867 %, still an order of magnitude above it; the block figure is quoted
+because it is the one the ceiling would have been applied to. A portfolio-level threshold cannot be applied to an enriched
 sample and read as an operating constraint.
 
 **What replaces it.** The operating point is the highest threshold whose decline rate stays

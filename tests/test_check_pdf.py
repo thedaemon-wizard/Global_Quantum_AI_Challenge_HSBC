@@ -169,14 +169,32 @@ def test_a_badly_overfull_line_is_caught(tmp_path) -> None:
 
 
 def test_ordinary_typesetting_slack_is_not_a_defect(tmp_path) -> None:
-    """A long inline equation overhangs by a few points and stays entirely readable.
+    """A hair of overhang is typesetting slack and stays entirely readable.
 
-    A gate that fired on those would be switched off rather than satisfied.
+    A gate that fired on those would be switched off rather than satisfied. "A few points" is
+    the standard; this test used to assert it of 46.9 pt, and the test below records what
+    46.9 pt actually did to page 4.
+    """
+    pdf = _log_with(
+        tmp_path, "Overfull \\hbox (3.2pt too wide) in paragraph at lines 26--32\n"
+    )
+    assert check_pdf.check_overfull(pdf) == []
+
+
+def test_the_overhang_that_reached_the_margin_is_caught(tmp_path) -> None:
+    """46.9 pt was certified by this gate and put text 15.5 mm into an 18 mm margin.
+
+    It shipped, and a human reading the PDF found it rather than this file. The tolerance was
+    60 pt because it had been set to catch a 146 pt clipped URL, and a threshold calibrated for
+    a catastrophe cannot enforce quality. Pinned here so that raising the tolerance back means
+    deleting a test that says what happened the last time it was that high.
     """
     pdf = _log_with(
         tmp_path, "Overfull \\hbox (46.9pt too wide) in paragraph at lines 26--32\n"
     )
-    assert check_pdf.check_overfull(pdf) == []
+    problems = check_pdf.check_overfull(pdf)
+    assert len(problems) == 1
+    assert "47 pt" in problems[0]
 
 
 def test_a_clean_log_passes(tmp_path) -> None:

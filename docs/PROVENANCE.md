@@ -64,7 +64,7 @@ No result here extrapolates to the declined population.
 | Source | Machine Learning Group, Université Libre de Bruxelles |
 | Licence | Two-layer: the **database** under ODbL, its **contents** under DbCL v1.0. Share-alike applies to a derived database; not redistributed here. |
 | In this repository | **Not present, and not reconstructible from this repository.** There is no fetch script; the file was never downloaded to this machine, which is why E15 was not run. Obtain it from the source above if you want to reproduce the stress case. |
-| Role | Stress case only. Its fraud-conditional quantile is degenerate at `alpha = 1e-2` (roughly 98 calibration frauds against the 99 required by the floor `(1/alpha) - 1`), which is precisely why IEEE-CIS is primary. |
+| Role | Stress case only, and **withdrawn** by amendment A9. The figure previously quoted here -- roughly 98 calibration frauds against the 99 the floor `(1/alpha) - 1` requires -- did not follow from this protocol's own split fractions, and was withdrawn rather than recomputed because replacing it would assert a measurement never made. The degeneracy argument it was to support is made directly on IEEE-CIS instead. |
 
 ### 1.3 Sparkov
 
@@ -148,5 +148,6 @@ launch.
 
 `make smoke` asserts the interpreter version, the torch build, the reachable architectures,
 the Aer device, the pandas copy-on-write behaviour and the dataset identity before any
-experiment runs. Three of its nine checks are optional and are reported as skipped rather than
-silently passing.
+experiment runs. Two of its nine checks may skip, and only for a reason the run proves on the
+host: the Aer GPU cross-check when cuQuantum is absent, and the ULB split feasibility when that
+file is not present. On this machine eight pass and S7 skips. Any other skip is a failure.

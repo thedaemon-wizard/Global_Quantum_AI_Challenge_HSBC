@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""A matrix-product-state classifier, trained by gradient descent on the RTX 6000.
+"""A matrix-product-state classifier, trained by gradient descent on the RTX PRO 6000.
 
 What this is, and what it is not
 --------------------------------

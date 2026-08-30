@@ -46,6 +46,7 @@ from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.data.splits import temporal_blocks
 from hsbcfraud.features.engineering import add_entity_aggregates, add_uid, select_model_columns
+from hsbcfraud.progress import SweepTimer, run_log
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -95,6 +96,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--zip", type=Path, default=REPO / "datasets" / IEEE_CIS_ZIP)
     parser.add_argument("--out", type=Path, default=REPO / "results" / "tables")
+    parser.add_argument("--runs", type=Path, default=REPO / "results" / "runs")
     parser.add_argument("--seeds", type=int, nargs="*", default=None)
     args = parser.parse_args(argv)
 
@@ -114,16 +116,22 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     rows: list[dict] = []
-    for name, build in variants.items():
-        frame = build(base)
-        features = select_model_columns(frame)
-        for seed in seeds:
-            result = fit_and_score(frame, features, blocks, seed)
-            rows.append({"variant": name, "seed": seed, "arm": "temporal", **result})
-            print(
-                f"  {name:24s} seed {seed} features {result['n_features']:3d} "
-                f"AUC {result['roc_auc']:.4f} AP {result['average_precision']:.4f}"
-            )
+    sweep = SweepTimer(len(variants) * len(seeds))
+    with run_log("ablations", directory=args.runs) as run:
+        run.info(f"{len(variants)} variants x {len(seeds)} seeds on the temporal arm")
+        for name, build in variants.items():
+            frame = build(base)
+            features = select_model_columns(frame)
+            for seed in seeds:
+                started = time.perf_counter()
+                result = fit_and_score(frame, features, blocks, seed)
+                sweep.record(time.perf_counter() - started)
+                rows.append({"variant": name, "seed": seed, "arm": "temporal", **result})
+                run.info(
+                    f"  {name:24s} seed {seed} features {result['n_features']:3d} "
+                    f"AUC {result['roc_auc']:.4f} AP {result['average_precision']:.4f} "
+                    f"-- {sweep.summary()}"
+                )
 
     table = pd.DataFrame(rows)
     args.out.mkdir(parents=True, exist_ok=True)

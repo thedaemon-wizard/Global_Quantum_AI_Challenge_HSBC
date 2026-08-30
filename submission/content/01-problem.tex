@@ -6,11 +6,14 @@ challenge the cardholder through 3-D Secure. The middle one is what makes the pr
 at scale --- routing even one percent of authorisation volume to human analysts is not
 operationally possible, while a step-up challenge is. Fraud models are reported by AUC or
 average precision; neither is a statement about a decision, and neither carries a finite-sample
-guarantee. Conformal methods reach this problem closely ---
-\Cited{Singh et al.} pair class-conditional prediction with cost-controlled abstention, and
-\Cited{Zhu et al.} certify a false-negative rate on card fraud --- but neither conditions the
-guarantee on the abstention region it routes to, nor evaluates it under a split that orders
-time. Both are what this submission adds, and the second turns out to matter.
+guarantee. Conformal methods reach this problem closely --- \Cited{Singh et al.} pair
+class-conditional prediction with cost-controlled abstention, \Cited{Zhu et al.} certify a
+false-negative rate on card fraud, \Cited{Nayak and Bushara} report a fraud objective their
+own paper calls conformal-style rather than a finite-sample guarantee, and
+\Cited{Chen et al.} carry the temporal case to a graph model --- but none conditions the
+guarantee on the abstention region it routes to, and those that do order time certify a
+prediction set rather than a decision. Both are what this submission adds, and the second
+turns out to matter.
 
 \textbf{What we contribute.} A three-valued rule whose \emph{abstention band} carries a
 distribution-free, finite-sample risk certificate under a pre-registration frozen before any

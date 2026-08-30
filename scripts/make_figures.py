@@ -61,44 +61,137 @@ def architecture_figure(tables: Path) -> Figure:
     scale 1.0; authoring wider and letting LaTeX shrink is what drives figure labels under the
     document's 10 pt floor.
     """
-    frame = pd.read_csv(tables / "splits.csv")
-    temporal = frame[frame["arm"] == "temporal"].set_index("block")
-
-    blocks = [
-        ("train", "fits the scorer $f$", False),
-        ("band", "sets the band edges\nand every threshold", True),
-        ("cal", "certifies $\\lambda$", True),
-        ("test", "read once; nothing\nis selected here", False),
-    ]
-
     figure = plt.figure(figsize=(TEXT_WIDTH_IN, 1.24))
     axis = figure.add_axes([0.005, 0.02, 0.99, 0.84])
     axis.set_xlim(0, 100)
     axis.set_ylim(0, 10)
     axis.axis("off")
-
-    width, gap = 22.3, 2.9
-    for index, (name, role, carries) in enumerate(blocks):
-        row = temporal.loc[name]
-        x = index * (width + gap)
-        axis.add_patch(
-            plt.Rectangle((x, 1.6), width, 6.9, facecolor=INSIDE if carries else NEUTRAL,
-                          edgecolor=REFERENCE, linewidth=0.9)
-        )
-        ink = "white" if carries else "black"
-        axis.text(x + width / 2, 7.15, f"$D_{{\\mathrm{{{name}}}}}$   {int(row['n_rows']):,}",
-                  ha="center", va="center", fontsize=10.5, color=ink, fontweight="bold")
-        axis.text(x + width / 2, 4.35, role, ha="center", va="center", fontsize=9.5,
-                  color=ink, linespacing=1.35)
-        axis.text(x + width / 2, 2.25, f"days {int(row['day_first'])}-{int(row['day_last'])}",
-                  ha="center", va="center", fontsize=9, color=ink)
-        if index < len(blocks) - 1:
-            axis.annotate("", xy=(x + width + gap, 5.0), xytext=(x + width, 5.0),
-                          arrowprops={"arrowstyle": "-|>", "color": REFERENCE, "linewidth": 1.1,
-                                      "shrinkA": 0, "shrinkB": 0})
+    draw_split_row(axis, tables, bottom=1.6, height=6.9)
     axis.text(50, 9.6, "time, forward only --- blocks are contiguous and never shuffled",
               ha="center", va="center", fontsize=9.2, color=REFERENCE)
     return figure, "architecture"
+
+
+# What each block is allowed to touch.  Shared by both figures that draw the split, because two
+# pictures of the same four blocks disagreeing with each other would be worse than one picture.
+SPLIT_BLOCKS = (
+    ("train", "fits the scorer $f$", False),
+    ("band", "sets the band edges\nand every threshold", True),
+    ("cal", "certifies $\\lambda$", True),
+    ("test", "read once; nothing\nis selected here", False),
+)
+
+
+def draw_split_row(axis, tables: Path, *, bottom: float, height: float) -> None:
+    """Draw the four-block split across ``axis`` in a 0-100 x-range, arrows between blocks.
+
+    Counts and day ranges come from ``splits.csv`` on every call, so neither figure can carry a
+    typed number and the two cannot drift apart from each other.
+    """
+    frame = pd.read_csv(tables / "splits.csv")
+    temporal = frame[frame["arm"] == "temporal"].set_index("block")
+
+    width, gap = 22.3, 2.9
+    middle = bottom + height / 2
+    for index, (name, role, carries) in enumerate(SPLIT_BLOCKS):
+        row = temporal.loc[name]
+        x = index * (width + gap)
+        axis.add_patch(
+            plt.Rectangle((x, bottom), width, height,
+                          facecolor=INSIDE if carries else NEUTRAL,
+                          edgecolor=REFERENCE, linewidth=0.9)
+        )
+        ink = "white" if carries else "black"
+        axis.text(x + width / 2, bottom + height * 0.80,
+                  f"$D_{{\\mathrm{{{name}}}}}$   {int(row['n_rows']):,}",
+                  ha="center", va="center", fontsize=10.5, color=ink, fontweight="bold")
+        axis.text(x + width / 2, bottom + height * 0.40, role, ha="center", va="center",
+                  fontsize=9.5, color=ink, linespacing=1.35)
+        axis.text(x + width / 2, bottom + height * 0.09,
+                  f"days {int(row['day_first'])}-{int(row['day_last'])}",
+                  ha="center", va="center", fontsize=9, color=ink)
+        if index < len(SPLIT_BLOCKS) - 1:
+            axis.annotate("", xy=(x + width + gap, middle), xytext=(x + width, middle),
+                          arrowprops={"arrowstyle": "-|>", "color": REFERENCE, "linewidth": 1.1,
+                                      "shrinkA": 0, "shrinkB": 0})
+
+
+def overview_figure(tables: Path) -> Figure:
+    """The whole picture for the README: the split above, the decision it produces below.
+
+    The proposal has six pages and its version of this had to drop the decision flow.  The
+    README has no page limit, so the two halves sit together -- which is the only place a
+    reader can see that the blocks exist *in order to* license the middle branch, rather than
+    as a data-handling convention that happens to precede it.
+    """
+    figure = plt.figure(figsize=(TEXT_WIDTH_IN, 3.5))
+    axis = figure.add_axes([0.005, 0.01, 0.99, 0.98])
+    axis.set_xlim(0, 100)
+    axis.set_ylim(0, 100)
+    axis.axis("off")
+
+    axis.text(50, 98, "time, forward only --- blocks are contiguous and never shuffled",
+              ha="center", va="center", fontsize=9.2, color=REFERENCE)
+    draw_split_row(axis, tables, bottom=74, height=21)
+
+    # A rail under the whole row, so the connector reads as "the split, all of it" rather than
+    # as an arrow leaving D_cal -- which is what a single line dropped at x=50 looked like.
+    axis.plot([11, 89], [71.5, 71.5], color=REFERENCE, linewidth=1.0)
+    axis.annotate("", xy=(50, 66), xytext=(50, 71.5),
+                  arrowprops={"arrowstyle": "-|>", "color": REFERENCE, "linewidth": 1.1,
+                              "shrinkA": 0, "shrinkB": 0})
+    axis.text(51.5, 68.6, "the split licenses the rule below", ha="left", va="center",
+              fontsize=9, color=REFERENCE)
+
+    # One authorisation, left to right: score it, then act on where the score falls.
+    axis.add_patch(plt.Rectangle((4, 52), 24, 13, facecolor=NEUTRAL,
+                                 edgecolor=REFERENCE, linewidth=0.9))
+    axis.text(16, 58.5, "one authorisation $x$", ha="center", va="center", fontsize=10)
+    axis.annotate("", xy=(34, 58.5), xytext=(28, 58.5),
+                  arrowprops={"arrowstyle": "-|>", "color": REFERENCE, "linewidth": 1.1,
+                              "shrinkA": 0, "shrinkB": 0})
+    axis.add_patch(plt.Rectangle((34, 52), 32, 13, facecolor=NEUTRAL,
+                                 edgecolor=REFERENCE, linewidth=0.9))
+    axis.text(50, 58.5, "scorer $f$ on $D_{\\mathrm{train}}$: $s = f(x)$", ha="center",
+              va="center", fontsize=10)
+
+    # The three branches fan from the SCORE, not from the transaction: an arrow leaving the
+    # input box would say "one authorisation, therefore approve", which means nothing.
+    centres = (16, 50, 84)
+    axis.annotate("", xy=(50, 46), xytext=(50, 51.6),
+                  arrowprops={"arrowstyle": "-", "color": REFERENCE, "linewidth": 1.1,
+                              "shrinkA": 0, "shrinkB": 0})
+    axis.plot([centres[0], centres[-1]], [46, 46], color=REFERENCE, linewidth=1.0)
+
+    branches = (
+        (4, 24, NEUTRAL, "black", "approve", "$s < \\tau_{\\mathrm{lo}}$"),
+        (30, 40, INSIDE, "white", "abstention band $B$", "$\\tau_{\\mathrm{lo}} \\leq s "
+         "< \\tau_{\\mathrm{hi}}$"),
+        (72, 24, NEUTRAL, "black", "decline", "$s \\geq \\tau_{\\mathrm{hi}}$"),
+    )
+    for centre, (x, width, fill, ink, label, rule) in zip(centres, branches, strict=True):
+        axis.annotate("", xy=(centre, 39), xytext=(centre, 46),
+                      arrowprops={"arrowstyle": "-|>", "color": REFERENCE, "linewidth": 1.1,
+                                  "shrinkA": 0, "shrinkB": 0})
+        axis.text(centre + 1.5, 42.5, rule, ha="left", va="center", fontsize=9.5,
+                  color=REFERENCE)
+        axis.add_patch(plt.Rectangle((x, 26), width, 13, facecolor=fill,
+                                     edgecolor=REFERENCE, linewidth=0.9))
+        axis.text(x + width / 2, 32.5, label, ha="center", va="center", fontsize=10,
+                  color=ink, fontweight="bold")
+
+    axis.annotate("", xy=(50, 13), xytext=(50, 25.6),
+                  arrowprops={"arrowstyle": "-|>", "color": REFERENCE, "linewidth": 1.1,
+                              "shrinkA": 0, "shrinkB": 0})
+    # Wide enough for its own caption: at 40 units the certified-threshold line overhung the
+    # box on both sides, which is the one defect in a diagram that no test catches.
+    axis.add_patch(plt.Rectangle((21, 0), 58, 13, facecolor="white",
+                                 edgecolor=INSIDE, linewidth=1.3))
+    axis.text(50, 8.6, "in-band rule $g$, threshold $\\lambda$ certified on $D_{\\mathrm{cal}}$",
+              ha="center", va="center", fontsize=10)
+    axis.text(50, 3.4, "challenge through 3-D Secure, or approve", ha="center", va="center",
+              fontsize=10, color=REFERENCE)
+    return figure, "overview"
 
 
 def coverage_figure(tables: Path) -> Figure:
@@ -219,7 +312,13 @@ def tradeoff_figure(tables: Path) -> Figure:
 # what GitHub renders in the README and what the portal accepts as an upload.  Producing them
 # from the same figure object is what stops the two from ever showing different numbers -- the
 # failure this whole script exists to prevent, one level up.
-FORMATS = ((".pdf", {}), (".png", {"dpi": 200}))
+#
+# ``CreationDate: None`` omits the timestamp matplotlib otherwise stamps into every PDF.  Without
+# it two consecutive runs of this script produce different bytes for identical pictures, and
+# ``scripts/freeze.py`` classifies figures as scientific artefacts that must be bit-identical --
+# so every rebuild reported eleven artefacts as changed, which teaches a reader to re-freeze
+# without reading the list.  A reproducibility check that always fires checks nothing.
+FORMATS = ((".pdf", {"metadata": {"CreationDate": None}}), (".png", {"dpi": 200}))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -229,7 +328,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     args.out.mkdir(parents=True, exist_ok=True)
-    for builder in (architecture_figure, coverage_figure, mps_figure, tradeoff_figure):
+    for builder in (architecture_figure, overview_figure, coverage_figure, mps_figure,
+                    tradeoff_figure):
         figure, stem = builder(args.tables)
         for suffix, options in FORMATS:
             target = args.out / f"{stem}{suffix}"

@@ -55,10 +55,9 @@ tables:
     source: results/tables/coverage_seed_summary.csv
     caption: >
       Coverage across five seeds per arm and level, judged against the exact Beta-Binomial
-      interval.  This replaces a single-split table whose temporal ratio at $\alpha = 0.01$
-      was the across-seed \emph{maximum} rather than its centre, and which described the
-      card-disjoint arm as inside the interval at every level.  The temporal arm breaches on
-      every seed at the two loosest levels; the stratified arm breaches on none at any level.
+      interval.  It replaces a single-split table that reported an across-seed maximum as a
+      centre; the appendix records that retraction.  The temporal arm breaches on every seed
+      at the two loosest levels; the stratified arm breaches on none at any level.
     label: tab:coverageseeds
     align: lrrrl
     rows:
@@ -81,12 +80,9 @@ tables:
     source: results/tables/split_arm_baselines.csv
     caption: >
       The same gradient-boosted model, the same hyperparameters, five seeds, evaluated on the
-      test block of three different splits.  A stratified random split inflates average
-      precision by 0.316 over a forward holdout, with non-overlapping ranges.  This is the
-      cleanest evidence in the study that a random split does not measure what a deployed
-      fraud model faces. It is one model on one file, so it establishes the size of the effect
-      here rather than a general rule, and it costs nothing to obtain: it is the control arm of
-      the split design, not an extra experiment.
+      test block of three different splits.  One model on one file, so it establishes the size
+      of the effect here rather than a general rule, and it is the control arm of the split
+      design rather than an extra experiment.
     label: tab:splitarm
     align: lrrr
     rows:

@@ -55,7 +55,7 @@ understood but satisfying it depends on something outside this repository.
 | C4 | §4.1 Report **precision** | met | appendix §A4 |
 | C5 | §4.1 Report **recall** | met | appendix §A4 |
 | C6 | §4.1 Report a **confusion matrix** | met | appendix §A4 |
-| C7 | §4.1 Benchmark against published results and report comparison methodology | met | proposal §3 compares against the 1st-place ROC AUC 0.9459 and states that it is a time-based cross-validation against this study's forward holdout |
+| C7 | §4.1 Benchmark against published results and report comparison methodology | met | proposal §3 gives the 1st-place IEEE-CIS solution both ways -- ROC AUC 0.9459 on the private leaderboard and about 0.9363 in time-based cross-validation over the training file -- against this study's strict forward holdout of that training file, and names the difference in task |
 | C8 | §5.2 Output: fraud probability | met | continuous score, `scores_*.parquet` |
 | C9 | §5.2 Output: binary prediction | met | thresholded, appendix §A4 |
 | C10 | §5.2 Output: **feature attribution** | met | `attribution.csv` and `attribution_examples.csv`, TreeSHAP with an asserted additivity check; proposal §5 reports the finding — [D-048](decisions.md) |
@@ -83,7 +83,7 @@ artefact a reviewer receives and nothing else checks them.
 | P2 | Deliverables names each uploaded file, its format and its contents | met | §1 table, five rows |
 | P3 | Supporting documents are linked rather than inlined, so the README stays readable | met | every `.md` in `docs/` is linked from README §1 — asserted as a property rather than a count, because the count drifted once already |
 | P4 | Development environment and measured benchmark cost are recorded | met | [ENVIRONMENT.md](ENVIRONMENT.md): hardware, pinned versions, wall clock per stage, circuit depth |
-| P5 | Results are shown as tables and figures, with LaTeX/MathJax notation for the mathematics | met | README §3 and §4; `$R(\lambda)$`, `$\alpha_{\mathrm{FN}}$` and the Beta-Binomial law render as mathematics |
+| P5 | Results are shown as tables and figures, with LaTeX/MathJax notation for the mathematics | met | README §2 carries the overview figure, §4 the certificate and §5 the three result figures, with every table in [RESULTS.md](RESULTS.md); `$R(\lambda)$`, `$\alpha_{\mathrm{FN}}$` and the Beta-Binomial law render as mathematics |
 | P6 | No emoji or decorative characters in any document or source file | met | scanned across `*.md`, `*.tex`, `*.py`, `*.yaml`, `Makefile` |
 | P7 | No mention of an AI assistant where the project does not require it | met | D-037 was rewritten as a methodological entry; nothing else in the tree mentions one |
 | P8 | Git history carries no assistant attribution | met | two human authors, no `Co-authored-by` trailer anywhere in the history (32 commits when checked, 2026-08-30) |

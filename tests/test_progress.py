@@ -8,9 +8,11 @@ after a first design failed: see ``DivergenceWatch`` and the tests below.
 
 from __future__ import annotations
 
+import ast
 import io
 import json
 import math
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -335,4 +337,48 @@ def test_every_long_fit_script_supplies_an_evaluation_probe() -> None:
     assert not offenders, (
         "these fit_mps calls report loss without a ranking metric, so a fit that stops "
         f"depending on its input would look healthy: {offenders}"
+    )
+
+
+# --- the wiring, not the mechanism -------------------------------------------------------
+#
+# The telemetry in this module was written, tested, and then not used: a seed sweep called
+# `fit_mps` without a reporter and ran silently for hours.  `run_log` shortened the wired-up
+# path so that would stop happening, and it stopped happening in the script it was written
+# for.  The other long scripts stayed silent, because nothing checked.  This does.
+
+REPO = Path(__file__).resolve().parents[1]
+
+# A script that reads IEEE-CIS fits models on 590,540 rows; there is no such script that
+# finishes fast enough to watch.  Named explicitly rather than discovered, so that adding one
+# is a decision someone makes rather than a default someone inherits.
+LONG_RUNNING_SCRIPTS = (
+    "run_baselines.py",
+    "run_ablations.py",
+    "run_seed_sweep.py",
+    "run_mps.py",
+    "measure_latency.py",
+)
+
+
+@pytest.mark.parametrize("name", LONG_RUNNING_SCRIPTS)
+def test_a_long_script_opens_a_progress_destination(name: str) -> None:
+    """Every script that loads the full file must report progress somewhere durable.
+
+    `run_log` and `ProgressReporter` are both acceptable: the first gives a file plus stdout,
+    the second gives a JSONL trace, and `run_mps` and `measure_latency` use the second
+    directly.  What is not acceptable is neither, which is what `run_baselines.py` and
+    `run_ablations.py` had -- 13 minutes and 4 minutes of fitting behind a `print` that fires
+    only once a model is already finished.
+    """
+    source = (REPO / "scripts" / name).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    called = {
+        node.func.id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+    assert called & {"run_log", "ProgressReporter"}, (
+        f"scripts/{name} loads IEEE-CIS and opens no progress destination. Wrap its main loop "
+        f"in hsbcfraud.progress.run_log, which writes to results/runs/ and to stdout."
     )

@@ -47,6 +47,7 @@ REPO = Path(__file__).resolve().parents[1]
 # legitimately mention a neighbouring one in its annotation.
 CITED_DOCUMENTS = (
     "README.md",
+    "docs/RESULTS.md",
     "docs/protocol.md",
     "docs/decisions.md",
     "docs/PROVENANCE.md",
@@ -62,7 +63,15 @@ CLAIM_MACRO_CONSUMERS = ("submission/content/*.tex",)
 # docs/decisions.md is deliberately NOT here. It is a historical log and quotes superseded
 # figures on purpose, so matching against it would mark a retracted claim as live -- which is
 # the exact failure this check exists to catch.
-CLAIM_TEXT_CONSUMERS = ("README.md", "docs/PROVENANCE.md", "docs/protocol.md")
+# docs/RESULTS.md is here because the README's results section moved into it: a list of
+# documents to scan is a list that goes stale the moment one is added, and this one did --
+# splitting the README out reported a live figure as a dead claim within the same hour.
+CLAIM_TEXT_CONSUMERS = (
+    "README.md",
+    "docs/RESULTS.md",
+    "docs/PROVENANCE.md",
+    "docs/protocol.md",
+)
 
 
 class ClaimError(Exception):

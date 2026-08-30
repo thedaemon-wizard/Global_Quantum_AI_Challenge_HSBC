@@ -22,7 +22,7 @@ in-process sampler under-reported peak usage, because Aer holds the GIL and the 
 thread got two scheduling ticks across the whole run. The measurement now streams from an
 \texttt{nvidia-smi} subprocess and is cross-checked against Aer's own result metadata.
 
-\paragraph{Every number in both documents is generated.} \texttt{docs/claims.yaml} binds each
+\paragraph{Every measured number in both documents is generated.} \texttt{docs/claims.yaml} binds each
 quoted figure to a table row; \texttt{scripts/check\_claims.py} recomputes all of them from
 \texttt{results/tables/*.csv}; \texttt{scripts/make\_tex.py} emits them as macros and renders
 the results tables from the same CSVs. \texttt{scripts/check\_pdf.py} then asserts page count,

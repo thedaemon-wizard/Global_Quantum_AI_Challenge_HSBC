@@ -76,9 +76,10 @@ count, and `scripts/check_protocol.py` hashes every guarantee-bearing parameter.
 
 ## 4. Golden values
 
-The five configurations that certify, out of 48 pre-registered. Every certified configuration
-sits at the loosest missed-fraud budget, so it is $\alpha_{\mathrm{FN}}$ that selects among
-them. Source: [`riskcontrol.csv`](../results/tables/riskcontrol.csv).
+The five configurations that certify, out of 48 pre-registered. All five sit at the loosest
+missed-fraud budget, $\alpha_{\mathrm{FN}} = 0.45$ --- which is therefore a necessary condition
+for certifying rather than what distinguishes the five from each other; band budget and $\alpha$
+do that. Source: [`riskcontrol.csv`](../results/tables/riskcontrol.csv).
 
 | Band budget | $\alpha$ | $\alpha_{\mathrm{FN}}$ | Band $[\tau_{\mathrm{lo}}, \tau_{\mathrm{hi}})$ | In-band legit. cal. rows | $\hat\lambda$ |
 |---|---|---|---|---|---|

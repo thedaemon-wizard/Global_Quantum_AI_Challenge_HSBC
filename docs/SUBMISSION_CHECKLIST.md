@@ -27,7 +27,7 @@ These are the items whose failure would make the submission wrong rather than in
 | `[x]` | Long runs report progress, and the log is readable while the run continues | `pytest tests/test_progress.py` | [D-033](decisions.md) |
 | `[x]` | An exploratory run cannot overwrite a pre-registered result table | non-default arguments divert to `results/runs/exploratory/` | [D-034](decisions.md) |
 | `[x]` | No certified configuration sits at the half-open band boundary, where the flagged set is empty by construction | inspect `selected_lambda` against `band_hi` | `riskcontrol.csv` |
-| `[x]` | `D_test` was evaluated once, for one configuration | `test_access.json` records `evaluations: 1` and one configuration digest | `results/tables/test_access.json` |
+| `[x]` | `D_test` was never used for selection: one authorised configuration, and the guard raises on a second distinct one | `test_access.json` records `evaluations: 1` and one configuration digest; amendment A8 lists the scripts that read the block for reporting outside the guard | `results/tables/test_access.json` |
 | `[x]` | Every number in the proposal prose resolves to a table | `make claims` | `docs/claims.yaml` |
 | `[x]` | No claim is defined and used nowhere | `scripts/check_claims.py --unused` | `docs/claims.yaml` |
 | `[x]` | Every citation in the documents resolves to an entry in [REFERENCES.md](REFERENCES.md) | `scripts/check_claims.py --citations` | [REFERENCE_CROSSCHECK.md](REFERENCE_CROSSCHECK.md) |

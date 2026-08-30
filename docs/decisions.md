@@ -2369,3 +2369,188 @@ sentence. This adds the case where the sentence is a *number*: **an unverified f
 implies the right conclusion is not evidence, and is harder to find than one that implies the
 wrong one.** The check that caught it was arithmetic against the protocol's own configuration,
 which costs nothing and was never run on this paragraph in three rounds.
+
+### D-071 The appendix printed nine amendments and listed eight, and the bound count is why
+
+`ProtocolAmendments` moved 8 to 9 the moment amendment A9 was written, and `A1-protocol.tex`
+dutifully printed 9 above an `enumerate` that still held 8 items. Two sentences around it were
+wrong with it: "the first four ... **the rest** were not" accounted for four of five, and "two
+disclosures" was three.
+
+**This is the third count-drift defect in the project, and the first two were fixed by binding
+the number.** That fix worked, in the sense that the digit is now always right. It does nothing
+whatever about the prose the digit describes, and the failure moved there: a reviewer who counts
+a numbered list finds the gap in ten seconds, in the section whose whole purpose is proving that
+nothing was dropped.
+
+So the fix is a test, not another macro. `test_appendix_lists_every_amendment_it_claims` parses
+the `enumerate` block and asserts the item count equals `protocol_amendments` in
+`decision_log.csv`. The generalised lesson: **binding a number stops the number drifting and
+leaves everything that references it unguarded.** Every bound count in this project should be
+asked what prose asserts a structure around it.
+
+### D-072 A tolerance chosen for a catastrophe certified a defect a reader could see
+
+`check_pdf.py` carried `OVERFULL_TOLERANCE_PT = 60.0`, set to catch a URL that overhung by
+146 pt and lost its last two words off the paper. Beside it the comment said a long equation
+"routinely overhangs by a few points". Both statements cannot be true of the same threshold. At
+60 pt the gate passed an inline equation overhanging by 47 pt, which put text 15.5 mm into an
+18 mm margin on page 4 -- found by a human looking at the PDF.
+
+Three changes, and the third is the one that matters. The equation is set as display math, since
+`\resizebox`, `\scalebox` and `\small` are banned here and shrinking is not a fix anyway. The
+tolerance is 12 pt, which is what "a few points" means. And a new `check_margins` measures the
+artefact instead of LaTeX's complaint about it: per page, the rightmost text position against
+the text block. Run against the previously shipped PDF it reports page 4 at 44 pt past the
+margin; against the current one, nothing outside the block on any page. **A gate that infers
+from a build log is checking the log. This one checks the page.**
+
+### D-073 The reference list's "cited nowhere" column was about to be used as a deletion list
+
+The cross-check reported 16 of 59 entries as reached by nothing, and the plan was to delete
+them. Four of the sixteen were live citations the tool could not see:
+
+* **RG-2** is cited in the proposal as `\Cited{EU AI Act}` -- the previous round replaced the
+  bracketed key with the instrument name precisely so a reviewer holding only two PDFs could
+  resolve it, and the scanner looks for keys.
+* **RG-3** has a section of its own in `REGULATORY_SOURCES.md`, which was not in `SEARCH_GLOBS`.
+  The glob list named five documents by hand and the `docs/` directory had grown past it.
+* **SW-5 crepes** and **SW-8 scikit-learn** are pinned dependencies declared in
+  `pyproject.toml`; the surname handle requires a capital first letter, so a lower-case package
+  name has no handle at all.
+
+Fixed at the source rather than by exception: `docs/*.md` replaces the hand-maintained document
+list, with `REFERENCES.md` and the generated cross-check explicitly excluded so an entry cannot
+cite itself; and a fourth handle, `Cited as: \`name\``, lets an entry declare how it is cited
+when it has no author to cite. FR-2 (ARGUS) and FR-5 (ProtoCP) were then *cited* in section 1
+rather than deleted -- ARGUS calls its own objective conformal-style rather than a finite-sample
+guarantee, which is the sharpest differentiator available, and ProtoCP is the closest
+counterexample to the novelty claim, so citing it removes an attack instead of inviting one.
+Ten genuinely unreachable entries were deleted; 49 remain and every one resolves.
+
+**The lesson.** An automated finding is evidence about the tool as much as about the corpus.
+This one had a 25 % false-positive rate and its output was one command away from removing four
+working citations.
+
+### D-074 5.554 % was attributed to the file in three documents and to the wrong band in a fourth
+
+The claim key is `BandValueFraudRate` and its selector is `{arm: temporal, block: band}`: it is
+the value-weighted fraud rate of `D_band`, the second of the four temporal blocks. `protocol.md`,
+`REFERENCES.md` and the appendix all attributed it to IEEE-CIS as a whole, which is **3.867 %**.
+Correcting the appendix, the first attempt then attributed it to the *abstention band* -- a
+different object again, since `D_band` is a time block and the band is a score interval.
+
+Both errors run the same way: toward the larger number, which strengthens the argument that a
+portfolio-level PSD2 ceiling cannot be applied here. The argument does not need the help; the
+whole file is still an order of magnitude above the loosest ceiling. **A claim macro binds a
+value to a selector and says nothing about the noun the prose attaches it to**, which is the
+same failure as D-071 in a different dress.
+
+### D-075 The kernel latency conclusion did not follow from the measurement
+
+Section 5 read "one in-band kernel evaluation would cost 96.577 ms ... it fits only because the
+band rations it". Two defects.
+
+**The support-set size was undisclosed.** `measure_latency.py` sets `SUPPORT_ROWS = 64`, a
+constant that appeared in neither PDF nor `configs/`. Cost is linear in it, and the in-band
+training block is 2,916 rows -- at which the same Gram row takes about 4.4 s and does not fit at
+all. A measurement whose governing assumption is not stated is not a measurement a reader can
+use.
+
+**Rationing bounds aggregate compute, not per-request latency.** A transaction that lands in the
+band pays the tail whether the band is 2 % of traffic or all of it, and authorisation timeouts
+are per-request. Both PDFs and `ENVIRONMENT.md` now state the support-set assumption, its
+linearity, and what the band does and does not bound; per-request feasibility separately
+requires holding the support set to order 100.
+
+### D-076 The literal scanner could not see a number at the end of a sentence
+
+`LITERAL`'s trailing lookahead was `(?![\w.])`, so a full stop immediately after a digit run
+suppressed the match. Two figures shipped unbound in the appendix -- a width ratio of `0.89.`
+and an AUC of `0.5000.` -- while the gate reported nothing unaccounted for over fifteen source
+files. The lookahead is now `(?![\w]|\.\w)`: a full stop ending a sentence is not part of the
+number, a full stop followed by a word character still is, which keeps `section 7.A` and
+three-part version strings out. Both figures were reworded rather than bound, since neither
+comes from a results table: one is a fixture, the other is chance by construction.
+
+Also corrected in the same pass: `A3-reproduction.tex` claimed "every number in both documents
+is generated", which was the claim this defect falsified. It now says every *measured* number,
+which is what the machinery actually enforces.
+
+### D-077 Three credentials and one product name, checked against their sources
+
+The team section said the QIntern results freeze had "the 135 checks green", conflating a
+SHA-256 freeze manifest with a pytest suite: the handoff document records a suite that grew
+110 to 135 tests, all green, and separately a freeze pinning 16 artefacts and 39 scalars that
+verifies with no mismatch. Both are true and they are not the same object. The later suite
+figure of 182 was not used: it depends on a feature branch that has not merged, and it counts
+work by others.
+
+The workstation is an **RTX PRO 6000** Blackwell, not an "RTX 6000 PRO" -- `nvidia-smi` reports
+`NVIDIA RTX PRO 6000 Blackwell Workstation Edition`, and `ENVIRONMENT.md` already had it right
+while the proposal and one docstring did not. The machine has 14 cores and **20 threads**, so
+the OpenMP note now says threads.
+
+`guarantee.md` said $\alpha_{\mathrm{FN}}$ selects among the five certified configurations. All
+five sit at $\alpha_{\mathrm{FN}} = 0.45$, so it is a necessary condition for certifying at all;
+band budget and $\alpha$ are what distinguish them.
+
+### D-078 The README opened with tables and closed with the picture that explains them
+
+Section 4 was 244 lines of tables between the certificate and the negative results, and the
+only diagram was a compact split figure sitting inside it, four screens down. A reader arriving
+from the submission portal met the numbers before the object they measure.
+
+Two changes. The results move to [`RESULTS.md`](RESULTS.md) in full -- every table, every range
+across seeds, every retraction -- and the README keeps the three figures with one paragraph of
+conclusion under each, linking out. 494 lines to 332. And a new `overview_figure` goes in at
+section 2, carrying the four-block split *and* the decision it licenses, which the proposal's
+version had to drop for space.
+
+The figure shares `draw_split_row` with the proposal's compact one, so the two pictures of the
+same four blocks cannot disagree; both read `splits.csv` on every build. Two defects were fixed
+by looking at the rendered PNG rather than by any test: the branch arrows originally left the
+*transaction* box rather than the score, which drew "one authorisation, therefore approve", and
+the bottom box was narrower than its own caption. **No gate in this project catches either.
+Figures are checked by eye, and that is a standing cost of having them.**
+
+### D-079 The telemetry was written, tested, used once, and then not used again
+
+`run_log` exists because a seed sweep called `fit_mps` without a reporter and ran silently for
+hours (D-051). It fixed that script. `run_baselines.py` then ran thirteen minutes of fitting
+behind a `print` that fires only after a model has already finished, and `run_ablations.py`
+four minutes the same way -- the identical defect, in the scripts nobody had looked at.
+
+Both are now wrapped in `run_log`, and all three long scripts report a `SweepTimer` estimate
+with the spread it is derived from. Extrapolating across jobs is defensible for the bond-
+dimension sweep because per-step cost barely moves with $\chi$ (D-032); for the baselines it is
+not, since logistic regression is far cheaper than either boosted family, which is why
+`summary()` prints the observed range beside the estimate rather than a bare deadline.
+
+The log timestamp now carries the date. A thirteen-hour sweep crosses midnight and a bare
+`01:14:07` cannot be ordered afterwards.
+
+Both refactors were checked against the committed tables rather than assumed: one seed of
+`run_baselines` and one of `run_ablations` re-run into a scratch directory reproduce every
+science column exactly. **The general point: a helper is not adopted because it exists.** The
+test added here asserts that each of the five scripts loading IEEE-CIS opens a progress
+destination, which is the only thing that stops this recurring a third time.
+
+### D-080 The reproducibility check fired on every rebuild, so it checked nothing
+
+`scripts/freeze.py` classifies `results/figures/*` as scientific artefacts and requires them to
+be bit-identical across runs. They never were. matplotlib stamps a `CreationDate` into every
+PDF it writes, so two consecutive `make figures` runs on the same tables produce different
+bytes for pixel-identical pictures -- measured directly here, twice, with the PNGs identical
+each time and the PDFs differing.
+
+The consequence is worse than the cause. `make check` reported "11 scientific artefacts differ
+from the manifest" after any rebuild, most of them figures that had not changed at all, under a
+message asking whether a measurement had genuinely moved. **A check that fires every time
+trains its reader to clear it without reading the list**, which is precisely how a real change
+would have passed.
+
+`savefig(..., metadata={"CreationDate": None})` omits the timestamp; the same two runs now
+produce identical bytes. The Makefile already had a `DETERMINISTIC` variable for exactly this
+reason and it was applied to the LaTeX build only, which is why the gap survived: the mechanism
+existed and covered the artefact somebody had already thought about.

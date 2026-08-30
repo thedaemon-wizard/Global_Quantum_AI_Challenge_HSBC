@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 70
+    value: 80
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -306,6 +306,20 @@ claims:
       size the band-conditional certificate has to work with, and why nothing certifies
       below alpha = 0.10.
 
+  - key: BandLegitCalCertifiedMin
+    value: 1572
+    source: results/tables/riskcontrol.csv
+    reduce:
+      op: min
+      column: n_legit_band_cal
+      where_equals: {certified: True}
+    tolerance: 0
+    note: >
+      Smallest calibration block behind a configuration that actually certified.  Distinct
+      from BandLegitCalMin, which is the tightest budget's block and certifies nothing: the
+      two were conflated in the feasibility section, attaching the shipped certificate to a
+      sample size no certificate was issued at.
+
   - key: ScreenConfigs
     value: 120
     source: results/tables/screens.csv
@@ -448,7 +462,9 @@ claims:
     note: >
       Value-weighted fraud rate on D_band.  Quoted as 5.554 % in the appendix.  It is roughly
       forty times the loosest PSD2 SCA-RTS ceiling, which is why those ceilings cannot select
-      a decline threshold on this file.
+      a decline threshold on this file.  Not a file-level figure and not the abstention band:
+      three documents attributed it to IEEE-CIS as a whole, which is 3.867 %, and the appendix
+      briefly attributed it to the abstention region.  Both were wrong in the same direction.
 
   - key: PsdDeclineRate
     value: 94.74

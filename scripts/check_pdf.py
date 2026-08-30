@@ -36,10 +36,25 @@ REPO = Path(__file__).resolve().parents[1]
 
 # How far a line may exceed the text block before it is treated as a defect rather than as
 # typesetting slack.  A long inline equation routinely overhangs by a few points and remains
-# entirely readable.  The portfolio URL overhung by 146 pt and its last two words were clipped
-# off the page edge, which no other check in this file could see: the page count was right, the
-# paper size was right, the font size was right, and the text was simply gone.
-OVERFULL_TOLERANCE_PT = 60.0
+# entirely readable.
+#
+# This was 60 pt, chosen to catch a portfolio URL that overhung by 146 pt and lost its last two
+# words off the page edge.  A threshold set to catch a catastrophe does not enforce quality: at
+# 60 pt it certified an inline equation overhanging by 47 pt, which put text 15.5 mm into an
+# 18 mm margin on page 4 and was found by a human looking at the PDF, not by this file.  The
+# comment above says "a few points", so the number now says a few points.
+OVERFULL_TOLERANCE_PT = 12.0
+
+# The text block of the built documents, in points: A4 at an 18 mm margin, matching
+# submission/preamble.tex.  Used by check_margins, which measures the artefact rather than
+# LaTeX's complaint about it.
+A4_WIDTH_PT = 595.276
+MARGIN_PT = 18.0 / 25.4 * 72.0
+
+# Slack allowed when comparing measured glyph positions to that block.  Extracted x positions
+# are the origin of a text run, not its right edge, and italic correction and kerning move them
+# by a point or so; 2 pt keeps ordinary typesetting from registering as a breach.
+MARGIN_SLACK_PT = 2.0
 OVERFULL = re.compile(
     r"^Overfull \\hbox \(([\d.]+)pt too wide\) in paragraph at lines (\d+)--(\d+)",
     re.MULTILINE,
@@ -60,11 +75,18 @@ ALLOWED_LITERALS = {
     "0.60",  # the RBF-distinctness screen threshold, fixed in configs/default.yaml
     "90",  # the PSD2 SCA-RTS rolling window, in days
     "431",  # sites in the full-scale chain, i.e. the feature count
+    "64",  # SUPPORT_ROWS in scripts/measure_latency.py: an assumption the kernel timing prices
 }
 # A digit run that is not part of an identifier.  The trailing lookahead stops mid-number
 # matches; the leading one excludes both word characters and a preceding "letter-hyphen",
 # which is what makes "Apache-2.0" and "3-D Secure" identifiers rather than figures.
-LITERAL = re.compile(r"(?<![\w.\\])(?<![A-Za-z]-)(\d+\.\d+|\d+)(?![\w.])")
+#
+# `\.\w` in the trailing lookahead rather than a bare `.`: a full stop ending a sentence is not
+# part of the number, and excluding it hid every figure written at the end of one -- "0.89." and
+# "0.5000." both shipped unbound while this file reported nothing unaccounted for.  A full stop
+# followed by a word character still is part of the token, which keeps "section 7.A" and a
+# three-part version out.
+LITERAL = re.compile(r"(?<![\w.\\])(?<![A-Za-z]-)(\d+\.\d+|\d+)(?![\w]|\.\w)")
 
 # Commands whose braced argument is an identifier or document metadata rather than prose.
 # Their digits belong to a filename, a cross-reference key or the challenge year, none of
@@ -227,6 +249,48 @@ def check_fonts(reader: PdfReader, floor: float) -> list[str]:
 
 
 
+def check_margins(pdf: Path, slack: float = MARGIN_SLACK_PT) -> list[str]:
+    """Text that actually falls outside the text block, measured page by page.
+
+    Every other check in this file reads what LaTeX *said*.  This one reads what the reader
+    *gets*: the rightmost glyph position on each page, against the right edge of the text
+    block.  The difference is not academic.  An inline equation on page 4 overhung by 47 pt and
+    put text 15.5 mm into an 18 mm margin, 6.9 pt from the paper edge; the log-based check saw
+    it, compared it to a tolerance set for a worse case, and passed the document.  Meanwhile a
+    31 pt overfull box in the centred title block puts no text past the margin at all and is
+    not a defect.  Reading the log cannot tell those apart.  Measuring can.
+
+    Only the right edge is checked.  Overhang to the left would need a negative-indent bug
+    rather than an unbreakable box, and nothing in this document tree can produce one.
+    """
+    import pypdf
+
+    reader = pypdf.PdfReader(pdf)
+    problems = []
+    worst = 0.0
+    for number, page in enumerate(reader.pages, start=1):
+        limit = float(page.mediabox.width) - MARGIN_PT
+        positions: list[float] = []
+
+        def collect(text, _cm, matrix, _font, _size, sink=positions):
+            if text.strip():
+                sink.append(matrix[4])
+
+        page.extract_text(visitor_text=collect)
+        if not positions:
+            continue
+        rightmost = max(positions)
+        worst = max(worst, rightmost - limit)
+        if rightmost > limit + slack:
+            problems.append(
+                f"page {number}: text begins {rightmost - limit:.0f} pt past the right margin "
+                f"({(rightmost - limit) / 72 * 25.4:.1f} mm), so it runs toward the paper edge"
+            )
+    if not problems:
+        print(f"  margins     no text outside the text block; closest {worst:+.0f} pt")
+    return problems
+
+
 def check_overfull(pdf: Path, tolerance: float = OVERFULL_TOLERANCE_PT) -> list[str]:
     """Lines LaTeX could not fit, read from the build log beside the PDF.
 
@@ -377,6 +441,7 @@ def main(argv: list[str] | None = None) -> int:
         *check_paper(reader, args.paper),
         *check_fonts(reader, args.min_font),
         *check_overfull(args.pdf),
+        *check_margins(args.pdf),
         *check_literals(args.source),
         *check_number_words(args.source),
     ]

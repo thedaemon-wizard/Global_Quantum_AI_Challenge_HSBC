@@ -103,7 +103,7 @@ complexity* as a bottleneck. Per single authorisation, batch size 1:
 
 **The serving profile matters more than the model, by three orders of magnitude.** XGBoost
 defaults its thread count to the core count. On a one-row payload the OpenMP barrier costs about
-19 ms on these 20 cores while the prediction it synchronises costs about 0.05 ms:
+19 ms across these 20 threads while the prediction it synchronises costs about 0.05 ms:
 
 | `nthread` | 1 | 4 | 20 (default) |
 |---|---|---|---|
@@ -121,8 +121,12 @@ everything above, on the issuer's hardware rather than this one.
 
 **The feasibility consequence.** The classical core is not the latency risk — it uses 0.19 % of
 the residual budget at its tail. The kernel is: at 96.6 ms it costs about 1,148× a classical
-score, and its tail takes 75.9 % of the residual budget. It fits, and only because the band
-rations it to a few percent of traffic. Batching helps the classical path by a further order of
+score, and its tail takes 75.9 % of the residual budget. That figure prices a **64-row support
+set** (`SUPPORT_ROWS` in `scripts/measure_latency.py`) and is linear in it, so the in-band
+training block of 2,916 rows would cost some 4.4 s per authorisation. Rationing bounds aggregate
+kernel compute, not per-request latency: a transaction that lands in the band pays the tail
+whether the band is 2 % of traffic or all of it. Per-request feasibility separately requires
+holding the support set to order 100. Batching helps the classical path by a further order of
 magnitude (0.0038 ms per transaction at batch 1024) but is unavailable to a per-authorisation
 decision, which is why batch 1 is the figure quoted.
 

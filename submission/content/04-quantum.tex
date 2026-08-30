@@ -13,18 +13,20 @@ $r_{\mathrm{eff}} = (\sum_i \sigma_i)^2 / (n \sum_i \sigma_i^2)$ inside a usable
 \textbf{\ClaimScreenPassBoth{} pass both.} The closest any configuration came to distinctness
 was $\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$; the median is
 \ClaimScreenMedianRbf{} and the maximum \ClaimScreenMaxRbf{}, indistinguishable to floating
-point. On \ClaimScreenSamples{} stratified rows with at most eight features, every kernel we
-could construct is to within measurement a classical RBF in disguise --- which reporting a
-downstream accuracy would have hidden. One caveat: the protocol names the Huang geometric
+point. On \ClaimScreenSamples{} stratified rows with at most eight features, no configuration
+cleared the pre-registered bar --- which reporting a downstream accuracy would have hidden. One caveat: the protocol names the Huang geometric
 difference first and the implementation computes it without gating on it (amendment~A6); since
 Huang treats a \emph{large} difference as favourable, gating would have made this rejection
 less decisive, not more. The closest published comparator agrees: a controlled benchmark on real
 card-transaction data \Cited{(Faryad, arXiv:2608.15718, 2026)} reports no robust quantum
 advantage, and finds one apparent advantage to be an artefact of unequal search budgets.
 
-\paragraph{The tensor network ran, and did not win.} A matrix-product-state classifier
-contracts $f(\mathbf{x}) = \sum_{\{s\}} A^{s_1} \cdots A^{s_N} \prod_j \phi^{s_j}(x_j)$ with
-$\phi(x) = [\cos\frac{\pi x}{2}, \sin\frac{\pi x}{2}]$, sweeping the bond dimension $\chi$
+\paragraph{The tensor network ran, and did not win.} A matrix-product-state classifier contracts
+\[
+f(\mathbf{x}) = \sum_{\{s\}} A^{s_1} \cdots A^{s_N} \prod_j \phi^{s_j}(x_j),
+\qquad \phi(x) = \bigl[\cos\tfrac{\pi x}{2},\ \sin\tfrac{\pi x}{2}\bigr],
+\]
+sweeping the bond dimension $\chi$
 rather than tuning it. In the band, on identical rows and features, it reaches average
 precision \ClaimMpsApBestChi{} at the largest bond dimension against \ClaimGbdtApBand{} for
 the tuned gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi.
@@ -51,8 +53,7 @@ should be told.
 The sweep is affordable because cost does not follow the bond dimension the way the ansatz
 suggests: the jobs took \ClaimSweepSecondsMin{} to \ClaimSweepSecondsMax{} seconds against the
 \ClaimSweepChiFlopSpan{}-fold spread a $\chi^2$ model predicts. A 431-site chain is bound by
-the launch overhead of its sequential contractions, not their arithmetic, so capacity is nearly
-free and depth is the cost.
+the launch overhead of its sequential contractions, not their arithmetic.
 
 \paragraph{The comparison is underpowered, and the gate that should have said so was itself
 wrong.} It is a comparison between model \emph{families}, whose measured standard error is

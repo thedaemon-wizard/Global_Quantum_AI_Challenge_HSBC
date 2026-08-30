@@ -4,23 +4,21 @@
 
 \textbf{What the PoC sprint would build.} The same protocol on the issuer's own authorisation
 stream: fit the incumbent scorer, freeze four blocks, calibrate the band, certify the
-band-conditional false-decline rate at a level the business picks. Every component exists and
-has been run end to end here, so the sprint is a port and a re-calibration rather than a build:
-three stages of roughly a month with a month of slack --- split integrity, then calibration and
-certification, then the quantum re-ranker, which is deliberately last because it is the only
-stage that can fail to produce a result.
+band-conditional false-decline rate at a level the business picks. Every component has been run
+end to end here, so the sprint is a port and a re-calibration rather than a build: three stages
+of roughly a month with a month of slack --- split integrity, then calibration and
+certification, then the quantum re-ranker, last because it is the only stage that can fail to
+produce a result.
 
 \textbf{Compute, measured rather than estimated.} The classical core is cheap: the tuned
 baseline fits the in-band problem in \ClaimBandGbdtSeconds{} seconds, and calibration is a sort.
 The expensive component is the quantum-inspired arm: \ClaimSweepJobs{} full-scale
 tensor-network fits over \ClaimSweepTrainRows{} rows and 431 sites took
 \ClaimSweepSecondsMin{}--\ClaimSweepSecondsMax{} seconds each on the one
-\Record{RTX~6000 PRO Blackwell (96\,GB), CUDA 13, Python 3.12} workstation every number here was
-measured on. Per-step cost is flat in the bond dimension (Section~\ref{sec:hybrid}), so capacity
-is nearly free, chain length is the cost, and a resource estimate scales with the feature count
-rather than the ansatz. No QPU is required: both arms are simulator-only, which the
-statement permits, and the screens ran on \ClaimScreenSamples{} stratified rows across
-\ClaimScreenConfigs{} configurations.
+\Record{RTX~PRO 6000 Blackwell (96\,GB), CUDA 13, Python 3.12} workstation every number here was
+measured on. Per-step cost is flat in the bond dimension, so capacity is nearly free, chain
+length is the cost, and a resource estimate scales with the feature count rather than the
+ansatz. No QPU is required (Section~\ref{sec:hybrid}).
 
 \textbf{Latency, against the budget the statement gives.} Of the
 \ClaimLatencyAuthorisationBudgetMs{}\,ms authorisation ceiling about \ClaimLatencyNetworkMs{}\,ms
@@ -28,14 +26,17 @@ is network, leaving roughly \ClaimLatencyBudgetResidualMs{}\,ms issuer-side. Sco
 authorisation costs \ClaimLatencyScorerMedian{}\,ms, \ClaimLatencyScorerTail{}\,ms at the tail;
 one in-band kernel evaluation would cost \ClaimLatencyKernelMedian{}\,ms ---
 \ClaimLatencyKernelVersusScorer{} times as much, its tail taking
-\ClaimLatencyKernelBudgetShare\,\% of that budget. The classical core is therefore not the latency
-risk and the kernel is: it fits only because the band rations it. Both figures bound model cost
-on this workstation, single-threaded, rather than production latency.
+\ClaimLatencyKernelBudgetShare\,\% of that budget. The classical core is therefore not the
+latency risk and the kernel is. That kernel figure prices a fixed 64-row support set and is
+linear in it, so a deployment would have to hold the support set to that order; the band bounds
+aggregate kernel compute, not per-request latency, which a transaction landing in the band pays
+in full. Both figures bound model cost on this workstation, single-threaded, rather than
+production latency.
 
 \textbf{Data, and why the PoC cannot reuse this file.} The method needs settled labels and an
-entity key to cluster on; both are ordinary in an issuer's data and only approximated here. And
-the benchmark's competition rules permit non-commercial research use only, so a commercial proof
-of concept \emph{must} move to the bank's stream. The protocol ports; the data does not.
+entity key to cluster on; both are ordinary in an issuer's data and only approximated here, and
+the benchmark's competition rules permit non-commercial research use only. The protocol ports;
+the data does not.
 
 \textbf{Constraints we have measured, and would carry into Phase II.} The population is
 conditional on an incumbent: this file contains only transactions an existing stack approved,
@@ -49,7 +50,9 @@ read that as a model which mostly recognises cards --- the strongest argument fo
 on an issuer's own data, where an entity key is a key and not a predictor. The certificate is
 sample-starved by design: conditioning on a narrow band is what makes the guarantee bind the
 component we care about, and also what leaves \ClaimBandLegitCalMin{} legitimate rows to certify
-with. A larger calibration block or a wider band buys tighter $\alpha$; the method is unchanged.
+with at the tightest budget --- the configurations that do certify had
+\ClaimBandLegitCalCertifiedMin{} or more. A larger calibration block or a wider band buys
+tighter $\alpha$; the method is unchanged.
 
 \textbf{What would change the quantum conclusion.} An encoding demonstrably outside the RBF
 family, at a bandwidth that does not concentrate, would pass the same screens unmodified; we did

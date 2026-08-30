@@ -39,7 +39,7 @@ actually resolve.
 cluster structure makes intervals too narrow by roughly the square root of the cluster size.
 That is the classical result for a sample mean. Average precision is a rank statistic; on a
 fixture with cluster-level risk the clustered interval came out \emph{narrower} than the
-row-level one, at a width ratio of 0.89. The row-level interval is invalid under this
+row-level one. The row-level interval is invalid under this
 dependence, but the sign of its error is statistic-dependent, and we no longer claim otherwise.
 
 \paragraph{Four source files were absent from every pushed commit.} A \texttt{.gitignore}
@@ -51,7 +51,7 @@ hygiene test now compares the files on disk against \texttt{git ls-files}.
 
 \paragraph{Two silent bugs in the tensor network.} The initialisation placed the identity on
 both physical channels, making the contraction input-independent; logits were bit-identical
-across samples and the AUC was exactly 0.5000. Separately, closing the final bond to
+across samples, so the AUC came out at exactly chance. Separately, closing the final bond to
 dimension one made renormalisation map every sample to $\pm 1$. Both produced plausible
 near-chance numbers rather than errors. A third latent hazard was removed while diagnosing a
 non-finite loss at 431 sites: a discarded log-norm was multiplied by zero, and

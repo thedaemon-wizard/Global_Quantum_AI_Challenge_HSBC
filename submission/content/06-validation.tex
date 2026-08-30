@@ -2,43 +2,33 @@
 \section{Validation plan}
 \label{sec:validation}
 
-The plan below is not aspirational. Every step of the certification pipeline --- split, band,
-calibration, certificate, held-out validation --- was executed in this study on public data, and
-the results are in Section~\ref{sec:results}; what a PoC sprint changes is the data, not the
-protocol. Some pre-registered items were \emph{not} executed, and are named here rather than
-left to be discovered: the two kernel hypotheses and the entanglement ablation, all closed by
-the screens before they could run, and the drift measurements recorded in amendment~A7, for
-which no script was written. The appendix enumerates both. A validation plan that cannot say
-which of its own steps ran is not a plan, and it is why the negative quantum results are in the
-body rather than buried.
+The plan below is not aspirational: every step was executed in this study on public data, and
+the results are in Section~\ref{sec:results}. What a PoC sprint changes is the data, not the
+protocol. Some pre-registered items were \emph{not} executed --- two kernel hypotheses and the
+entanglement ablation, closed by the screens, and amendment~A7's drift measurements --- and the
+appendix enumerates them, because a plan that cannot say which of its own steps ran is not one.
 
-\textbf{The success metric is a certificate, not a score.} A PoC succeeds if the
-band-conditional false-decline rate is certified at a level the business names, with family-wise
-error control, and the certificate then holds on a block never used to build it. Average
-precision and ROC AUC are reported alongside but decide nothing: they are not statements about a
-decision and carry no finite-sample guarantee. The corresponding failure is equally well
-defined --- the admissible set comes back empty, which is what happens here at the tightest band
-budget.
+\textbf{Success is a certificate, not a score.} A PoC succeeds if the band-conditional
+false-decline rate is certified at a level the business names, with family-wise error control,
+and the certificate then holds on a block never used to build it. Average precision and ROC AUC
+are reported alongside but decide nothing. Failure is equally well defined --- the admissible
+set comes back empty, which is what happens here at the tightest band budget --- and the
+acceptance test is the held-out read reported in Section~\ref{sec:results}.
 
-\textbf{Held-out validation is the acceptance test.} The certificate is selected on calibration
-data, then read on a fold protected by a ledger that refuses a second distinct configuration.
-Here \ClaimHFiveConfigsHolding{} of \ClaimHFiveConfigsTotal{} held their risk, the worst at
-\ClaimHFiveWorstRatio{} of its budget. A PoC would run exactly this test and report it whichever
-way it came out.
+\textbf{Size the evaluation block to the power target first.} This is the one change that would
+make a quantum-versus-classical comparison on this problem informative. A detectable-effect
+ceiling is fixed \emph{before} the comparison and the block sized to it; Section~\ref{sec:quantum}
+reports what happens when it is not.
 
-\textbf{Benchmarking is against a tuned baseline, replicated, with the power stated first.} The
-comparator is a tuned gradient-boosted model, not a straw man, on identical rows and features,
-and intervals resample entities rather than rows. Crucially, a detectable-effect ceiling is fixed \emph{before} the comparison: here
-\ClaimPowerCeiling{}, against an effect the comparison could actually resolve of
-\ClaimMpsMdeRealised{}, computed afterwards from its own bootstrap standard error. That gap is
-why H4 is reported as underpowered rather than as a null. A PoC would size its evaluation block to that ceiling
-first, which is the single change that would make a quantum-versus-classical comparison on this
-problem informative.
+\textbf{Threshold change management.} $\lambda$ moves on every recalibration, so it needs an
+owner and a cadence rather than a rerun. Model risk approves each move quarterly, matching the
+rolling window the fraud-rate definition already uses, and out of cycle whenever realised in-band
+risk crosses the certified $\alpha$. If a recalibration fails to certify, the rule falls back to
+the previously certified $\lambda$, and failing that to the incumbent scorer with the band
+closed --- degrading to today's behaviour rather than to an uncertified threshold. Phase~II runs
+the challenger in shadow first, scoring every authorisation and acting on none.
 
-\textbf{What keeps the plan honest.} Hypotheses, grids, splits and decision thresholds are
-frozen and hashed before any model is fitted, and a gate refuses undocumented change; multiple
-comparisons carry Holm correction; coverage is judged against the exact law of
-Section~\ref{sec:method} rather than against $\alpha$. Every retraction is recorded --- this
-submission carries \ClaimDecisionEntries{} decision entries, including the ones that removed
-results we had already written down --- and reproduction is
-\texttt{make smoke \&\& make reproduce \&\& make check}.
+\textbf{What keeps the plan honest.} Grids, splits and thresholds are hashed before any model is
+fitted, the hypotheses are frozen with dated amendments, and every retraction is recorded ---
+\ClaimDecisionEntries{} decision entries, including ones that removed results already written
+down. Reproduction is \texttt{make smoke \&\& make reproduce \&\& make check}.

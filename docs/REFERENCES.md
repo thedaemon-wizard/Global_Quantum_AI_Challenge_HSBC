@@ -95,28 +95,7 @@ ratio. **Distinguished from [CP-5]**, which gives approximate coverage under arb
 with fixed weights. Fraud tactics change `P(Y|X)`, not only `P(X)`, so the covariate-shift
 assumption is not adopted here.
 
-**[CP-11]** Podkopaev, A. and Ramdas, A. "Distribution-free uncertainty quantification for
-classification under label shift". *Proceedings of Machine Learning Research* 161:844-853
-(UAI), 2021. arXiv:2103.03323.
-Fraud prevalence drift is label shift, which covariate-shift weighting does not cover.
-
-**[CP-12]** Gibbs, I. and Candes, E. J. "Adaptive Conformal Inference Under Distribution
-Shift". *Advances in Neural Information Processing Systems* 34, 2021. arXiv:2106.00170.
-
-**[CP-13]** Gibbs, I. and Candes, E. J. "Conformal Inference for Online Prediction with
-Arbitrary Distribution Shifts". *Journal of Machine Learning Research* 25(162):1-36, 2024.
-arXiv:2208.08401.
-Positioned as the Phase II monitoring layer, not as the Phase I guarantee.
-
 ---
-
-**[CP-14]** Boruah, I. "Distribution-Free Conformal Prediction for Steel Fatigue Strength:
-Marginal Validity Is Not Enough". arXiv:2608.07589, 5 August 2026.
-Independent evidence, in an unrelated domain, that the marginal versus group-conditional
-distinction is load-bearing: split conformal holds 0.918 marginally and falls to 0.758 in the
-highest-strength quartile, while Mondrian group-conditional calibration holds 0.917-0.939 at a
-12 % width premium. Cited as analogical support for the band-conditional construction of
-section 1, not as a fraud result.
 
 **[CP-15]** Zhong, L., Wang, X., Huang, S. and Shi, Y. "When Is a Conformal Guarantee Fair?
 Auditing Silent Subgroup Under-Coverage in Alzheimer's Disease Longitudinal Prediction".
@@ -126,14 +105,6 @@ nominal marginal coverage, and separates rarity from tail-heaviness -- the latte
 additional calibration data cannot close. Clinical regression; cited for the mechanism, not for
 any fraud number. See `docs/decisions.md` D-055 for what this does and does not imply about the
 band-conditional certificate here.
-
-**[CP-16]** Sharma, J. K. and Dutta, A. "Does Marginal Coverage Guarantee Class-Conditional
-Safety for Zero-Shot VLMs Under Shift?". arXiv:2608.19376, 19 August 2026. ECCV 2026 UNCV
-workshop.
-Source-side Mondrian calibration improves the in-distribution tail but does not transfer under
-shift; only target-side calibration recovers it. Cited as the reason the stratified-split
-result is not read as repairing the temporal-split failure -- the stratified arm removes the
-shift rather than solving it. Vision-language, not tabular.
 
 ## 2. Conformal prediction applied to fraud detection -- the prior art this work is positioned against
 
@@ -158,10 +129,6 @@ describes its own objective as conformal-style rather than a finite-sample guara
 credit card fraud detection". *Decision Support Systems* 208, 2026.
 DOI 10.1016/j.dss.2026.114717.
 Conformal risk control with a formal guarantee on the false-negative rate.
-
-**[FR-4]** Mapaila and Senekane. *Technologies* 14(4):212, 3 April 2026.
-DOI 10.3390/technologies14040212.
-Split conformal prediction with abstention-based routing on PaySim.
 
 **[FR-5]** Chen, Gong, Cheng and Jin. "Temporal Graph Prototype-conditioned Conformal
 Prediction for Fraud Detection" (ProtoCP). *KDD* 2026. DOI 10.1145/3770855.3818061.
@@ -194,10 +161,6 @@ DOI 10.1038/s41467-024-49287-w. arXiv:2208.11060.
 Four sources of concentration: embedding expressivity, global measurements, entanglement and
 noise. The paper states that kernel-alignment training is also susceptible, which closes the
 usual escape route.
-
-**[QM-3]** Kubler, J. M., Buchholz, S. and Scholkopf, B. "The Inductive Bias of Quantum
-Kernels". *Advances in Neural Information Processing Systems* 34, 2021. arXiv:2106.03747.
-An exponentially large feature space makes generalisation harder, not easier.
 
 **[QM-4]** Slattery, L., Shaydulin, R., Chakrabarti, S., Pistoia, M., Khairy, S. and Wild,
 S. M. "Numerical evidence against advantage with quantum fidelity kernels on classical data".
@@ -233,13 +196,6 @@ secondary. Reports average precision 0.793 +/- 0.085 against 0.770 +/- 0.096 for
 difference the authors do not claim as significant, under random stratified cross-validation
 with the time column removed.
 
-**[QM-9]** Park, S. and Simeone, O. "Quantum Conformal Prediction for Reliable Uncertainty
-Quantification in Quantum Machine Learning". *IEEE Transactions on Quantum Engineering* 5,
-art. 3103224, 2024. DOI 10.1109/TQE.2023.3333224. arXiv:2304.03398.
-Shot noise makes the nonconformity score a random variable, so a naive conformal wrapper
-around a shot-based quantum kernel is not automatically valid. This study's Phase I response
-is an exact statevector simulator with a fixed configuration.
-
 **[QM-10]** Faryad, M. "Quantum Kernel k-Means for Credit-Card Fraud Detection: A Controlled
 Benchmark on Real Transaction Data". arXiv:2608.15718, 16 August 2026.
 The closest published comparator to this study's kernel arm, and it agrees with it. Reports
@@ -250,11 +206,6 @@ matters as much as the result -- a search-budget ablation converted the one stat
 significant advantage into a procedural artefact, which is the same failure mode this study's
 pre-registered screens and matched budgets exist to prevent. Retrieved and read 2026-08-28;
 cited as corroboration, not as a source for any implementation here.
-
-**[QM-11]** Spencer, Nicholls and Caprio. "Adaptive Conformal Prediction for Quantum Machine
-Learning". *Transactions on Machine Learning Research*, May 2026. arXiv:2511.18225.
-Time-varying hardware noise undermines conformal guarantees even when the data are
-exchangeable. Named as the Phase II hardware mitigation path.
 
 ---
 
@@ -273,16 +224,6 @@ the mechanism is structural (boundary-site interactions and a causality trap), a
 rate is reported**, so the 2-of-16 rate measured here is a new quantitative datum for the
 discriminative case rather than a reproduction. Proposes natural gradient descent and a
 TTNS-Sketch warm start, neither applied here; both are Phase II recommendations.
-
-**[QM-14]** Gillani, S. A., Baig, M. S. A., Shah, S. M., Ali, A. and Siddiqui, H. "How Quantum
-Is the Advantage? A Fair, Calibration- and Noise-Aware Benchmark and Attribution Audit of
-Quantum Machine Learning for Network Intrusion Detection". arXiv:2608.18155, 13 August 2026.
-This study's design run independently on a different problem -- equal-budget feature views, a
-leakage-controlled protocol, imbalance- and calibration-aware metrics, false-discovery-rate
-correction -- reaching the same headline: tuned Random Forest and XGBoost match or exceed the
-quantum models on every dataset. Two advantages survive correction, and both are at operating
-points rather than on aggregate metrics; that distinction is why section 5 states what this
-study's negative does and does not cover. Network intrusion detection, not payments.
 
 **[QM-15]** Saiapin, A. and Batselier, K. "Tensor Network Kernel Machines: A JAX Framework for
 Machine Learning and Nonlinear System Identification". arXiv:2608.07043, 7 August 2026.
@@ -352,13 +293,14 @@ listed here until 2026-08-30 and is removed: nothing in this repository relied o
 monitoring obligation belongs to a deployment, and it is named in the Phase II plan rather than
 cited as a provision this study used.*
 **Used as a structural argument, not as a threshold selector.** See `docs/protocol.md`
-amendment A2: these are portfolio-level rates and IEEE-CIS is a fraud-enriched benchmark at a
-5.554 % value-weighted rate.
+amendment A2: these are portfolio-level rates and IEEE-CIS is a fraud-enriched benchmark, at a
+5.554 % value-weighted rate on `D_band` and 3.867 % over the whole file.
 
 **[RG-2]** Regulation (EU) 2024/1689 (the Artificial Intelligence Act), Annex III point 5(b).
 Credit scoring is high-risk **with the exception of AI systems used for the purpose of
 detecting financial fraud**. Recital 58 reinforces the exception. This project therefore makes
 no AI Act high-risk compliance claim.
+Cited as: `EU AI Act`
 
 **[RG-3]** Regulation (EU) 2026/1744, published in the Official Journal 24 July 2026.
 Defers stand-alone Annex III high-risk obligations to 2 December 2027.
@@ -410,9 +352,11 @@ Supplies `FidelityStatevectorKernel`, the production kernel path here.
 https://github.com/amazon-braket/amazon-braket-sdk-python
 **[SW-4]** MAPIE 1.5.0. BSD-3-Clause. https://github.com/scikit-learn-contrib/MAPIE
 **[SW-5]** crepes 0.9.1. BSD-3-Clause. https://github.com/henrikbostrom/crepes
+Cited as: `crepes`
 **[SW-6]** XGBoost 3.4.1. Apache-2.0. https://github.com/dmlc/xgboost
 **[SW-7]** SHAP 0.52.0. MIT. https://github.com/shap/shap
 **[SW-8]** scikit-learn 1.9.0. BSD-3-Clause.
+Cited as: `scikit-learn`
 
 **[SW-9]** PyTorch 2.13.0+cu130. BSD-3-Clause.
 

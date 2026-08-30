@@ -16,7 +16,7 @@ This times it.
 
 That is this script's main finding, and it was nearly reported the other way round. XGBoost
 defaults its thread count to the core count. On a one-row payload the OpenMP barrier costs about
-19 ms on this 20-core machine while the prediction it synchronises costs about 0.05 ms -- so the
+19 ms on this 20-thread machine while the prediction it synchronises costs about 0.05 ms -- so the
 default configuration is roughly 380 times slower than a single thread, and the penalty is
 independent of device, feature count and batch size. Measured on a fitted booster, one row:
 

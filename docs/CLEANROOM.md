@@ -36,7 +36,7 @@ Everything after it is fast except `make reproduce`.
 | `python3.12 -m venv` from the system interpreter | Python 3.12.11 |
 | `pip install torch==2.13.0` from the cu130 index | installed; `torch.cuda.is_available()` **True** |
 | `pip install -e ".[dev]"` | clean, no resolution conflicts |
-| `make smoke` | **9 of 9 accounted for**, 7 pass and 2 skip |
+| `make smoke` | **9 of 9 accounted for**, 7 pass and 2 skip in the fresh environment, where the Aer GPU cross-check skips as well as the ULB check; the committed environment reports 8 and 1 |
 | `make walkthrough` | every assertion holds against the committed tables |
 
 The two skips are declared, not silent:

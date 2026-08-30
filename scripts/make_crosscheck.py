@@ -7,14 +7,21 @@ what it was checked against". It did not exist. Writing it by hand would have ma
 within a round -- references get renumbered, modules get refactored, and a hand-maintained map
 drifts exactly like the hand-maintained decision count did.
 
-So it is generated. Each entry is searched for by three independent handles:
+So it is generated. Each entry is searched for by four independent handles:
 
 * its **identifier**, ``[CP-4]`` or ``CP-4``;
 * its **arXiv identifier**, if it has one;
 * its **first author's surname**, which is how the source modules actually cite -- the
-  docstrings name people rather than reference keys.
+  docstrings name people rather than reference keys;
+* an **explicit alias**, written into the entry as ``Cited as: `EU AI Act` ``.
 
-An entry found by none of the three is reported as uncited, which is a finding rather than an
+The fourth handle exists because the first three all assume an author. Three entries had none
+that this file could see -- a regulation cited by instrument name, and two packages whose names
+begin with a lower-case letter -- and all three were reported as cited nowhere while being
+cited. Reporting a live citation as dead is worse than missing a dead one: the list was about
+to be used as a deletion list.
+
+An entry found by none of the four is reported as uncited, which is a finding rather than an
 error: a reference list may legitimately carry background and exclusion records. What it must
 not do is carry them silently.
 
@@ -37,14 +44,16 @@ REPO = Path(__file__).resolve().parents[1]
 
 # Where a reference can legitimately be used.  The reference list itself is excluded, and so is
 # this script's own output.
+#
+# ``docs/*.md`` rather than the five documents this list used to name.  The named list drifted:
+# ``REGULATORY_SOURCES.md`` devotes a section to RG-3 and was never searched, so RG-3 read as
+# cited nowhere and was very nearly deleted as dead.  An allowlist of documents has to be
+# maintained in step with the documents, and this one was not.
 SEARCH_GLOBS = (
     "src/hsbcfraud/**/*.py",
     "scripts/*.py",
     "tests/*.py",
-    "docs/protocol.md",
-    "docs/decisions.md",
-    "docs/PROVENANCE.md",
-    "docs/guarantee.md",
+    "docs/*.md",
     "docs/claims.yaml",
     "docs/tables.yaml",
     "submission/content/*.tex",
@@ -53,6 +62,10 @@ SEARCH_GLOBS = (
     "Makefile",
     "pyproject.toml",
 )
+
+# The reference list cannot cite itself, and neither can this script's own output: an entry
+# mentioning a neighbour in its annotation would otherwise mark that neighbour used.
+NOT_A_CITATION_SITE = frozenset({"docs/REFERENCES.md", "docs/REFERENCE_CROSSCHECK.md"})
 
 # Files that are ABOUT the citation machinery rather than users of it.  They name identifiers
 # as format examples, and counting those as uses would report the reference list as fully
@@ -72,6 +85,10 @@ SURNAME = re.compile(r"^\*\*\[[A-Z]{2}-\d+\]\*\*\s+([A-Z][A-Za-z'À-ſ-]+)")
 # Sections whose entries are deliberately not used: they record what was NOT relied upon.
 EXCLUSION_HEADING = re.compile(r"^##\s+\d*\.?\s*.*not\s+relied\s+upon", re.IGNORECASE)
 
+# An alias declared inside the entry, for references whose natural citation is not a surname.
+# Back-ticked rather than quoted because ``_title`` reads the first quoted run as the title.
+ALIAS = re.compile(r"Cited as:\s*`([^`]{2,80})`")
+
 # Surnames too common to search on without false positives.  Each is checked by identifier and
 # arXiv id instead.  Kept explicit and short; a long list would mean the heuristic is wrong.
 AMBIGUOUS_SURNAMES = frozenset({"Board", "Commission", "Regulation", "Financial", "Prudential"})
@@ -86,18 +103,20 @@ class Entry:
     title: str
     arxiv: str | None
     surname: str | None
+    aliases: tuple[str, ...] = ()
     by_identifier: list[str] = field(default_factory=list)
     by_arxiv: list[str] = field(default_factory=list)
     by_surname: list[str] = field(default_factory=list)
+    by_alias: list[str] = field(default_factory=list)
 
     @property
     def used(self) -> bool:
-        return bool(self.by_identifier or self.by_arxiv or self.by_surname)
+        return bool(self.by_identifier or self.by_arxiv or self.by_surname or self.by_alias)
 
     @property
     def sites(self) -> list[str]:
         seen: dict[str, None] = {}
-        for site in (*self.by_identifier, *self.by_arxiv, *self.by_surname):
+        for site in (*self.by_identifier, *self.by_arxiv, *self.by_surname, *self.by_alias):
             seen.setdefault(site, None)
         return list(seen)
 
@@ -133,6 +152,7 @@ def parse_entries(text: str) -> list[Entry]:
                 title=_title(blob),
                 arxiv=arxiv.group(1) if arxiv else None,
                 surname=None if name in AMBIGUOUS_SURNAMES else name,
+                aliases=tuple(ALIAS.findall(blob)),
             )
         )
     return entries
@@ -176,7 +196,7 @@ def locate(entries: list[Entry], repo: Path) -> None:
         except UnicodeDecodeError:
             continue
         name = str(path.relative_to(repo))
-        if name in TOOLING:
+        if name in TOOLING or name in NOT_A_CITATION_SITE:
             continue
         lowered = text.lower()
         for entry in entries:
@@ -186,6 +206,10 @@ def locate(entries: list[Entry], repo: Path) -> None:
                 entry.by_arxiv.append(name)
             if entry.surname and re.search(rf"\b{re.escape(entry.surname.lower())}\b", lowered):
                 entry.by_surname.append(name)
+            for alias in entry.aliases:
+                if alias.lower() in lowered:
+                    entry.by_alias.append(name)
+                    break
 
 
 def render(entries: list[Entry], exclusion_sections: set[str]) -> str:
@@ -201,9 +225,11 @@ def render(entries: list[Entry], exclusion_sections: set[str]) -> str:
         "`scripts/make_crosscheck.py` — do not edit; a hand-maintained map of this kind drifts",
         "within a round, which is why the file `REFERENCES.md` promised did not exist for so long.",
         "",
-        "Each entry is searched for by three independent handles: its identifier, its arXiv",
-        "identifier, and its first author's surname. Source modules cite people rather than",
-        "reference keys, so the surname is usually the handle that finds them.",
+        "Each entry is searched for by four independent handles: its identifier, its arXiv",
+        "identifier, its first author's surname, and an alias the entry declares as",
+        "`Cited as: \\`name\\``. Source modules cite people rather than reference keys, so the",
+        "surname is usually the handle that finds them; the alias covers the entries that have",
+        "no author to cite -- an instrument named in prose, or a lower-case package name.",
         "",
         f"**{len(entries)} entries. {len(used)} reached from the repository, "
         f"{len(background)} recorded as deliberately not relied upon, "

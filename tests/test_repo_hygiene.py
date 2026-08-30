@@ -101,6 +101,30 @@ def test_decision_log_matches_the_decisions_document() -> None:
         )
 
 
+def test_appendix_lists_every_amendment_it_claims() -> None:
+    """The printed list must be as long as the number printed above it.
+
+    Binding the count was the fix for the previous two drift defects and it was not enough
+    here: ``ProtocolAmendments`` moved 8 -> 9 the moment A9 was written, the appendix
+    dutifully printed 9, and the ``enumerate`` beneath it still held 8 items.  A macro
+    protects the digit, not the prose the digit describes, and a reviewer who counts a
+    numbered list finds the gap in the one section whose purpose is proving nothing was
+    dropped.
+    """
+    recorded = pd.read_csv(REPO / "results" / "tables" / "decision_log.csv")
+    claimed = int(recorded["protocol_amendments"].iloc[0])
+
+    body = (REPO / "submission" / "content" / "A1-protocol.tex").read_text(encoding="utf-8")
+    block = re.search(r"\\begin\{enumerate\}.*?\\end\{enumerate\}", body, re.S)
+    assert block is not None, "A1-protocol.tex no longer contains an enumerate block"
+    listed = len(re.findall(r"^\\item\b", block.group(0), re.M))
+
+    assert listed == claimed, (
+        f"the appendix prints {claimed} amendments and lists {listed}. Add the missing "
+        f"\\item to submission/content/A1-protocol.tex, or amend docs/protocol.md"
+    )
+
+
 def test_every_document_is_linked_from_the_readme() -> None:
     """No document in docs/ is orphaned.
 

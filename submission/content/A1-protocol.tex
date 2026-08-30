@@ -22,9 +22,9 @@ a gate irritating enough to be bypassed protects nothing. Fields entering no gua
 
 \paragraph{Amendments.} The pre-registration carries \ClaimProtocolAmendments{} of them. The
 first four were derived from block sizes or from $\Dband$ alone, never from $\Dcal$ risks or
-from $\Dtest$. The rest were not, and are listed as what they are: corrections found after the
-certificate existed, and two disclosures --- of work pre-registered and never done, and of a
-rule stated more strongly than the code enforces it.
+from $\Dtest$. The last five were not, and are listed as what they are: two corrections found
+after the certificate existed, and three disclosures --- of work pre-registered and never done,
+of a rule stated more strongly than the code enforces it, and of a dataset never obtained.
 
 \begin{enumerate}[label=A\arabic*.]
 \item The band-conditional certificate is sample-starved by construction; the reachable
@@ -32,8 +32,8 @@ rule stated more strongly than the code enforces it.
   and Section~3 of the body reports the measurement landing exactly there.
 \item PSD2 SCA-RTS rates withdrawn as a threshold selector. The ceilings are
   \emph{value}-weighted, measured over a rolling 90 days across a whole portfolio, and govern
-  exemption eligibility rather than a decline threshold. IEEE-CIS has a value-weighted fraud
-  rate of \ClaimBandValueFraudRate\,\%, \ClaimBandFraudVersusCeiling{} times the loosest
+  exemption eligibility rather than a decline threshold. $\Dband$, the block this was measured on, has a
+  value-weighted fraud rate of \ClaimBandValueFraudRate\,\%, \ClaimBandFraudVersusCeiling{} times the loosest
   ceiling of \ClaimPsdLoosestCeiling\,\%; meeting it on this file would
   require declining \ClaimPsdDeclineRate\,\% of traffic. Applying a portfolio ceiling to a fraud-enriched
   research benchmark is a category error, and it was ours.
@@ -57,11 +57,15 @@ rule stated more strongly than the code enforces it.
   claim, and every threshold comes from $\Dband$ and $\Dcal$ --- so the guarantee stands, but
   the sentence did not. The protocol was corrected rather than the scripts, which would have
   changed committed tables to retire a wording defect.
+\item \emph{Disclosure of a dataset promised and never obtained.} ULB European Cardholder was
+  pre-registered as secondary and never downloaded, so the external-validity experiment did not
+  run and the counts quoted for it came from its published description rather than from
+  measurement. Withdrawn rather than recomputed, which would assert a measurement not made.
 \end{enumerate}
 
-\paragraph{The single-evaluation rule is a mechanism, and its scope is selection.} Exactly one
-configuration is chosen on $\Dband$, certified on $\Dcal$ and carried to $\Dtest$ unchanged;
-nothing is tuned or ranked there. The loader records the authorised configuration hash in
+\paragraph{The single-evaluation rule is a mechanism, and its scope is selection.} Selection
+happens once: band edges and $\lambda$ come from $\Dband$ and $\Dcal$ and are carried to
+$\Dtest$ unchanged, and nothing is tuned or ranked there. The loader records the authorised configuration hash in
 \texttt{results/tables/test\_access.json} and raises on a second distinct one, so a reviewer
 can read the ledger rather than take our word for it. Amendment~A8 lists the scripts that read
 the block for reporting without passing through it.

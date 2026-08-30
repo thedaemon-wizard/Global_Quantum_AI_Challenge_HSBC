@@ -41,7 +41,7 @@ from sklearn.preprocessing import MinMaxScaler
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.paths import display_path
-from hsbcfraud.progress import run_log
+from hsbcfraud.progress import SweepTimer, run_log
 from hsbcfraud.quantum.mps import MPSConfig, fit_mps
 
 REPO = Path(__file__).resolve().parents[1]
@@ -183,6 +183,12 @@ def main(argv: list[str] | None = None) -> int:
     rows: list[dict] = []
     jobs = [(chi, seed) for chi in args.bonds for seed in args.seeds]
 
+    # Extrapolation across jobs is defensible here and only here: at 431 sites the per-step
+    # cost barely moves with the bond dimension (D-032), so the median finished job predicts
+    # the unfinished ones. A thirteen-hour run that cannot say how much is left is a run
+    # nobody watches.
+    sweep = SweepTimer(len(jobs))
+
     with run_log(f"mps_seed_sweep_{args.arm}", directory=args.runs) as run:
         run.info(
             f"{len(jobs)} jobs: {len(args.bonds)} bond dimensions x {len(args.seeds)} seeds, "
@@ -226,11 +232,13 @@ def main(argv: list[str] | None = None) -> int:
             # Written after every job.  A fourteen-hour run that is interrupted at hour ten
             # should leave ten hours of usable rows, not nothing.
             pd.DataFrame(rows).to_csv(target, index=False)
+            sweep.record(elapsed)
             run.info(
                 f"  job {index}/{len(jobs)}  chi={chi} seed={seed}: "
                 f"AUC {rows[-1]['roc_auc']:.4f}  AP {rows[-1]['average_precision']:.4f}  "
                 f"loss {history[-1]:.4f}  {elapsed:.0f}s"
             )
+            run.info(f"  sweep: {sweep.summary()}")
 
     frame_out = pd.DataFrame(rows)
     print(f"\nWrote {display(target)} ({len(frame_out)} rows)")

@@ -604,8 +604,10 @@ def run_log(
     logger.propagate = False
 
     handler = logging.FileHandler(directory / f"{name}.log", mode="w", encoding="utf-8")
+    # Date as well as time: the seed sweep runs for thirteen hours and a log that says only
+    # "01:14:07" cannot be ordered once it has crossed midnight.
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-7s %(message)s",
-                                           datefmt="%H:%M:%S"))
+                                           datefmt="%Y-%m-%d %H:%M:%S"))
     logger.addHandler(handler)
     logging.captureWarnings(True)
     warnings_logger = logging.getLogger("py.warnings")

@@ -28,6 +28,7 @@ from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.data.splits import Blocks, card_disjoint_blocks, stratified_blocks, temporal_blocks
 from hsbcfraud.features.engineering import add_entity_aggregates, select_model_columns
+from hsbcfraud.progress import SweepTimer, run_log
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -182,36 +183,48 @@ def main(argv: list[str] | None = None) -> int:
 
     rows: list[dict] = []
     args.runs.mkdir(parents=True, exist_ok=True)
-    for arm in args.arms:
-        for seed in seeds:
-            blocks = arm_blocks[arm](seed)
-            for model_name in args.models:
-                model_rows, scores = evaluate(causal, blocks, features, model_name, seed)
-                rows.extend(model_rows)
-                test_row = next(r for r in model_rows if r["block"] == "test")
-                print(
-                    f"  {arm:13s} seed {seed} {model_name:9s} "
-                    f"test AUC {test_row['roc_auc']:.4f} AP {test_row['average_precision']:.4f} "
-                    f"({test_row['fit_seconds']:.0f}s)"
-                )
-                if model_name == "xgboost":
-                    # The frozen score interface. Everything downstream reads this, not the
-                    # model, so a stage can be re-run without refitting and a different
-                    # scorer can be substituted without touching the conformal code.
-                    block_of = np.full(len(causal), "train", dtype=object)
-                    for name in ("band", "cal", "test"):
-                        block_of[blocks[name]] = name
-                    pd.DataFrame(
-                        {
-                            "row": np.arange(len(causal)),
-                            "block": block_of,
-                            "y": causal["isFraud"].to_numpy(),
-                            "score": scores,
-                            "amount": causal["TransactionAmt"].to_numpy(),
-                            "entity": causal[cfg.split.entity_key].to_numpy(),
-                            "day": causal["day"].to_numpy(),
-                        }
-                    ).to_parquet(args.runs / f"scores_{arm}_{seed}.parquet", index=False)
+    fits = [(arm, seed, model) for arm in args.arms for seed in seeds for model in args.models]
+    # Three model families over the requested arms and seeds is about thirteen minutes of
+    # fitting with nothing on stdout between the first line and the last. The jobs are not
+    # equal-cost -- logistic regression is far cheaper than either boosted family -- so the
+    # estimate is reported together with the spread it comes from, which is what
+    # SweepTimer.summary prints, rather than as a deadline.
+    sweep = SweepTimer(len(fits))
+    blocks_for: dict[tuple[str, int], Blocks] = {}
+
+    with run_log("baselines", directory=args.runs) as run:
+        run.info(f"{len(fits)} fits: arms {args.arms}, seeds {seeds}, models {args.models}")
+        for index, (arm, seed, model_name) in enumerate(fits, start=1):
+            # Cached rather than rebuilt per model: the split is the same for all three, and
+            # rebuilding it would be work done only to be thrown away.
+            blocks = blocks_for.setdefault((arm, seed), arm_blocks[arm](seed))
+            model_rows, scores = evaluate(causal, blocks, features, model_name, seed)
+            rows.extend(model_rows)
+            test_row = next(r for r in model_rows if r["block"] == "test")
+            sweep.record(float(test_row["fit_seconds"]))
+            run.info(
+                f"  fit {index}/{len(fits)}  {arm:13s} seed {seed} {model_name:9s} "
+                f"test AUC {test_row['roc_auc']:.4f} AP {test_row['average_precision']:.4f} "
+                f"({test_row['fit_seconds']:.0f}s) -- {sweep.summary()}"
+            )
+            if model_name == "xgboost":
+                # The frozen score interface. Everything downstream reads this, not the
+                # model, so a stage can be re-run without refitting and a different scorer
+                # can be substituted without touching the conformal code.
+                block_of = np.full(len(causal), "train", dtype=object)
+                for name in ("band", "cal", "test"):
+                    block_of[blocks[name]] = name
+                pd.DataFrame(
+                    {
+                        "row": np.arange(len(causal)),
+                        "block": block_of,
+                        "y": causal["isFraud"].to_numpy(),
+                        "score": scores,
+                        "amount": causal["TransactionAmt"].to_numpy(),
+                        "entity": causal[cfg.split.entity_key].to_numpy(),
+                        "day": causal["day"].to_numpy(),
+                    }
+                ).to_parquet(args.runs / f"scores_{arm}_{seed}.parquet", index=False)
 
     args.out.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(args.out / "baselines.csv", index=False)
