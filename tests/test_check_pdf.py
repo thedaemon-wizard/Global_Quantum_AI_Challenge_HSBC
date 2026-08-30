@@ -198,3 +198,23 @@ def test_the_built_proposal_has_no_clipped_lines() -> None:
     if not proposal.exists():
         pytest.skip("proposal.pdf is not built")
     assert check_pdf.check_overfull(proposal) == []
+
+
+def test_a_structural_argument_may_contain_one_nested_group(tmp_path) -> None:
+    """A nested group inside a structural argument does not leak its contents to the scan.
+
+    The title block is `\\author{... \\url{github.com/...}}`: one group inside another. The
+    stripper's brace matcher was flat (`[^{}]*`), so the argument failed to match, was left in
+    place, and the challenge year in the author line was reported as an unbound measurement.
+    That was the fourth wrong verdict from this checker and the third caused by arguments
+    rather than by the commands themselves.
+    """
+    source = r"\author{Global Quantum + AI Challenge 2026 --- HSBC \url{example.org/x_1}}"
+    assert _scan(tmp_path, source, check_pdf.check_literals) == []
+
+
+def test_a_real_literal_beside_a_nested_group_is_still_caught(tmp_path) -> None:
+    """The other direction: widening the pattern must not blind the scan to prose."""
+    source = r"\author{Challenge 2026 \url{example.org}} and the rate was 0.0421 on the band"
+    problems = _scan(tmp_path, source, check_pdf.check_literals)
+    assert any("0.0421" in problem for problem in problems)

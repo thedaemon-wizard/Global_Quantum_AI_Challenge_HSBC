@@ -84,10 +84,25 @@ STRUCTURAL_COMMANDS = (
 # so both are declared in the source and removed before scanning.
 DECLARED_EXTERNAL = ("Cited", "Record")
 
+# One braced group, allowing a single level of nesting inside it.  A flat `[^{}]*` was not
+# enough: `\author{... {\normalsize \url{...}} ...}` nests, the group failed to match, and the
+# scanner then reported the challenge year in the title block as an unbound measurement.  That
+# is the fourth wrong verdict from this checker and the third caused by arguments rather than
+# by the commands themselves, so the pattern is widened rather than the case excused.
+#
+# One level, not arbitrary depth: regex cannot balance braces in general, and a document that
+# needs two levels inside a structural argument is one worth looking at by hand.
+#
+# A command's arguments must also sit on ONE source line.  The scan is line-by-line so that a
+# failure can name a line, and a brace opened on one line and closed on another is beyond any
+# pattern applied to a single line.  That is a real limit, not a defect to work around in the
+# document: a structural command whose argument spans lines should be joined.
+_BRACED = r"\{(?:[^{}]|\{[^{}]*\})*\}"
+
 # A command from either group together with its optional and braced arguments.
 ARGUMENT_BEARING = re.compile(
     r"\\(?:" + "|".join((*DECLARED_EXTERNAL, *STRUCTURAL_COMMANDS)) + r")\b"
-    r"\s*(?:\[[^\]]*\])?\s*(?:\{[^{}]*\}\s*){0,2}"
+    r"\s*(?:\[[^\]]*\])?\s*(?:" + _BRACED + r"\s*){0,2}"
 )
 
 # Number words, composed from the parts English builds them from rather than enumerated, so

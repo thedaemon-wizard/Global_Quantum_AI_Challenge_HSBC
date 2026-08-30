@@ -1155,6 +1155,29 @@ The arm's conclusion is unchanged and is now better supported. Every one of the 
 including the best draw at 0.2512, sits far below the tuned gradient-boosted baseline's
 0.5055--0.5114. Which draw is reported does not matter.
 
+**Reframed 2026-08-30 against the literature, which changes what this finding is worth.** The
+stall was recorded here as an unexplained property of the ansatz. It is a known failure mode:
+Tang, Khoo and Ying \[QM-13] describe randomly initialised matrix product states failing under
+gradient descent, and attribute it to a structural cause -- boundary-site interactions and a
+causality trap -- rather than to bad luck in the seed.
+
+Three things follow, and the middle one is the reason to record this at all.
+
+* **What is not new.** That randomly initialised MPS training can fail is documented. Reporting
+  it as a discovery would have been an overstatement, and this entry previously read that way.
+* **What is new, and is a measurement rather than an anecdote.** Their setting is *generative* --
+  Born machines and tomography -- and they **report no failure rate**. The 2 of 16 measured here
+  is a rate, for the *discriminative* case, on payments data, at fixed hyperparameters across
+  four seeds and four bond dimensions. That is a quantitative datum the literature does not have.
+* **What it turns into.** They propose two remedies this study did not apply: natural gradient
+  descent, and a TTNS-Sketch warm start in place of random initialisation. So the honest Phase II
+  reading is not "the tensor network is unreliable" but "the failure has a named cause and two
+  published remedies, neither of which was tried here" -- a caveat converted into a specific
+  next step rather than left as a shrug.
+
+The rate stays as reported. What changes is that it is now positioned against work that explains
+it, which is the difference between a negative result and an unfinished one.
+
 ### D-042 The format gate failed the build on the proposal's own filenames
 
 `scripts/check_pdf.py` scans the LaTeX sources for numeric literals, because every measured
@@ -2308,3 +2331,41 @@ what it was actually absorbing was mathematical scripts.
 **What it cost.** About thirty lines of prose across six sections, none of it a measured result.
 The body is 4,016 words against 4,166 before, and every figure in the submission is still
 generated from a committed table rather than drawn.
+
+### D-070 ULB was pre-registered, never obtained, and its one numeric claim did not follow from the split
+
+The pre-registration listed ULB European Cardholder as **Secondary**, with row and fraud counts,
+and asserted a degeneracy result on it. The dataset is not on this machine, no script fetches
+it, and smoke check S7 has skipped for that reason throughout. Amendment A9 records it.
+
+Three defects, and they are different kinds:
+
+1. **Not run.** E15 never executed. Same class as the drift tests in A7, same treatment.
+2. **Not measured.** 284,807 rows, 492 frauds, 1,081 duplicates are transcribed from the
+   dataset's published description. Probably right; nothing here checked them, and the protocol
+   presented them as if it had.
+3. **Arithmetically inconsistent with this protocol.** Section 6.1 said "roughly 98 calibration
+   frauds against the 99 required". 98 is 20 % of 492 -- this protocol's **test** fraction.
+   `split.cal` is 10 %, giving roughly 49.
+
+The third is the interesting one, because the error is invisible from the conclusion. 49 against
+a floor of 99 is *more* degenerate than 98 against 99, so the claim "ULB degenerates at
+alpha = 1e-2" survives and strengthens. A number that supports the right conclusion by the wrong
+route is the hardest kind to catch: nothing downstream looks wrong.
+
+**Withdrawn rather than corrected.** Recomputing 49 and leaving the sentence would assert a
+measurement that still has not been made. ULB is out of scope for Phase I, and the argument it
+was to supply -- that a fraud-conditional quantile degenerates on a small imbalanced file where
+IEEE-CIS's does not -- is already made directly by section 6.1's own degeneracy table, where the
+floor is 19 rows against 847 available.
+
+**Nothing in the submission moves.** No claim, figure or table rests on ULB; it appears in no
+`.tex` file. The appendix's licensing paragraph mentioned ULB's two-layer licence and now names
+the operative restriction instead: Kaggle competition rules section 7.A limits IEEE-CIS to
+non-commercial research, which is a reason the Phase II sprint must move to the issuer's stream.
+
+**The lesson.** D-068 recorded that a pre-registration is only as good as its narrowest
+sentence. This adds the case where the sentence is a *number*: **an unverified figure that
+implies the right conclusion is not evidence, and is harder to find than one that implies the
+wrong one.** The check that caught it was arithmetic against the protocol's own configuration,
+which costs nothing and was never run on this paragraph in three rounds.

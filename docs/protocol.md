@@ -77,7 +77,9 @@ Three conditions are carried explicitly rather than left for a reader to discove
 columns, spanning exactly 182.00 days, `TransactionDT` monotonically increasing.
 
 **Secondary:** ULB European Cardholder, 284,807 rows, 492 frauds, after removing the 1,081
-exact duplicate rows **before** splitting.
+exact duplicate rows **before** splitting. *Withdrawn by amendment A9: the dataset was never
+obtained and nothing here was run on it. These counts are transcribed from its published
+description, not measured.*
 
 Sparkov is not used in Phase I.
 
@@ -234,9 +236,15 @@ stratified arm of a superseded split and were never the temporal ones; the count
 regenerated from `results/tables/splits.csv` and agree with `degeneracy.csv` row for row.
 
 The whole `alpha` grid clears both. The guarantee lives on the legitimate class, where
-degeneracy never binds — a design property, not luck. On ULB the fraud-conditional quantile
-is degenerate at `alpha = 1e-2` (roughly 98 calibration frauds against the 99 required),
-which is why IEEE-CIS is primary and ULB is the stress case.
+degeneracy never binds — a design property, not luck.
+
+*Amended by A9.* This paragraph continued: "On ULB the fraud-conditional quantile is degenerate
+at `alpha = 1e-2` (roughly 98 calibration frauds against the 99 required), which is why
+IEEE-CIS is primary and ULB is the stress case." That was never measured, and its arithmetic
+does not match this protocol's own split: 98 is 20 % of ULB's 492 frauds, which is the **test**
+fraction, while `split.cal` is 10 % and yields roughly 49. The direction of the conclusion is
+unaffected — 49 against a floor of 99 is more degenerate than 98, not less — but the number was
+wrong and unverified, so it is withdrawn rather than corrected in place.
 
 ### 6.2 Minimum detectable effect — computed before the arm runs
 
@@ -708,3 +716,38 @@ claims.
 
 **Guarantee integrity.** No `D_cal` risk value and no threshold was derived from anything in
 the table above. The change is to the description of the rule, not to the rule.
+
+## Amendment A9 — 2026-08-30, ULB was pre-registered as a secondary dataset and never used
+
+**What changed:** section 5 listed ULB European Cardholder as **Secondary**, with row and fraud
+counts, and section 6.1 asserted a degeneracy result on it. Neither was ever executed. The
+dataset is not on this machine, no script fetches it, `ulb.csv` does not exist, and smoke check
+S7 has skipped for that reason throughout.
+
+**Three separate things were wrong, and they are worth separating.**
+
+1. **Not run.** E15, the ULB stress case, never executed. This is the same class of omission as
+   the three drift measurements in A7, and it gets the same treatment: recorded, not quietly
+   dropped.
+2. **Not measured.** The counts in section 5 — 284,807 rows, 492 frauds, 1,081 exact duplicates
+   — are transcribed from the dataset's published description. They may well be right; nothing
+   here checked them, and the protocol presented them as though they had been.
+3. **Arithmetically inconsistent with this protocol.** Section 6.1 said "roughly 98 calibration
+   frauds against the 99 required". 98 is 20 % of 492, which is this protocol's **test**
+   fraction. `split.cal` is 10 %, giving roughly 49. The conclusion survives and strengthens —
+   49 against a floor of 99 is more degenerate than 98 — but a number that does not follow from
+   the split it is quoted beside is not evidence, whichever way it points.
+
+**Why ULB is out of scope rather than deferred.** The comparison it was meant to supply — that a
+fraud-conditional quantile degenerates on a small, heavily imbalanced file where IEEE-CIS's does
+not — is an argument about sample size that the IEEE-CIS measurements already make directly:
+section 6.1's own degeneracy table shows the floor at 19 rows against 847 available, two orders
+of magnitude clear. ULB would have been a second illustration of a point already carried.
+
+**What this changes in the submission.** Nothing. No claim in either PDF, no figure and no table
+rests on ULB; `grep` finds it in no `.tex` file. `docs/PROVENANCE.md` §1.2 already records that
+it is not reconstructible here. This amendment exists so that the pre-registration says the same
+thing the repository does.
+
+**Guarantee integrity.** No `D_cal` risk value and no threshold was ever derived from ULB,
+because ULB was never loaded.

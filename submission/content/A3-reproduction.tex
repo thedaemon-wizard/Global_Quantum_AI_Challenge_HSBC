@@ -30,9 +30,10 @@ paper size and font floor against the built PDF and scans the sources for numeri
 a typed number is a defect review can see.
 
 \paragraph{Licensing.} Code is Apache-2.0 with an SPDX header on every file, enforced by test.
-Raw data is never committed: IEEE-CIS is distributed under Kaggle competition rules rather
-than an open licence, and the ULB dataset is two-layer --- the database under ODbL and its
-contents under DbCL v1.0. \texttt{cuquantum-cu11} arrives under NVIDIA's proprietary SLA and is therefore not
+Raw data is never committed: IEEE-CIS is distributed under Kaggle competition rules rather than
+an open licence, and section~7.A of those rules restricts it to non-commercial research, which
+is one reason a Phase~II sprint must move to the issuer's own stream.
+\texttt{cuquantum-cu11} arrives under NVIDIA's proprietary SLA and is therefore not
 installed by the default target; it has its own \texttt{make venv-gpu} and its own NOTICE
 entry. The conformal implementation was written from the published papers rather than adapted
 from an unlicensed repository, and that decision is recorded with its date.

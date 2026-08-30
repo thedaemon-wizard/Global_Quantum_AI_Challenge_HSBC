@@ -40,6 +40,7 @@ reference keys, so the surname is usually the handle that finds them.
 | **QM-8** | A Mixture-of-Experts Framework for Practical Hybrid-Quantum Models in Credit Card Fraud Detection | `docs/decisions.md`, `docs/protocol.md`, `src/hsbcfraud/stats.py` |
 | **QM-10** | Quantum Kernel k-Means for Credit-Card Fraud Detection: A Controlled Benchmark on Real Transaction Data | `docs/PROVENANCE.md`, `submission/content/04-quantum.tex` |
 | **QM-12** | Supervised Learning with Tensor Networks | `docs/PROVENANCE.md`, `src/hsbcfraud/quantum/mps.py`, `README.md` |
+| **QM-13** | Initialization and training of matrix product state probabilistic models | `docs/decisions.md` |
 | **QM-15** | Tensor Network Kernel Machines: A JAX Framework for Machine Learning and Nonlinear System Identification | `README.md`, `src/hsbcfraud/quantum/mps.py` |
 | **DS-1** | IEEE-CIS Fraud Detection | `README.md`, `NOTICE`, `docs/PROVENANCE.md`, `docs/decisions.md`, `docs/guarantee.md`, `docs/protocol.md` and 15 more |
 | **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/PROVENANCE.md`, `docs/decisions.md`, `docs/guarantee.md` and 16 more |
@@ -47,8 +48,7 @@ reference keys, so the surname is usually the handle that finds them.
 | **DS-4** | Database: Open Database, Contents: Database Contents | `docs/decisions.md`, `NOTICE`, `docs/PROVENANCE.md`, `docs/protocol.md` |
 | **DS-5** | Leveraging Machine Learning to Detect Fraud: Tips to Developing a Winning Kaggle Solution | `README.md`, `docs/decisions.md` |
 | **RG-1** | Commission Delegated Regulation (EU) 2018/389 supplementing Directive (EU) 2015/2366 as regards regulatory tec | `README.md`, `docs/decisions.md` |
-| **RG-2** | Regulation (EU) 2024/1689 (the Artificial Intelligence Act), Annex III point 5(b) | `submission/content/01-problem.tex` |
-| **RG-4** | effective challenge | `docs/decisions.md`, `submission/content/01-problem.tex` |
+| **RG-4** | effective challenge | `docs/decisions.md` |
 | **RG-5** | fraud | `docs/decisions.md` |
 | **RG-6** | Financial Conduct Authority | `README.md`, `docs/decisions.md` |
 | **SW-1** | Qiskit 2.5.2 | `README.md`, `Makefile`, `NOTICE`, `docs/PROVENANCE.md`, `docs/decisions.md`, `pyproject.toml` and 8 more |
@@ -80,8 +80,8 @@ listed rather than left to be discovered.
 | **QM-3** | The Inductive Bias of Quantum Kernels |
 | **QM-9** | Quantum Conformal Prediction for Reliable Uncertainty Quantification in Quantum Machine Learning |
 | **QM-11** | Adaptive Conformal Prediction for Quantum Machine Learning |
-| **QM-13** | Initialization and training of matrix product state probabilistic models |
 | **QM-14** | Gillani, S. A., Baig, M. S. A., Shah, S. M., Ali, A. and Siddiqui, H. "How Quantum Is the Advantage? A Fair, C |
+| **RG-2** | Regulation (EU) 2024/1689 (the Artificial Intelligence Act), Annex III point 5(b) |
 | **RG-3** | Regulation (EU) 2026/1744, published in the Official Journal 24 July 2026 |
 | **SW-5** | crepes 0.9.1 |
 | **SW-8** | scikit-learn 1.9.0 |
