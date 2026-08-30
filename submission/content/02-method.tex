@@ -7,7 +7,7 @@ wrapped in a classical certificate that depends on neither.
 
 \paragraph{The rule, and which block may touch which parameter.} Figure~\ref{fig:architecture}
 is the whole method. A classical scorer $f$ splits traffic three ways against thresholds fixed
-in advance; the band is $B = \{x : \taulo < f(x) < \tauhi\}$ and $g$ is the in-band re-scorer,
+in advance; the band is $B = \{x : \taulo \le f(x) < \tauhi\}$ and $g$ is the in-band re-scorer,
 where a quantum model would enter if one were usable. Which block sets what is what carries the
 guarantee: edges and thresholds from $\Dband$, $\lambda$ certified on $\Dcal$, nothing selected
 on $\Dtest$.

@@ -2565,3 +2565,135 @@ not, and the two conventions sat in the same document.
 Integers of 10,000 and above are now grouped in the inline macros as they always were in the
 tables. Only integers: a probability or a ratio is never grouped, and `_value_appears` in
 `check_claims.py` already matched both forms, so the binding is unaffected.
+
+### D-082 GitHub eats backslash escapes inside math, and eleven expressions were affected
+
+A reader reported "Missing or unrecognized delimiter for \Bigl" in README section 4.2.
+
+**The renderer is MathJax, not KaTeX**, and identifying that mattered more than it sounds. The
+first pass here used KaTeX as the oracle, which answers "Expected group as argument to '\Bigr'"
+for the same input -- a different message for the same defect. The reported string is MathJax's
+wording, and MathJax was then confirmed by reproducing the reader's message exactly. Working
+from the wrong renderer produced two wrong conclusions and one wrong fix, all corrected below.
+
+**What GitHub does to the source**, measured through its own `POST /markdown` endpoint and then
+through MathJax, rather than modelled:
+
+| written as | what the renderer receives |
+|---|---|
+| `$...$` or `$$...$$` | a backslash before ASCII punctuation is **removed** |
+| `$...$` only | a raw `<` or `>` is escaped **twice** and arrives as the five characters `&lt;` |
+| fenced ` ```math ` | **byte for byte**, except a row separator at end of line, which gains a backslash |
+| `$...$` across a line break | not mathematics at all: literal text and no math node |
+
+So `\Bigl\{` arrives as `\Bigl{` -- a group opener where a delimiter was meant.
+
+**The visible error was the least of it.** One expression failed outright; **seven others
+rendered without any error and silently wrong** -- `\,` and `\;` arriving as a literal comma
+and semicolon dropped into the middle of a formula, and `\{ \}` arriving as grouping braces so
+that the abstention band printed as $B = x : \ldots$ with its set braces gone, and the
+tensor-network sum printed as $\sum_s$ rather than a sum over configurations. A defect that
+raises is found by whoever reads the page. A defect that renders is not.
+
+**A second failure the report did not mention**: a raw `<` inside inline math. Four spans had
+one, including both statements of the abstention band and both statements of the RBF screen
+threshold. Each answers "Misplaced &". And one inline span crossed a soft line break, so it was
+never mathematics.
+
+**The fix follows the table.** Display mathematics moves into fenced `math` blocks, where it
+keeps its natural `\;` `\,` `\{` `\}` spelling and needs no substitution at all -- the row
+separator in the decision rule starts its line rather than ending it, which is the one fence
+hazard. Inline mathematics has no fence available, since a fence cannot live in a table cell, so
+it uses `\lbrace` `\rbrace` `\lt` `\gt`. Verified end to end: all 137 spans in 15 documents
+pushed through GitHub's renderer and then through MathJax, zero failures.
+
+**Two claims from the first pass, withdrawn.** `\textsc` was reported here as unsupported and
+therefore as breaking both central formulas of the guarantee document. That was a KaTeX
+artefact: MathJax defines `\textsc`, and those formulas rendered. The `\texttt{DECLINE}`
+spelling was kept anyway, because the README already used it for the same word, but it is a
+consistency change and not a repair. Second, the first fix substituted `\thickspace` for `\;`
+throughout; the fence makes that unnecessary, and an independent check raised a doubt about
+which MathJax package set GitHub loads that the fence removes entirely rather than answers.
+
+**And a gate, because there was none.** `scripts/check_markdown_math.py` extracts every span
+GitHub would render, skipping code fences and code spans, and asserts each of the four rows of
+that table. With `--render DIR` it additionally parses every expression through MathJax as the
+renderer will receive it, which is the only way to catch an undefined macro. Run against the
+previous commit it reports all eleven, ending with the reader's own error string; against this
+one, none.
+
+**The lesson.** Every artefact this project publishes had a gate except the one most people will
+actually read, and the first attempt to build that gate used the wrong renderer and would have
+certified a document GitHub could not display. **A gate is only as good as its oracle, and the
+oracle has to be identified rather than assumed.**
+
+### D-083 Three formulas in the shipped documents are not what the code computes
+
+Found while checking the mathematics that the rendering work had touched. All three are in the
+proposal PDF, not only in the markdown.
+
+**Effective rank.** Both documents printed
+$r_{\mathrm{eff}} = (\sum_i \sigma_i)^2 / (n \sum_i \sigma_i^2)$, the participation ratio.
+`effective_rank_ratio` in `quantum/screens.py` computes the **exponential of the spectral
+entropy**, normalised by matrix size. These are different functions of the spectrum. They agree
+on a flat spectrum and nowhere else: on a geometric decay they give 0.4873 against 0.3721, a
+31 % relative gap. Every screen verdict in `screens.csv`, and the reported 28 of 120 passing
+conditioning, came from the entropy form -- so the printed formula was not the one that produced
+the number beside it.
+
+**RBF correlation.** Printed as $\mathrm{corr}(K_Q, K_{\mathrm{RBF}}(\gamma^\star))$. The code
+takes the **largest absolute** correlation over a 25-point bandwidth grid, on **off-diagonal
+entries only** -- both kernels have unit diagonal, so including it would add a block of
+perfectly correlated values and inflate the result. Two material qualifications, neither stated.
+
+**The tensor-network contraction.** As written, every bond index is contracted and the
+expression has no free index: it is a scalar. `MPSClassifier` carries a $(\chi, 2)$ head that
+closes the final bond into two class logits, which is what makes it a classifier. The head is
+now in both statements of the formula.
+
+**The lesson, and it is uncomfortable.** This project binds every quoted *number* to a table and
+gates on it. It never checked a single *formula* against the code, and three of them were wrong
+in the shipped PDF while every gate was green. A number is easy to bind and a formula is not,
+which is exactly why the formulas drifted and the numbers did not.
+
+### D-084 The degeneracy flag disagreed with its own module, twice
+
+`degeneracy_floor` derives the bound and documents it as **strict**:
+at $n = \lceil 1/\alpha \rceil - 1$ the algebra gives $\lceil (n+1)(1-\alpha) \rceil = n$,
+a finite quantile, so a class
+holding exactly `floor` points is not degenerate. Its docstring even records that an earlier
+version said "at or below" and was off by one. The `headroom` property beside it agrees: it
+calls a class degenerate only when the headroom is negative.
+
+`mondrian_thresholds` then set `degenerate = n <= floor`, which is the version the docstring had
+already retracted. At exact equality it reports a class as degenerate whose quantile is finite,
+and disagrees with `headroom == 0` on the same object.
+
+Nothing measured moves: the smallest headroom in `degeneracy.csv` is 1122 rows, so no reported
+configuration is anywhere near the boundary. That is precisely why only a test would ever have
+caught it, and there is one now, parameterised over the five levels on the grid, asserting the
+three statements agree at `floor` and at `floor - 1`.
+
+### D-085 The band was written open at both ends and implemented half-open
+
+`rows_in_band` selects `score >= low & score < high` and its docstring says so: a score at the
+upper edge is a decline, not an abstention. Every written statement of the band said
+`tau_lo < f(x) < tau_hi`, open at both ends -- so a score exactly at the lower edge abstained in
+the code and was approved by the document.
+
+Five sites, one of them the proposal PDF: `README.md`, `docs/guarantee.md` twice (the notation
+table and the three-valued decision rule), `docs/protocol.md` twice, and
+`submission/content/02-method.tex`. The decision rule was the worst of them, because its three
+branches were written `>= tau_hi`, `tau_lo < f(x) < tau_hi` and `<= tau_lo`: a score exactly at
+`tau_lo` matched the approve branch and was excluded from the step-up branch, while the code
+routes it to step-up. Two branches claiming the same point is not imprecision, it is an
+ill-defined rule.
+
+All five now read `tau_lo <= f(x) < tau_hi`, and the decision rule's approve branch reads
+`f(x) < tau_lo`, which makes the three branches a partition.
+
+On continuous scores this is a measure-zero event and no reported number moves. It is recorded
+because the estimand is the whole content of the guarantee: a certificate on
+$\mathbb{P}(D(X) = \texttt{DECLINE} \mid Y = 0, X \in B)$ is a statement about a specific $B$,
+and a reader checking the code against the document would have found them disagreeing about
+which one.

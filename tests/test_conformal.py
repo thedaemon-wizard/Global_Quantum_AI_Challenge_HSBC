@@ -13,6 +13,7 @@ sentence that describes a test should describe the test that runs.
 
 from __future__ import annotations
 
+import math
 from itertools import pairwise
 
 import numpy as np
@@ -215,3 +216,38 @@ def test_geometric_weights_favour_recent_observations() -> None:
 def test_unit_rho_gives_unit_weights() -> None:
     """rho = 1 is plain split conformal, which is the sanity anchor for the whole family."""
     assert np.allclose(geometric_weights(30, rho=1.0), np.ones(30))
+
+
+@pytest.mark.parametrize("alpha", [0.5, 0.25, 0.2, 0.1, 0.05])
+def test_degeneracy_is_strict_at_the_floor(alpha: float) -> None:
+    """A class holding exactly ``floor`` calibration points is not degenerate.
+
+    ``degeneracy_floor`` documents the bound as strict and derives it -- an earlier version of
+    that docstring said "at or below", which is off by one at exact equality. The flag in
+    ``mondrian_thresholds`` still read ``n <= floor``, so the module contradicted itself twice
+    in one file and disagreed with its own ``headroom`` property, which calls a class
+    degenerate only when the headroom is negative.
+
+    Nothing measured moves: the smallest headroom in ``degeneracy.csv`` is 1122 rows. That is
+    exactly why a test is the only thing that would ever have caught it.
+    """
+    at_floor = math.ceil(degeneracy_floor(alpha))
+
+    # Ground truth: a finite quantile exists, so the class is not degenerate.
+    qhat, k, n = conformal_threshold(np.arange(at_floor, dtype=float), alpha)
+    assert math.isfinite(qhat), f"n = floor = {at_floor} should admit a finite quantile"
+    assert k <= n
+
+    labels = np.zeros(at_floor, dtype=int)
+    result = mondrian_thresholds(np.arange(at_floor, dtype=float), labels, alpha)[0]
+    assert not result.degenerate, "a class exactly at the floor is not degenerate"
+    assert result.headroom >= 0
+
+    # One row below it is, and the two statements have to agree.
+    below = at_floor - 1
+    if below > 0:
+        qhat_below, _, _ = conformal_threshold(np.arange(below, dtype=float), alpha)
+        assert not math.isfinite(qhat_below), f"n = {below} should have no finite quantile"
+        thin = mondrian_thresholds(np.arange(below, dtype=float),
+                                   np.zeros(below, dtype=int), alpha)[0]
+        assert thin.degenerate and thin.headroom < 0

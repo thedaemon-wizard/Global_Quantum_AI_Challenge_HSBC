@@ -28,7 +28,8 @@ help:
 	@echo "figures    submission figures, generated from the tables"
 	@echo "walkthrough trace the certificate end to end against the committed tables"
 	@echo "freeze     write the SHA-256 manifest"
-	@echo "claims     recompute every number quoted in prose from its source table"
+	@echo "claims     recompute every number quoted in prose from its source table, and check"
+	@echo "           that the markdown mathematics survives GitHub's renderer"
 	@echo "tex        regenerate the LaTeX macros from docs/claims.yaml"
 	@echo "pdf        build the submission PDFs; format constraints are build assertions"
 	@echo "pdf-draft  same build with the assertions demoted to a report (fitting loop)"
@@ -145,10 +146,17 @@ claims: derived
 	$(PY) scripts/check_claims.py --citations
 	$(PY) scripts/check_claims.py --unused
 	$(PY) scripts/check_protocol.py
+	$(PY) scripts/check_markdown_math.py $(KATEX)
 
 # `check` depends on `pdf` because it gates *against* the built PDFs: claims.yaml lists them
 # as documents and freeze.py hashes them in the scientific class.  Without the dependency,
 # `make reproduce && make check` validates documents built before the tables moved.
+# Set KATEX to a directory from which `import katex` resolves to turn on the parse half of
+# check_markdown_math: KATEX=/path/to/dir make check. Without it the escape half still runs,
+# which is what catches the defect class that broke README section 4.2.
+KATEX_DIR ?=
+KATEX = $(if $(KATEX_DIR),--render $(KATEX_DIR),)
+
 check: pdf claims
 	$(PY) scripts/freeze.py --check
 

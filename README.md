@@ -101,9 +101,11 @@ unconditional false-decline rate — it does not, and §1 of the protocol says w
 
 The certified quantity is conditional on the band, not marginal:
 
-$$R(\lambda) \;=\; \mathbb{P}\bigl(\,D(X) = \texttt{DECLINE} \;\bigm|\; Y = 0,\; X \in B\,\bigr)$$
+```math
+R(\lambda) \;=\; \mathbb{P}\bigl(\, D(X) = \texttt{DECLINE} \;\bigm|\; Y = 0,\; X \in B\,\bigr)
+```
 
-where $B = \{x : \tau_{\mathrm{lo}} < f(x) < \tau_{\mathrm{hi}}\}$ is the abstention band and
+where $B = \lbrace x : \tau_{\mathrm{lo}} \le f(x) \lt \tau_{\mathrm{hi}} \rbrace$ is the abstention band and
 $D$ the composite rule. The marginal rate $\mathbb{P}(D(X)=\texttt{DECLINE} \mid Y=0)$ is
 reported alongside and is deliberately **not** the headline: it is dominated by
 $\tau_{\mathrm{hi}}$ and would barely move if the in-band scorer were replaced by a coin
@@ -116,7 +118,9 @@ Learn-then-Test (Angelopoulos, Bates, Candès, Jordan & Lei, *AoAS* 19(2):1641�
 controls the family-wise error over a **pre-specified finite grid** $\Lambda$. For each
 $\lambda \in \Lambda$ the Hoeffding–Bentkus p-value is
 
-$$p^{\mathrm{HB}}_\lambda \;=\; \min\Bigl\{\, \exp\bigl(-n\,h_1(\hat{R}(\lambda) \wedge \alpha,\ \alpha)\bigr),\;\; e\,\mathbb{P}\bigl(\mathrm{Bin}(n,\alpha) \le \lceil n\hat{R}(\lambda)\rceil\bigr) \,\Bigr\}$$
+```math
+p^{\mathrm{HB}}_\lambda \;=\; \min\Bigl\{ \, \exp\bigl(-n\, h_1(\hat{R}(\lambda) \wedge \alpha,\ \alpha)\bigr),\;\; e\,\mathbb{P}\bigl(\mathrm{Bin}(n,\alpha) \le \lceil n\hat{R}(\lambda)\rceil\bigr) \,\Bigr\}
+```
 
 with $h_1(a,b) = a\log\frac{a}{b} + (1-a)\log\frac{1-a}{1-b}$. Two risks are controlled
 jointly — the band-conditional false-decline rate at $\alpha$ and the false-negative rate at
@@ -134,7 +138,9 @@ nothing is lost. See [D-024](docs/decisions.md).
 For a sound split-conformal system the number of test errors is not merely bounded in
 expectation — it follows an exact predictive law:
 
-$$E \;\sim\; \mathrm{BetaBinomial}\bigl(m,\; n + 1 - k,\; k\bigr), \qquad k = \lceil (n+1)(1-\alpha) \rceil$$
+```math
+E \;\sim\; \mathrm{BetaBinomial}\bigl(m,\; n + 1 - k,\; k\bigr), \qquad k = \lceil (n+1)(1-\alpha) \rceil
+```
 
 Checking $\hat{r} \le \alpha$ instead is a **one-sided test against the wrong null**: on a
 correctly calibrated system it passes only 51.15 % of the time. Every coverage row in
@@ -203,7 +209,7 @@ no fixed inflation factor is claimed.
 
 Two a-priori gates over 120 configurations of encoding × qubits × bandwidth × entanglement:
 a kernel is usable only if it is not exponentially concentrated **and** not reproducible by a
-tuned RBF ($\rho_{\mathrm{RBF}} < 0.60$). **28 of 120 pass conditioning; none passes both.**
+tuned RBF ($\rho_{\mathrm{RBF}} \lt 0.60$). **28 of 120 pass conditioning; none passes both.**
 The closest any configuration came was $\rho_{\mathrm{RBF}} = 0.6291$. The arm was therefore
 never run on the decision task — which is what pre-registering a screen is for.
 [Screen definitions and the full 120](docs/RESULTS.md#quantum-kernel-rejected-by-the-screens-before-it-ran)

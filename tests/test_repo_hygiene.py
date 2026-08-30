@@ -262,3 +262,27 @@ def test_protocol_lock_matches_configuration() -> None:
     assert result.returncode != 1, (
         "the pre-registered state changed without a documented amendment:\n" + result.stderr
     )
+
+
+def test_markdown_math_survives_the_github_renderer() -> None:
+    """No math span in any document relies on an escape GitHub removes.
+
+    Three transformations, each measured against GitHub's own renderer. Outside a fenced
+    ``math`` block the backslash is stripped from escaped ASCII punctuation, so ``\\Bigl\\{``
+    arrives as ``\\Bigl{`` and fails outright while ``\\,`` and ``\\;`` arrive as a literal
+    comma and semicolon and render *without* an error. Inside inline ``$...$`` a raw ``<`` is
+    escaped twice and reaches the renderer as ``&lt;``. And an inline span that crosses a line
+    break is not mathematics at all.
+
+    Eleven expressions were affected when this was written, one of them the display equation in
+    README section 4.2 that a reader reported. The property is checked here rather than only in
+    ``make check`` because the published README was the one surface in this repository with no
+    gate on it at all.
+    """
+    sys.path.insert(0, str(REPO / "scripts"))
+    import check_markdown_math
+
+    spans = check_markdown_math.collect(REPO)
+    assert spans, "no math found in any document; the extractor has stopped working"
+    problems = check_markdown_math.check_spans(spans) + check_markdown_math.check_unbalanced(REPO)
+    assert not problems, "\n".join(problems)

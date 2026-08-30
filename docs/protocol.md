@@ -126,10 +126,10 @@ withdrawn, because the count is what a reader actually wants.
 Three-valued, matching the actions an issuer actually has:
 
 ```
-f(x) >= tau_hi          ->  DECLINE
-f(x) <= tau_lo          ->  APPROVE without step-up
-tau_lo < f(x) < tau_hi  ->  STEP-UP (SCA challenge); the in-band scorer g re-ranks,
-                            and g(x) >= lambda decides
+f(x) >= tau_hi           ->  DECLINE
+f(x) <  tau_lo           ->  APPROVE without step-up
+tau_lo <= f(x) < tau_hi  ->  STEP-UP (SCA challenge); the in-band scorer g re-ranks,
+                             and g(x) >= lambda decides
 ```
 
 The abstain tier is **step-up authentication**, not manual review. Routing even one percent
@@ -142,7 +142,7 @@ as well as as a fraction.
 
 ## 4. The band, and why freezing it is what makes the guarantee valid
 
-`B = { x : tau_lo < f(x) < tau_hi }`.
+`B = { x : tau_lo <= f(x) < tau_hi }`, half-open, matching `rows_in_band`.
 
 The edges are chosen on `D_band` **only**, by the rule fixed here: take the traffic budget
 `beta` from `configs/default.yaml` and place the interval symmetrically in score quantiles

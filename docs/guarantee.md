@@ -15,7 +15,7 @@ Every number below is reproduced from `results/tables/` and is checked by
 |---|---|
 | $f$ | the classical scorer, fitted on $D_{\mathrm{train}}$ |
 | $\tau_{\mathrm{lo}}, \tau_{\mathrm{hi}}$ | band edges, fixed on $D_{\mathrm{band}}$ and never re-estimated |
-| $B$ | the abstention band, $\{x : \tau_{\mathrm{lo}} < f(x) < \tau_{\mathrm{hi}}\}$ |
+| $B$ | the abstention band, $\lbrace x : \tau_{\mathrm{lo}} \le f(x) \lt \tau_{\mathrm{hi}} \rbrace$ |
 | $g$ | the in-band re-scorer, where a quantum model would enter |
 | $\lambda$ | the in-band decision threshold, selected on $D_{\mathrm{cal}}$ |
 | $\alpha$ | the false-decline budget |
@@ -25,21 +25,21 @@ Every number below is reproduced from `results/tables/` and is checked by
 
 The decision rule is three-valued:
 
-$$
+```math
 D(x) = \begin{cases}
-\textsc{decline} & f(x) \ge \tau_{\mathrm{hi}}\\
-\textsc{step-up},\ \text{then } g(x) \ge \lambda \Rightarrow \textsc{decline} & \tau_{\mathrm{lo}} < f(x) < \tau_{\mathrm{hi}}\\
-\textsc{approve} & f(x) \le \tau_{\mathrm{lo}}
+\texttt{DECLINE} & f(x) \ge \tau_{\mathrm{hi}}
+\\ \texttt{STEP-UP},\ \text{then } g(x) \ge \lambda \Rightarrow \texttt{DECLINE} & \tau_{\mathrm{lo}} \le f(x) < \tau_{\mathrm{hi}}
+\\ \texttt{APPROVE} & f(x) < \tau_{\mathrm{lo}}
 \end{cases}
-$$
+```
 
 ## 2. The estimand, and why it is conditional
 
 The certified quantity is the **band-conditional** false-decline rate:
 
-$$
-R(\lambda) \;=\; \mathbb{P}\bigl(D(X) = \textsc{decline} \,\bigm|\, Y = 0,\; X \in B\bigr)
-$$
+```math
+R(\lambda) \;=\; \mathbb{P}\bigl(D(X) = \texttt{DECLINE} \,\bigm|\, Y = 0,\; X \in B\bigr)
+```
 
 Not the marginal false-decline rate. The marginal rate is dominated by $\tau_{\mathrm{hi}}$ and
 would be almost unchanged if $g$ were replaced by a coin flip, so a certificate on it would not
@@ -55,9 +55,9 @@ Learn-then-Test selects $\hat\lambda$ from a grid fixed in advance, testing a nu
 point with Hoeffding-Bentkus $p$-values under Holm correction across the family. The guarantee
 is over the draw of $D_{\mathrm{cal}}$:
 
-$$
+```math
 \mathbb{P}\bigl(R(\hat\lambda) > \alpha\bigr) \;\le\; \delta
-$$
+```
 
 Three properties of this statement matter more than the inequality itself.
 

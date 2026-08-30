@@ -73,7 +73,7 @@ bound claim.
 |---|---|---|---|
 | Tuned GBDT, full feature set | 431 features, 356,216 train rows | **15.9 – 18.8 s** | GPU |
 | Tuned GBDT, in-band | 8 features, 2,916 band rows | **0.28 s** | GPU |
-| Tensor network, in-band | 8 sites, $\chi \in \{4, 8, 16, 32\}$ | **0.69 – 1.91 s** per fit | GPU |
+| Tensor network, in-band | 8 sites, $\chi \in \lbrace 4, 8, 16, 32 \rbrace$ | **0.69 – 1.91 s** per fit | GPU |
 | Tensor network, full scale | 431 sites, 356,216 rows, 30 epochs | **2,747 – 3,145 s** per fit | GPU |
 | Full-scale seed sweep | 16 fits, 4 bond dimensions $\times$ 4 seeds | **13.0 GPU-hours** total | GPU |
 | Quantum kernel screens | 120 configurations, 300 stratified rows each | **0.041 – 0.708 s** per Gram matrix, **17.5 s** total | CPU |

@@ -130,8 +130,9 @@ set is empty by construction and the risk is structurally zero ([D-024](decision
 | 0.100 | 0.15 | 0.45 | 4831 | 1 | 0.0537 |
 | 0.100 | 0.25 | 0.45 | 4831 | 2 | 0.0426 |
 
-These are **loose levels**, and saying so is the point. Nothing certifies below $\alpha =
-0.10$, nothing certifies at the 2 % band budget at all, and every surviving configuration
+These are **loose levels**, and saying so is the point.
+Nothing certifies below $\alpha = 0.10$, nothing certifies at the 2 % band budget at all,
+and every surviving configuration
 needs $\alpha_{\mathrm{FN}} = 0.45$. The mechanism is sample size, not method: certification
 appears only once the band budget is widened enough to put a few thousand legitimate rows in
 $D_{\mathrm{cal}}$. That is [amendment A1](protocol.md) showing up in the measurement
@@ -159,11 +160,20 @@ single seed's maximum, which was an overclaim.
 
 Two a-priori gates over 120 configurations (encoding × qubits × bandwidth × entanglement):
 
-$$\text{effective rank } r_{\mathrm{eff}} = \frac{\left(\sum_i \sigma_i\right)^2}{n \sum_i \sigma_i^2}, \qquad \rho_{\mathrm{RBF}} = \mathrm{corr}\bigl(K_Q,\, K_{\mathrm{RBF}}(\gamma^\star)\bigr)$$
+```math
+r_{\mathrm{eff}} = \frac{1}{n}\exp\left(-\sum_i p_i \log p_i\right), \quad p_i = \frac{\sigma_i}{\sum_j \sigma_j}, \qquad \rho_{\mathrm{RBF}} = \max_{\gamma}\left|\mathrm{corr}\bigl(K_Q, K_{\mathrm{RBF}}(\gamma)\bigr)\right|
+```
+
+$r_{\mathrm{eff}}$ is the exponential of the spectral entropy of the Gram matrix, normalised by
+its size, so it is 1 for a flat spectrum and near 0 for a rank-one one. $\rho_{\mathrm{RBF}}$ is
+maximised over a 25-point bandwidth grid and computed on **off-diagonal entries only**: both
+kernels have unit diagonal by construction, so including it would add a block of perfectly
+correlated values. The absolute value matters too, since an anti-correlated kernel is no more
+distinct from the RBF family than a correlated one.
 
 A kernel is usable only if it is **not** exponentially concentrated — effective rank
 $r_{\mathrm{eff}}$ inside a usable band — **and not** reproducible by a tuned RBF
-($\rho_{\mathrm{RBF}} < 0.60$). Result: **28 of 120 pass conditioning, 0 pass distinctness, 0 pass both.** The
+($\rho_{\mathrm{RBF}} \lt 0.60$). Result: **28 of 120 pass conditioning, 0 pass distinctness, 0 pass both.** The
 closest any configuration came was $\rho_{\mathrm{RBF}} = 0.6291$ against a 0.60 threshold.
 
 The kernel arm was therefore not run on the decision task. Reporting a screen that rejects
@@ -173,7 +183,13 @@ its own headline method is the point of pre-registering it.
 
 The matrix-product-state classifier (Stoudenmire & Schwab, NeurIPS 29:4799, 2016) contracts
 
-$$f(\mathbf{x}) \;=\; \sum_{\{s\}} A^{s_1}_{\alpha_1} A^{s_2}_{\alpha_1\alpha_2} \cdots A^{s_N}_{\alpha_{N-1}} \prod_{j=1}^{N} \phi^{s_j}(x_j), \qquad \phi(x) = \bigl[\cos\tfrac{\pi x}{2},\ \sin\tfrac{\pi x}{2}\bigr]$$
+```math
+f_\ell(\mathbf{x}) \;=\; \sum_{\{ s \}} A^{s_1}_{\alpha_1} A^{s_2}_{\alpha_1\alpha_2} \cdots A^{s_N}_{\alpha_{N-1}} W_{\alpha_{N-1}\ell} \prod_{j=1}^{N} \phi^{s_j}(x_j), \qquad \phi(x) = \bigl[\cos\tfrac{\pi x}{2},\ \sin\tfrac{\pi x}{2}\bigr]
+```
+
+The head $W$ is what makes this a classifier rather than a scalar: the cores contract to a
+vector on the final bond and $W$ closes it into the two class logits $\ell$. Written without it,
+every bond index is contracted and the expression has no free index at all.
 
 with bond dimension $\chi$ swept rather than tuned.
 
@@ -183,7 +199,7 @@ Every interval contains zero. In-band, on identical rows and features,
 against a tuned GBDT — see [`mps_band.csv`](../results/tables/mps_band.csv) and
 [`mps_h4.csv`](../results/tables/mps_h4.csv).
 
-| $\chi$ | AP (MPS) | AP (GBDT) | $\Delta$AP | 95 % clustered CI | $p$ | Holm |
+| $\chi$ | AP (MPS) | AP (GBDT) | $\Delta\mathrm{AP}$ | 95 % clustered CI | $p$ | Holm |
 |---|---|---|---|---|---|---|
 | 4 | 0.1202 | 0.1407 | -0.0205 | [-0.0593, +0.0149] | 0.864 | not rejected |
 | 8 | 0.1173 | 0.1407 | -0.0234 | [-0.0630, +0.0122] | 0.895 | not rejected |

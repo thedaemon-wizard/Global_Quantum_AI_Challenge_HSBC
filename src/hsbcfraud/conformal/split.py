@@ -143,6 +143,9 @@ def mondrian_thresholds(
             order_index=k,
             n_calibration=n,
             floor=floor,
-            degenerate=bool(n <= floor),
+            # Strict, matching degeneracy_floor's own docstring and the `headroom` property
+            # beside it: at n == floor the algebra gives ceil((n+1)(1-alpha)) == n, which is a
+            # finite quantile. `<=` reported a class at exactly the floor as degenerate.
+            degenerate=bool(n < floor),
         )
     return out

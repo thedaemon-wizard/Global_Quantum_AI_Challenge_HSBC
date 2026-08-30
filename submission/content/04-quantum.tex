@@ -6,8 +6,9 @@
 pre-registered screens over \ClaimScreenConfigs{} configurations of encoding $\times$ qubits
 $\times$ bandwidth $\times$ entanglement, and gated on two: a kernel is usable only if it is
 not exponentially concentrated --- effective rank
-$r_{\mathrm{eff}} = (\sum_i \sigma_i)^2 / (n \sum_i \sigma_i^2)$ inside a usable band ---
-\emph{and} not reproducible by a tuned RBF, $\rho_{\mathrm{RBF}} < 0.60$.
+$r_{\mathrm{eff}} = \exp(-\sum_i p_i \log p_i)/n$ at $p_i = \sigma_i/\sum_j \sigma_j$, inside a
+usable band --- \emph{and} not reproducible by a tuned RBF, where $\rho_{\mathrm{RBF}}$ is the
+largest absolute off-diagonal correlation over a bandwidth grid and must fall below 0.60.
 
 \ClaimScreenPassConditioning{} of \ClaimScreenConfigs{} pass conditioning.
 \textbf{\ClaimScreenPassBoth{} pass both.} The closest any configuration came to distinctness
@@ -23,11 +24,11 @@ advantage, and finds one apparent advantage to be an artefact of unequal search 
 
 \paragraph{The tensor network ran, and did not win.} A matrix-product-state classifier contracts
 \[
-f(\mathbf{x}) = \sum_{\{s\}} A^{s_1} \cdots A^{s_N} \prod_j \phi^{s_j}(x_j),
-\qquad \phi(x) = \bigl[\cos\tfrac{\pi x}{2},\ \sin\tfrac{\pi x}{2}\bigr],
+f_\ell(\mathbf{x}) = \sum_{\{s\}} \bigl[A^{s_1} \cdots A^{s_N}\bigr]_\alpha W_{\alpha\ell}
+\prod_j \phi^{s_j}(x_j), \qquad \phi(x) = \bigl[\cos\tfrac{\pi x}{2},\ \sin\tfrac{\pi x}{2}\bigr],
 \]
-sweeping the bond dimension $\chi$
-rather than tuning it. In the band, on identical rows and features, it reaches average
+where $W$ is the head that closes the final bond into the two class logits $\ell$, sweeping the
+bond dimension $\chi$ rather than tuning it. In the band, on identical rows and features, it reaches average
 precision \ClaimMpsApBestChi{} at the largest bond dimension against \ClaimGbdtApBand{} for
 the tuned gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi.
 
