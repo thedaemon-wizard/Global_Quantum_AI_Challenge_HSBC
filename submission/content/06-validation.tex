@@ -30,10 +30,10 @@ and report it whichever way it came out.
 \textbf{Benchmarking is against a tuned baseline, replicated, with the power stated first.}
 The comparator is a tuned gradient-boosted model, not a straw man, fitted on identical rows and
 features. Intervals resample entities rather than rows, because transactions on one card are
-not independent. Crucially, the minimum detectable effect is computed \emph{before} the
-comparison and reported with it: here that figure is \ClaimMpsMdeRealised{} average precision
-against a pre-registered ceiling of \ClaimPowerCeiling{}, which is why H4 is reported as
-underpowered rather than as a null. A PoC would size its evaluation block to that ceiling
+not independent. Crucially, a detectable-effect ceiling is fixed \emph{before} the comparison: here
+\ClaimPowerCeiling{}, against an effect the comparison could actually resolve of
+\ClaimMpsMdeRealised{}, computed afterwards from its own bootstrap standard error. That gap is
+why H4 is reported as underpowered rather than as a null. A PoC would size its evaluation block to that ceiling
 first, which is the single change that would make a quantum-versus-classical comparison on this
 problem informative.
 

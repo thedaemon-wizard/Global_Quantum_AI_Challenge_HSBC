@@ -22,9 +22,9 @@ a gate irritating enough to be bypassed protects nothing. Fields entering no gua
 
 \paragraph{Amendments.} The pre-registration carries \ClaimProtocolAmendments{} of them. The
 first four were derived from block sizes or from $\Dband$ alone, never from $\Dcal$ risks or
-from $\Dtest$. The last three were not, and are listed as what they are: two corrections found
-after the certificate existed, and one disclosure of work that was pre-registered and never
-done.
+from $\Dtest$. The rest were not, and are listed as what they are: corrections found after the
+certificate existed, and two disclosures --- of work pre-registered and never done, and of a
+rule stated more strongly than the code enforces it.
 
 \begin{enumerate}[label=A\arabic*.]
 \item The band-conditional certificate is sample-starved by construction; the reachable
@@ -51,13 +51,20 @@ done.
   as ``measured, not assumed''. Three were never run --- the conformal test martingale, the
   block permutation test, and band-conditional against marginal drift. No script exists for any
   of them, and the two tables they would have written do not exist.
+\item \emph{The single-evaluation rule described more than the code enforces.} The rule said
+  every sweep and ablation runs on held-out slices of $\Dband$ or $\Dcal$; three scripts read
+  $\Dtest$ without the guard. Nothing was \emph{selected} there --- the ablation table feeds no
+  claim, and every threshold comes from $\Dband$ and $\Dcal$ --- so the guarantee stands, but
+  the sentence did not. The protocol was corrected rather than the scripts, which would have
+  changed committed tables to retire a wording defect.
 \end{enumerate}
 
-\paragraph{The single-evaluation rule is a mechanism.} $\Dtest$ is read once, for the one
-configuration selected on $\Dband$ and certified on $\Dcal$. The loader records the authorised
-configuration hash and its evaluation count in
-\texttt{results/tables/test\_access.json} and raises on a second distinct configuration. A
-reviewer can read the ledger rather than take our word for it.
+\paragraph{The single-evaluation rule is a mechanism, and its scope is selection.} Exactly one
+configuration is chosen on $\Dband$, certified on $\Dcal$ and carried to $\Dtest$ unchanged;
+nothing is tuned or ranked there. The loader records the authorised configuration hash in
+\texttt{results/tables/test\_access.json} and raises on a second distinct one, so a reviewer
+can read the ledger rather than take our word for it. Amendment~A8 lists the scripts that read
+the block for reporting without passing through it.
 
 \paragraph{Hypotheses.} H1--H5 were stated in advance with their tests. Only two were tested.
 H1, H2 and H3 all compare a quantum kernel against a control, and the a-priori screens rejected

@@ -2191,16 +2191,25 @@ The three items this repository carried as unresolved were closed by going to th
 of them turned out not to be facts about the credential at all, but mistakes in the audit that
 raised them — and both made the record look weaker than the evidence supports.
 
-**The Yale bitstrings: there was nothing to compare.** The 要確認 said the author's working
-repository recorded different peak bitstrings for problems 3 to 9 "than the answers published in
-the third-party repository". `github.com/roman-bagdasarian/Peaked-Circuits` holds **two problem
-sets**, and the comparison was made against the wrong one. `data/Yale_Quantum_2025/` has six
-problems; `data/Yale_Quantum_2026/` has ten, and the names diverge from P2 onward —
-`swift_rise`/`sharp_peak`/`golden_mountain` in 2025 against `small_bump`/`tiny_ripple`/
-`gentle_mound` in 2026. The published answers are 2025's, five `.txt` files committed by the
-repository owner on 2026-04-09. Under 2026 there is exactly one answer file, and the author
-committed it himself alongside `marginal_attack.py`. The ten-problem set is also the one the
-leaderboard scores: weights 10, 20, ... 100 sum to 550.
+**The Yale bitstrings: one answer set in two bit orders, and it took me two wrong explanations
+to get there.** The 要確認 said the author's working repository recorded different peak
+bitstrings for problems 3 to 9 than the third-party repository. Compared programmatically, the
+two records are the same nine answers reversed: P3 to P9 are **exact string reversals**,
+character for character; P1 is identical because `1001` is a palindrome; P2 is identical because
+it is the one row the third-party README transcribed un-reversed. That coincidence is precisely
+what made a raw comparison read as "agrees on 1 and 2, differs on 3 to 9".
+
+The clinching artefact is one the author committed himself. `P5_soft_rise.qasm.txt` is the
+output of a single run and prints `Little-Endian:` and `Big-Endian:` on consecutive lines — the
+first is the third-party README's P5 row, the second is his. Both "sets" are two lines of one
+simulation, because the tooling emits `peak` and `peak[::-1]` by construction. His copy is the
+*submitted* orientation, so the doubt ran the wrong way.
+
+**My first explanation for it was also wrong**, and worth recording: I concluded the two records
+were different problem sets, 2025 against 2026, having looked only at the `data/*.txt` files and
+never opened the third-party README, which carries a Yale-2026 table with all ten problems. Two
+wrong explanations for one item, both produced by checking a part of the artefact rather than
+the artefact.
 
 **The QIntern calibration module: the independent attribution existed and had not been read.**
 The 要確認 said authorship rested only on a self-authored handoff, because the file arrives in a
@@ -2221,8 +2230,49 @@ checking it, and D-060 that removing one is not either. Both were about being to
 These two are the opposite failure: an audit that manufactured doubt from a comparison it had
 not validated, and then carried that doubt in a shipped document for three rounds. **An
 unresolved 要確認 is a claim too** — it asserts that something could not be settled, and that
-assertion needs the same evidence as any other. Neither of these could have survived ten minutes
-against the actual artefact.
+assertion needs the same evidence as any other. Neither survived contact with the actual
+artefact, and the Yale one did not survive my first two attempts at explaining it either: read
+the whole artefact (D-062), and when a cheap check is available, run it before writing the
+explanation (D-063, D-066).
 
 Only A8 remains open, and it cannot be closed from here: the portal upload is a manual action.
 The live form was read on 2026-08-30 and confirms five empty slots and the accepted-format list.
+
+### D-068 The pre-registration claimed an enforcement the code does not perform
+
+Section 2.2 of the protocol stated: "`D_test` is evaluated **once** … **Every sweep, ladder and
+ablation runs on held-out slices of `D_band` or `D_cal`.**" Three scripts read the test block
+without going through `TestFoldGuard` — `run_baselines.py` (3 arms x 5 seeds of descriptive
+metrics), `run_ablations.py` (4 leakage-ablation variants x 5 seeds) and `run_seed_sweep.py`
+(the 16-job full-scale arm) — while `test_access.json` records one authorised configuration.
+
+**The guarantee is intact, and that is a separate question from whether the sentence was true.**
+What protects a finite-sample guarantee is that nothing may be *selected* on the test fold.
+Nothing was: `ablations.csv` is consumed by no claim, no figure and no downstream script, and
+the baselines and the sweep report primary metrics on a held-out block, which is what a held-out
+block is for. Every threshold and both band edges come from `D_band` and `D_cal`.
+
+**The sentence was still wrong, and the ablation ladder is exactly the case it excluded.** A
+reviewer comparing section 2.2 against `run_ablations.py:82` finds it in two minutes. A
+pre-registration that overstates its own enforcement is worse than one that states a weaker rule
+accurately, because the overstatement is the part a reviewer is checking.
+
+**What was not done, deliberately.** The three scripts were not routed through the guard and the
+ledger was not back-filled. Either would have changed committed tables so that a text problem
+disappeared. The protocol is what was wrong, so the protocol is what changed — amendment A8
+records which scripts read the fold, why the guarantee survives, and that `TestFoldGuard` raises
+only on a *different* configuration rather than on a repeat read, which is what its docstring
+always said and what section 2.2 now claims.
+
+**Related, and also corrected this round:** the Expected Impact paragraph added earlier today
+cited the AI Act's Annex III point 5(b) as a source of "documentation duties". That provision is
+the clause **excluding** fraud detection from the high-risk category, and this repository's own
+reference entry says so. The sentence now uses the exception the way it should be used: because
+no external high-risk regime applies, the discipline has to come from internal model-risk
+review. A regulatory misattribution in a proposal whose subject is governance auditability is
+among the cheapest errors for a reviewer to find and the most expensive to make.
+
+**The lesson.** D-064 recorded that a green gate certifies only what it was built to check.
+This is the same shape one level up: **a pre-registration is only as good as the narrowest
+sentence in it**, and the sentences most worth auditing are the ones describing enforcement,
+because those are the ones a reader will test against the code.

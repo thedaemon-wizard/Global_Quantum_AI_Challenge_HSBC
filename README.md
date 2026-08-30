@@ -41,7 +41,7 @@ repository:
 
 | Document | What it carries |
 |---|---|
-| [`docs/protocol.md`](docs/protocol.md) | The frozen pre-registration and its seven dated amendments |
+| [`docs/protocol.md`](docs/protocol.md) | The frozen pre-registration and its dated amendments |
 | [`docs/guarantee.md`](docs/guarantee.md) | The guarantee stated once: notation, theorem, golden values, and six things it does **not** cover |
 | [`docs/decisions.md`](docs/decisions.md) | Every decision and every retraction, in order |
 | [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) | The machine, the pinned versions, and the measured wall-clock cost of each stage |
@@ -447,7 +447,7 @@ power gate that can be computed afterwards is not a gate.
 
 | Path | Contents |
 |---|---|
-| [`docs/protocol.md`](docs/protocol.md) | Pre-registration, frozen before any model was fitted. Estimand, split, decision rule, band freezing, null hypotheses H1–H5, screens, out-of-scope claims, and seven dated amendments (A1–A7) |
+| [`docs/protocol.md`](docs/protocol.md) | Pre-registration, frozen before any model was fitted. Estimand, split, decision rule, band freezing, null hypotheses H1–H5, screens, out-of-scope claims, and its dated amendments |
 | [`docs/decisions.md`](docs/decisions.md) | Every entry, including the retractions and the reason for each |
 | [`docs/REFERENCES.md`](docs/REFERENCES.md) | 59 entries: conformal theory (CP-1…CP-17), fraud prior art (FR-1…FR-6), quantum ML evidence (QM-1…QM-15), datasets (DS-1…DS-5), regulation (RG-1…RG-6), software (SW-1…SW-10), and sources deliberately **not** relied upon. [`REFERENCE_CROSSCHECK.md`](docs/REFERENCE_CROSSCHECK.md) reports which are reached from the repository and which are not |
 | [`NOTICE`](NOTICE) | Third-party licences, including why `cuquantum-cu11` is not installed by default |

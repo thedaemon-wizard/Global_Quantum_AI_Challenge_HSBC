@@ -99,9 +99,13 @@ component and a sampling component, rather than attributing all of it to time.
 
 ### 2.2 The single-evaluation rule
 
-`D_test` is evaluated **once**, for the single pre-registered configuration selected on
-`D_band` and certified on `D_cal`. Every sweep, ladder and ablation runs on held-out slices
-of `D_band` or `D_cal`.
+`D_test` is evaluated **once for selection**: exactly one pre-registered configuration is
+chosen on `D_band`, certified on `D_cal`, and carried to `D_test` unchanged. Nothing is tuned,
+ranked or chosen using the test block.
+
+*Amended 2026-08-30 (A8).* This paragraph previously read "Every sweep, ladder and ablation
+runs on held-out slices of `D_band` or `D_cal`", which the code does not do. See A8 for exactly
+which scripts read the test block and why the guarantee is unaffected.
 
 This is enforced in code, not by discipline: the test-fold loader keeps a persisted ledger in
 `results/tables/test_access.json` recording the authorised configuration hash and how many
@@ -664,3 +668,43 @@ left to be inferred from an absent table.
 them touches the guarantee, so they belong in the first stage of the sprint, alongside the
 split-integrity work.
 
+
+
+## Amendment A8 — 2026-08-30, the single-evaluation rule described more than the code enforces
+
+**What changed:** section 2.2 stated that "every sweep, ladder and ablation runs on held-out
+slices of `D_band` or `D_cal`". Four scripts read the test block, and three of them do not go
+through `TestFoldGuard`:
+
+| Script | What it reads from `D_test` | Guard |
+|---|---|---|
+| `run_conformal.py` | the certified configuration | `authorise()` |
+| `validate_certificate.py` | H5, the held-out validation | `authorise()` |
+| `run_baselines.py` | descriptive metrics, 3 arms x 5 seeds | none |
+| `run_ablations.py` | 4 leakage-ablation variants x 5 seeds | none |
+| `run_seed_sweep.py` | the 16-job full-scale arm | none |
+| `run_mps.py` | the in-band comparison | `authorise()` |
+
+**Why the guarantee is unaffected, and why this is still a defect.** The rule that protects a
+finite-sample guarantee is that nothing may be *selected* on the test fold. Nothing was:
+`ablations.csv` is consumed by no claim, no figure and no downstream script — it is a
+standalone diagnostic — and `baselines.csv` and the seed sweep report the primary metrics on
+the test block, which is what a held-out block is for. The certified threshold and the band
+edges come from `D_band` and `D_cal` only, and `test_access.json` records the one configuration
+that was authorised.
+
+What is genuinely wrong is the sentence. "Every sweep, ladder and ablation runs on held-out
+slices" is stronger than the code, and the ablation ladder is exactly the case it excludes. A
+reviewer comparing section 2.2 with `run_ablations.py:82` finds the divergence in two minutes,
+and a pre-registration that overstates its own enforcement is worse than one that states a
+weaker rule accurately.
+
+**What was not done.** The scripts were not changed to route through the guard, and the ledger
+was not back-filled. Both would alter committed tables to make a text problem disappear, which
+is the wrong direction: the protocol is the thing that was wrong, so the protocol is what
+changed. `TestFoldGuard` also raises only on a *different* configuration hash rather than on a
+repeat read; that is the behaviour its own docstring describes, and it is what section 2.2 now
+claims.
+
+**Guarantee integrity.** No `D_cal` risk value and no threshold was derived from anything in
+the table above. The change is to the description of the rule, not to the rule.

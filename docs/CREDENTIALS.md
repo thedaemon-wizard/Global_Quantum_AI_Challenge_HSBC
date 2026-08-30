@@ -14,7 +14,7 @@ that were carried here were all closed on 2026-08-30 by going to the artefact:
 | Item | Outcome |
 |---|---|
 | `conformal_calibrate.py` authorship "not independently confirmable" | **Wrong.** A teammate's own handoff attributes it and records reproducing its numbers to six decimals (§2) |
-| Yale peak bitstrings for problems 3–9 "differ from the published set" | **Wrong.** The published answers are the 2025 problem set; the 2026 set has different problems and no published answers (§3) |
+| Yale peak bitstrings for problems 3–9 "differ from the published set" | **Wrong.** Same nine answers, opposite bit order: P3–P9 are exact string reversals, P1 is a palindrome, P2 is the one row transcribed un-reversed (§3) |
 | Sole-proprietor filing date | **Settled: 1 August 2026** (§1, and §7 for a CV that says otherwise) |
 
 Two of the three were errors in this file's own earlier auditing, not in the credential. Both
@@ -146,26 +146,39 @@ collaboration with YQuantum, is held by the author (`cert-Amon Koike-merquery@pr
 not in this repository). It certifies completion; the placement is certified by the leaderboard
 above.
 
-**The bitstring discrepancy was withdrawn on 2026-08-30: there was nothing to compare.** An
-earlier version of this file carried a 要確認 saying the author's working repository recorded
-different peak bitstrings for problems 3 to 9 than "the answers published in the third-party
-repository". Checked against `github.com/roman-bagdasarian/Peaked-Circuits` directly, the
-premise is false on two counts.
+**The bitstring discrepancy is closed: it is an endianness artefact, and it runs in the
+author's favour.** An earlier version of this file carried a 要確認 saying the author's working
+repository recorded different peak bitstrings for problems 3 to 9 than the third-party
+repository. The two records are the **same nine answers in opposite bit order**:
 
-* The repository holds **two different problem sets**, `data/Yale_Quantum_2025/` and
-  `data/Yale_Quantum_2026/`, and the problem names diverge from P2 onward — 2025 has
-  `P2_swift_rise`, `P3_sharp_peak`, `P4_golden_mountain`; 2026 has `P2_small_bump`,
-  `P3_tiny_ripple`, `P4_gentle_mound`. 2025 has six problems, 2026 has ten. Only P1 shares a
-  name. Two sets of answers to two sets of problems are not a discrepancy.
-* The published answers are **2025's**: five `.txt` answer files under `Yale_Quantum_2025/`,
-  committed by the repository owner on 2026-04-09. Under `Yale_Quantum_2026/` there is exactly
-  **one** answer file, `P5_soft_rise.qasm.txt`, and the author added it himself in the same
-  commit as `marginal_attack.py`. There is no published 2026 set for problems 3 to 9 to disagree
-  with.
+| Problem | Qubits | Public vs private |
+|---|---|---|
+| 1 | 4 | identical — `1001` is a palindrome |
+| 2 | 12 | identical — the one row the third-party README transcribed un-reversed |
+| 3 – 9 | 30, 40, 50, 60, 42, 58, 69 | **exact string reversals**, character for character |
 
-The ten-problem 2026 set is also what the leaderboard scores: weights 10, 20, ... 100 sum to the
-550 the SCORE column shows. The comparison that produced the original 要確認 was made against
-the wrong year, and the item is closed rather than carried.
+Not one bit differs beyond the reversal. The clinching artefact is one the author committed
+himself: `data/Yale_Quantum_2026/P5_soft_rise.qasm.txt` is the output of a single run and prints
+both lines,
+
+```
+Little-Endian: 00011011001101000001010110110100101010011000011001
+Big-Endian   : 10011000011001010100101101101010000010110011011000
+```
+
+the first of which is the third-party README's P5 row and the second the author's. Both
+"sets" are two lines of one simulation, because the tooling emits `peak` and `peak[::-1]`
+by construction.
+
+The author's copy is the **submitted** orientation: his `solve_all.py` marks big-endian,
+$q_{n-1}$-first, as correct, and it records that an endianness error cost six failed P5
+submissions before it was fixed. So the earlier 要確認 had the direction backwards — his
+repository is the correctly oriented one, and the coincidence that P1 is a palindrome while P2
+happens to be transcribed the other way is exactly what made a raw comparison look like
+"agrees on 1 and 2, differs on 3 to 9".
+
+The same private table independently corroborates the field size, recording problem 10 as
+"unsolved by all **549** participants".
 
 The team is registered as **MerQury** on the leaderboard; **PeakQubit** is a label in the
 author's own working repository only.

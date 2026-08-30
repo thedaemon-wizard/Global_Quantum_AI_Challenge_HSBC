@@ -27,11 +27,12 @@
 claims:
   # -------------------------------------------------------------------- split and data
   - key: CardOverlap
-    value: 0.8496
+    value: 85.0
     source: results/tables/data_integrity.csv
     select: {arm: temporal}
     column: fraction_test_entities_seen_in_train
-    tolerance: 0.00005
+    scale: 100
+    tolerance: 0.05
     note: >
       Fraction of test-block card1 values also present in training.  Quoted as 85.0 % in
       prose; an earlier draft said 84.8 %.  This is why row-level exchangeability fails and
@@ -68,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 67
+    value: 68
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -83,7 +84,7 @@ claims:
       test_decision_log_matches_the_decisions_document asserts the two agree.
 
   - key: ProtocolAmendments
-    value: 7
+    value: 8
     source: results/tables/decision_log.csv
     column: protocol_amendments
     tolerance: 0
