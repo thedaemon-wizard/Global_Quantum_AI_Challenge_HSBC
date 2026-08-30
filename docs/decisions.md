@@ -2554,3 +2554,14 @@ would have passed.
 produce identical bytes. The Makefile already had a `DETERMINISTIC` variable for exactly this
 reason and it was applied to the LaTeX build only, which is why the gap survived: the mechanism
 existed and covered the artefact somebody had already thought about.
+
+### D-081 The tables grouped their counts and the prose did not
+
+`format_value` rendered a claim exactly as `claims.yaml` records it, so section 3 read "847
+legitimate in-band rows against 58343 overall" two pages after a table printing "356,216".
+Inside a table a column gives the eye somewhere to land; in running prose a five-digit run does
+not, and the two conventions sat in the same document.
+
+Integers of 10,000 and above are now grouped in the inline macros as they always were in the
+tables. Only integers: a probability or a ratio is never grouped, and `_value_appears` in
+`check_claims.py` already matched both forms, so the binding is unaffected.

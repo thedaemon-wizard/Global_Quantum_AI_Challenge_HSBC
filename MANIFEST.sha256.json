@@ -20,7 +20,7 @@
     "results/tables/coverage_by_arm_seeds.csv": "2c3b386b1af7309d68eccbc4aa54bbdeadfbc1d9e789a3956f33f5e3b8923065",
     "results/tables/coverage_seed_summary.csv": "856b9fc36895a5b53a0c2089381f72efc143afa0e8f6b3310dccabbb0c016b4f",
     "results/tables/data_integrity.csv": "79622ed7e5aecf1fad2256ec89b21f7498e5df4e27caa12d8471375a4ebc7e7c",
-    "results/tables/decision_log.csv": "e5224978e50e5a272c936899fef3e7cda0e115318df3e8bd358225b3a10d544f",
+    "results/tables/decision_log.csv": "6b7b135ca436b0634fcd4acdd8e76a9c0796d4aeeea25fb4683455ef3d74c84d",
     "results/tables/degeneracy.csv": "276f74f149e4e327dcecd1eed963c38a0355fddd719f63fe76e74861fff5f74c",
     "results/tables/envelope.csv": "f2ea606df51028d851162a79d8b7e7ef113e2713a8b9b0ed891b8957508e588d",
     "results/tables/h5_validation.csv": "26496256782729eec5cad65fd1a2a3dcaa2a38cae531e6f4863e8916a0c48a74",
@@ -43,15 +43,15 @@
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
     "results/tables/test_access.json": "e83c79936cc9c734e823cc30f9dc44462c089466c255a59dc4a109ed30a5a448",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "2d413741e58c717091cf838bfb005f6084c08453e03cce81619860c5f90ddcd3",
-    "submission/proposal.pdf": "8e7dc816f404b4cbc592ad3d1cdc04be8fc1fa05c00050610fd3a3f24a75bc5c"
+    "submission/appendix.pdf": "a709c532f4813a3e2b1bcecbba81437ee83c91f7d713b73dfe2183f81a6ae414",
+    "submission/proposal.pdf": "411584fa2b824690eebea9bb25074794068333a25bbdd3ca6490a446284492c0"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
     "docs/REFERENCES.md": "8eaca8bc214f90bc7154827e0651a719221d620a50f1289330468af83aeab1a4",
-    "docs/claims.yaml": "79fdf27068fec0b9ec644f1f9508b440d75d7f8931fd450209e07a3018ab870d",
-    "docs/decisions.md": "d374797ba2be3841b30d81f832bb1a1a24e7423438446d227bf5917bb35aa2f1",
-    "docs/protocol.lock.json": "7f9959b4d0116831a24e12089d49cafc664423f06fdf687b8783fe40d12ac7ee",
+    "docs/claims.yaml": "e073845b06e8e0513cb3ee527dd9fe00c5b486f48b52ed63ab5ae5ccd15566e8",
+    "docs/decisions.md": "ae35b4f1c2c2d1b980e73baf37dacffbbba6d1ccac5ec93ac8514c004df89c7f",
+    "docs/protocol.lock.json": "04efbbc195bd991ad71da6daa5bd726678a41f50e44178ad773274e0818c3443",
     "docs/protocol.md": "6e7dce484de83b486a096f6b35165b1b46aa12611bfea4f1e17e02267bfe8f1a",
     "docs/tables.yaml": "e2fb8155cc8875ea7614685bbaf76b89ef63f762dd05bee40c1966ce6ab3f981"
   }

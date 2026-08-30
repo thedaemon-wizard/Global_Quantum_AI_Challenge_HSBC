@@ -32,13 +32,23 @@ REPO = Path(__file__).resolve().parents[1]
 ALLOWED = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 
+# Above this, an integer gets a thousands separator.  The tables have always grouped their
+# counts and the inline macros did not, so the body read "58343 legitimate rows" beside a table
+# printing "356,216" -- and 58343 is a row count in running prose, where the eye has no column
+# to help it.  Only integers: a probability or a ratio is never grouped.
+THOUSANDS_FROM = 10_000
+
+
 def format_value(value: Any) -> str:
-    """The value exactly as claims.yaml records it, with a LaTeX minus for negatives.
+    """The value as claims.yaml records it, grouped if it is a large count.
 
     A bare ``-`` in text mode renders as a hyphen, which is wrong for a numeric difference
     and is the kind of typographic error that survives every proofread.
     """
-    text = str(value)
+    if isinstance(value, int) and not isinstance(value, bool) and abs(value) >= THOUSANDS_FROM:
+        text = f"{value:,}"
+    else:
+        text = str(value)
     return f"$-${text[1:]}" if text.startswith("-") else text
 
 
