@@ -36,13 +36,18 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from sklearn.metrics import average_precision_score, roc_auc_score
-from sklearn.preprocessing import MinMaxScaler
 
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
+from hsbcfraud.features.band import band_edges, prepare, rows_in_band, select_band_features
+from hsbcfraud.paths import display_path
 from hsbcfraud.progress import ProgressReporter, SweepTimer
 from hsbcfraud.quantum.mps import MPSConfig, fit_mps
-from hsbcfraud.stats import clustered_bootstrap_difference, holm_bonferroni
+from hsbcfraud.stats import (
+    clustered_bootstrap_difference,
+    holm_bonferroni,
+    minimum_detectable_effect_from_standard_error,
+)
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -62,23 +67,6 @@ def require_power_gate(tables: Path) -> pd.DataFrame:
             "comparison it governs.\n  Run: .venv/bin/python scripts/run_power.py"
         )
     return pd.read_csv(path)
-
-
-def prepare(frame: pd.DataFrame, rows: np.ndarray, columns: list[str], scaler: MinMaxScaler | None):
-    """Numeric matrix scaled to [0, 1], which is the domain the local feature map needs.
-
-    The scaler is fitted once on the training block and reused everywhere else.  Fitting it
-    per block would leak the deployment distribution into the encoding.
-    """
-    numeric = frame.iloc[rows][columns]
-    filled = (
-        numeric.fillna(numeric.median(numeric_only=True))
-        .fillna(0.0)
-        .to_numpy(dtype=np.float32)
-    )
-    if scaler is None:
-        scaler = MinMaxScaler(clip=True).fit(filled)
-    return scaler.transform(filled).astype(np.float32), scaler
 
 
 def progress_probe(x_eval: np.ndarray, y_eval: np.ndarray, n_rows: int, seed: int):
@@ -173,7 +161,7 @@ def main(argv: list[str] | None = None) -> int:
         print(
             f"Not the pre-registered configuration (bonds={args.bonds}, "
             f"epochs={args.epochs}, band_features={args.band_features}); writing tables to "
-            f"{args.out.relative_to(REPO)} instead of results/tables/."
+            f"{display_path(args.out)} instead of results/tables/."
         )
 
     power = require_power_gate(defaults.out)
@@ -206,26 +194,15 @@ def main(argv: list[str] | None = None) -> int:
     # on D_band exactly as scripts/run_conformal.py fixes it.
     band_block = scores[scores["block"] == "band"]
     s_band = band_block["score"].to_numpy()
-    hi = float(np.quantile(s_band, 1.0 - cfg.decline_rate_budget))
-    lo = float(np.quantile(s_band, 1.0 - cfg.decline_rate_budget - cfg.band.traffic_budget))
+    lo, hi = band_edges(s_band, cfg.decline_rate_budget, cfg.band.traffic_budget)
 
-    from sklearn.feature_selection import mutual_info_classif
-
-    rng = np.random.default_rng(seed)
-    probe = rng.choice(len(train_rows), size=min(20_000, len(train_rows)), replace=False)
-    probe_x, _ = prepare(frame, train_rows[probe], all_numeric, None)
-    mi = mutual_info_classif(probe_x, y[train_rows[probe]], random_state=seed)
-    band_columns = [all_numeric[i] for i in np.argsort(mi)[::-1][: args.band_features]]
+    band_columns = select_band_features(
+        frame, train_rows, y, all_numeric, k=args.band_features, seed=seed
+    )
 
     rows: list[dict] = []
-    band_train = scores[(scores["block"] == "band")]
-    band_train_rows = band_train[
-        (band_train["score"] >= lo) & (band_train["score"] < hi)
-    ]["row"].to_numpy()
-    band_eval = scores[scores["block"] == "cal"]
-    band_eval_rows = band_eval[
-        (band_eval["score"] >= lo) & (band_eval["score"] < hi)
-    ]["row"].to_numpy()
+    band_train_rows = rows_in_band(scores, "band", lo, hi)
+    band_eval_rows = rows_in_band(scores, "cal", lo, hi)
 
     x_bt, scaler = prepare(frame, band_train_rows, band_columns, None)
     x_be, _ = prepare(frame, band_eval_rows, band_columns, scaler)
@@ -332,6 +309,7 @@ def main(argv: list[str] | None = None) -> int:
         p_values[f"chi={chi}"] = float(
             stats.norm.sf(result.point / result.spread) if result.spread > 0 else 1.0
         )
+        realised_mde = minimum_detectable_effect_from_standard_error(result.spread)
         h4_rows.append(
             {
                 "hypothesis": "H4",
@@ -344,8 +322,23 @@ def main(argv: list[str] | None = None) -> int:
                 "standard_error": result.spread,
                 "n_clusters": result.n_clusters,
                 "n_resamples_usable": result.n_resamples,
-                "minimum_detectable_effect": mde,
-                "resolvable": bool(abs(result.point) >= mde),
+                # Two different minimum detectable effects, and conflating them is how a
+                # comparison came to be labelled resolvable when it was not.
+                #
+                # The PRE-REGISTERED one comes from power.csv.  It is estimated from proxies
+                # before this comparison runs and it is what authorises the run at all; it is
+                # a commitment, and it must not be recomputed from the outcome.
+                #
+                # The REALISED one is this comparison's own bootstrap standard error, which
+                # exists only now.  It is what the comparison could actually have detected,
+                # so it -- not the commitment -- decides whether an observed difference is
+                # resolvable.  An earlier version stored only the pre-registered figure and
+                # compared against that, and because the value it read predated the D-030
+                # correction it reported ``resolvable`` as true on all four bond dimensions
+                # whose observed differences are a third of what they could resolve.
+                "minimum_detectable_effect_preregistered": mde,
+                "minimum_detectable_effect_realised": realised_mde,
+                "resolvable": bool(abs(result.point) >= realised_mde),
                 "seed": seed,
             }
         )

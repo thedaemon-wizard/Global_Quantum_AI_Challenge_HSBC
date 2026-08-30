@@ -17,6 +17,7 @@ measured property that dictates how confidence intervals must be computed.
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -31,8 +32,12 @@ from hsbcfraud.data.splits import (
     stratified_blocks,
     temporal_blocks,
 )
+from hsbcfraud.progress import ProgressReporter
 
 REPO = Path(__file__).resolve().parents[1]
+
+# Per arm: build the blocks, then two two-sample fits and an entity scan.
+UNITS_PER_ARM = 4
 COLUMNS = ["TransactionID", "TransactionAmt", "card1", "addr1", "D1", "ProductCD"]
 # Features offered to the two-sample block-discrimination classifier.
 TWO_SAMPLE_FEATURES = ["TransactionAmt", "card1", "addr1", "D1"]
@@ -137,46 +142,87 @@ def main(argv: list[str] | None = None) -> int:
         f"({loaded.fraud_rate:.4%}), span {loaded.span_days:.2f} days"
     )
 
-    arms: dict[str, Blocks] = {
-        "temporal": temporal_blocks(frame["day"], cfg.split),
-        "stratified": stratified_blocks(frame["isFraud"], cfg.split, seed),
-        "card_disjoint": card_disjoint_blocks(frame[cfg.split.entity_key], cfg.split, seed),
+    # Twelve units: for each of three arms, a block construction, two two-sample fits and an
+    # entity-overlap scan.  On an idle machine the whole loop is about two seconds -- this is
+    # not a slow script.  It is instrumented anyway because it is the first target
+    # `make reproduce` invokes and it previously printed nothing between the dataset line and
+    # the results, so on a *busy* machine it was indistinguishable from a hang.  That is not
+    # hypothetical: it is exactly how it was misdiagnosed here, when unrelated processes were
+    # saturating the cores (D-066).  Silence should not look like failure.
+    args.out.mkdir(parents=True, exist_ok=True)
+    builders = {
+        "temporal": lambda: temporal_blocks(frame["day"], cfg.split),
+        "stratified": lambda: stratified_blocks(frame["isFraud"], cfg.split, seed),
+        "card_disjoint": lambda: card_disjoint_blocks(
+            frame[cfg.split.entity_key], cfg.split, seed
+        ),
     }
+    steps = len(builders) * UNITS_PER_ARM
 
     summary_rows: list[dict[str, object]] = []
     integrity_rows: list[dict[str, object]] = []
-    for name, blocks in arms.items():
-        blocks.assert_disjoint(loaded.n_rows)
-        summary_rows.extend(block_rows(frame, blocks))
 
-        for block in BLOCK_NAMES:
-            part = frame.iloc[blocks[block]]
-            if int(part["isFraud"].sum()) == 0:
-                raise SystemExit(f"arm {name!r} block {block!r} contains no frauds; split unusable")
+    reporter = ProgressReporter(
+        "splits",
+        total=steps,
+        stream=sys.stdout,
+        log_path=args.out / "make_splits.jsonl",
+        context={"rows": loaded.n_rows, "arms": list(builders)},
+        every=1,
+        label_width=34,
+    )
 
-        # Two feature sets. The neutral one omits the entity key so the three arms are
-        # comparable; the full one includes it and is reported because the gap between them
-        # is itself the measurement of how much block identity is carried by the entity.
-        neutral = [f for f in TWO_SAMPLE_FEATURES if f != cfg.split.entity_key]
-        auc_neutral = two_sample_auc(frame, blocks["cal"], blocks["test"], seed, neutral)
-        auc_full = two_sample_auc(frame, blocks["cal"], blocks["test"], seed, TWO_SAMPLE_FEATURES)
-        overlap = entity_overlap(frame, blocks, cfg.split.entity_key)
-        integrity_rows.append(
-            {
-                "arm": name,
-                "cal_vs_test_two_sample_auc": auc_neutral,
-                "cal_vs_test_two_sample_auc_with_entity": auc_full,
-                "entity_key": cfg.split.entity_key,
-                **overlap,
-            }
-        )
-        print(
-            f"  {name:14s} cal-vs-test AUC {auc_neutral:.4f} (without {cfg.split.entity_key}), "
-            f"{auc_full:.4f} (with) | "
-            f"{overlap['fraction_test_entities_seen_in_train']:.1%} of test entities in train"
-        )
+    arms: dict[str, Blocks] = {}
+    with reporter:
+        for name, build in builders.items():
+            arms[name] = build()
+            reporter.tick(arm=name, stage="build")
 
-    args.out.mkdir(parents=True, exist_ok=True)
+        for name, blocks in arms.items():
+            blocks.assert_disjoint(loaded.n_rows)
+            summary_rows.extend(block_rows(frame, blocks))
+
+            for block in BLOCK_NAMES:
+                part = frame.iloc[blocks[block]]
+                if int(part["isFraud"].sum()) == 0:
+                    raise SystemExit(
+                        f"arm {name!r} block {block!r} contains no frauds; split unusable"
+                    )
+
+            # Two feature sets. The neutral one omits the entity key so the three arms are
+            # comparable; the full one includes it and is reported because the gap between them
+            # is itself the measurement of how much block identity is carried by the entity.
+            neutral = [f for f in TWO_SAMPLE_FEATURES if f != cfg.split.entity_key]
+            auc_neutral = two_sample_auc(frame, blocks["cal"], blocks["test"], seed, neutral)
+            reporter.tick(arm=name, stage="auc_neutral", auc=round(auc_neutral, 4))
+
+            auc_full = two_sample_auc(
+                frame, blocks["cal"], blocks["test"], seed, TWO_SAMPLE_FEATURES
+            )
+            reporter.tick(arm=name, stage="auc_with_entity", auc=round(auc_full, 4))
+
+            overlap = entity_overlap(frame, blocks, cfg.split.entity_key)
+            reporter.tick(
+                arm=name,
+                stage="entity_overlap",
+                shared=round(overlap["fraction_test_entities_seen_in_train"], 4),
+            )
+            integrity_rows.append(
+                {
+                    "arm": name,
+                    "cal_vs_test_two_sample_auc": auc_neutral,
+                    "cal_vs_test_two_sample_auc_with_entity": auc_full,
+                    "entity_key": cfg.split.entity_key,
+                    **overlap,
+                }
+            )
+            reporter.note(
+                f"{name}: cal-vs-test AUC {auc_neutral:.4f} without "
+                f"{cfg.split.entity_key}, {auc_full:.4f} with; "
+                f"{overlap['fraction_test_entities_seen_in_train']:.1%} of test entities "
+                "already in train"
+            )
+
     pd.DataFrame(summary_rows).to_csv(args.out / "splits.csv", index=False)
     pd.DataFrame(integrity_rows).to_csv(args.out / "data_integrity.csv", index=False)
     print(f"\nWrote {args.out / 'splits.csv'} and {args.out / 'data_integrity.csv'}")

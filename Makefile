@@ -8,8 +8,9 @@ PY      := .venv/bin/python
 RUFF    := .venv/bin/ruff
 BOOT    := /usr/bin/python3.12
 
-.PHONY: help venv smoke test fast lint data baseline conformal quantum mps explain measure \
-        figures freeze claims tex pdf pdf-draft submission check reproduce clean
+.PHONY: help venv venv-gpu smoke test fast lint baseline conformal quantum mps explain \
+        latency seedsweep figures walkthrough freeze derived claims tex pdf pdf-draft \
+        submission check reproduce clean
 
 help:
 	@echo "venv       create .venv with python3.12 and install pinned dependencies"
@@ -17,14 +18,15 @@ help:
 	@echo "test       full pytest suite"
 	@echo "fast       pytest without the slow cases"
 	@echo "lint       ruff"
-	@echo "data       stage IEEE-CIS from the local zip; fetch ULB and Sparkov"
+	@echo "seedsweep  E10 at full scale: 16 fits over 4 bond dimensions x 4 seeds (13 GPU-hours)"
 	@echo "baseline   E1 splits and integrity, E2 label-censoring audit, E3 classical baselines"
 	@echo "conformal  E4 PSD2 envelope, E5 two-sided risk control, E6 coverage, E7 exchangeability"
-	@echo "quantum    E8 a-priori screens, E9 kernel arm and controls, E11 simulator parity"
+	@echo "quantum    E8 a-priori screens, E11 simulator parity, circuit structure"
 	@echo "mps        E10 tensor-network arm"
-	@echo "explain    E12 SHAP and circuit sensitivity"
-	@echo "measure    E13 latency, E14 issuer economics, E15 ULB stress case"
+	@echo "explain    E12 feature attribution over the calibration band"
+	@echo "latency    E13 per-transaction inference latency against the authorisation budget"
 	@echo "figures    submission figures, generated from the tables"
+	@echo "walkthrough trace the certificate end to end against the committed tables"
 	@echo "freeze     write the SHA-256 manifest"
 	@echo "claims     recompute every number quoted in prose from its source table"
 	@echo "tex        regenerate the LaTeX macros from docs/claims.yaml"
@@ -69,43 +71,80 @@ fast:
 lint:
 	$(RUFF) check src tests scripts
 
-data:
-	$(PY) scripts/fetch_data.py
+# Experiments that were planned and are NOT in these targets, each recorded rather than
+# silently dropped.  A target that names a script which does not exist makes `make reproduce`
+# fail, which is worse than an honest gap: it turns "not run" into "cannot run".
+#
+#   E7  drift and exchangeability tests    pre-registered, never run   protocol amendment A7
+#   E9  quantum kernel re-ranking          stopped by its own screens  protocol section 9
+#   E14 issuer economics                   not started                 docs/protocol.md A2
+#   E15 ULB stress case                    blocked, dataset not local  docs/PROVENANCE.md 1.2
+#
+# E9 is the only one that is a result rather than a gap: the a-priori screens rejected every
+# configuration, so the arm was stopped by the stopping rule it was pre-registered under.
+#
+# E12 and E13 were on this list and are not any more: `explain` and `latency` below run them.
 
 baseline:
 	$(PY) scripts/make_splits.py
 	$(PY) scripts/audit_labels.py
 	$(PY) scripts/run_baselines.py
+	$(PY) scripts/run_ablations.py
 
 conformal:
-	$(PY) scripts/run_envelope.py
 	$(PY) scripts/run_conformal.py
-	$(PY) scripts/measure_shift.py
+	$(PY) scripts/run_power.py
+	$(PY) scripts/summarise_coverage.py
+	$(PY) scripts/validate_certificate.py
 
 quantum:
 	$(PY) scripts/screen_kernels.py
-	$(PY) scripts/run_quantum.py
 	$(PY) scripts/check_parity.py
+	$(PY) scripts/report_circuits.py
 
 mps:
 	$(PY) scripts/run_mps.py
 
+# The full-scale arm, kept out of `reproduce` deliberately: 16 fits at roughly 3,000 s each is
+# 13 GPU-hours, against seconds for everything else in the pipeline.  A reviewer checking the
+# certificate should not have to spend a day re-deriving the tensor-network result, which the
+# frozen manifest already covers.  It is a target so that it *can* be re-run, and named in
+# `reproduce`'s closing message so its absence is stated rather than silent.
+seedsweep:
+	$(PY) scripts/run_seed_sweep.py
+
 explain:
 	$(PY) scripts/run_explain.py
 
-measure:
+latency:
 	$(PY) scripts/measure_latency.py
-	$(PY) scripts/measure_economics.py
-	$(PY) scripts/run_ulb.py
 
 figures:
 	$(PY) scripts/make_figures.py
 
+# A reviewer's trace of the certificate against the committed tables.  Reads and asserts; it
+# refits nothing, so it costs a second and no GPU.  It is a repository artefact -- the portal
+# accepts no .ipynb and all five slots are full.
+walkthrough:
+	$(PY) notebooks/walkthrough.py
+
 freeze:
 	$(PY) scripts/freeze.py
 
-claims:
+# Tables derived from a document rather than from a run.  Both are regenerated before the
+# claim gate because a normal editing session changes their sources.  The decision count went
+# stale exactly this way: two entries were appended, the table was not regenerated, and every
+# gate passed -- because the gate compares claims.yaml to the table, never the table to the
+# document it summarises.  Deriving it inside `claims` is what makes that impossible.
+derived:
+	$(PY) scripts/summarise_decisions.py
+	$(PY) scripts/make_crosscheck.py
+
+claims: derived
 	$(PY) scripts/check_claims.py
+	$(PY) scripts/check_claims.py --citations
+	$(PY) scripts/check_claims.py --unused
+	$(PY) scripts/check_protocol.py
 
 # `check` depends on `pdf` because it gates *against* the built PDFs: claims.yaml lists them
 # as documents and freeze.py hashes them in the scientific class.  Without the dependency,
@@ -113,9 +152,11 @@ claims:
 check: pdf claims
 	$(PY) scripts/freeze.py --check
 
-reproduce: baseline conformal quantum mps explain measure figures freeze
+reproduce: baseline conformal quantum mps explain latency figures freeze
 	@echo
 	@echo "Reproduction complete.  Verify a later run against this one with: make check"
+	@echo "Not included: the full-scale tensor-network sweep behind section 4.8, which is"
+	@echo "13 GPU-hours.  Run it with: make seedsweep"
 
 # Deterministic output so the built PDFs can enter the manifest.
 TEXFLAGS       := -pdf -interaction=nonstopmode -halt-on-error -file-line-error

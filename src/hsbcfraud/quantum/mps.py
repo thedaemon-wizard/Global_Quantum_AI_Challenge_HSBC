@@ -37,6 +37,17 @@ truncation schedule; on 439 features and an 18-day budget a fixed-``chi`` gradie
 defensible choice, and the bond dimension is swept explicitly instead so the capacity
 dependence is measured rather than adapted away.
 
+This choice is contested and the negative result should be read with that in mind.  Saiapin and
+Batselier (QM-15, arXiv:2608.07043, 2026) report alternating least squares reaching 0.102
+validation MSE against Adam's 0.145 on a tabular regression benchmark with the model held
+fixed, which is an argument that a gradient-trained tensor network is optimiser-limited rather
+than capacity-limited.  Their closed-form core update is a least-squares construction and does
+not transfer to the log-loss trained here, and Jaeger, Plenio and Rieser (ESANN 2025,
+pp. 537-542) find DMRG-Lanczos and gradient descent within 0.1 percentage point at fixed
+constraint -- so the evidence cuts both ways.  What this module can say is that the negative
+reported here is conditional on the optimiser, and that a sweeping implementation is a Phase II
+item rather than a settled improvement.
+
 Numerical conditioning is the one thing this ansatz does badly by default.  A product of ``d``
 matrices underflows or overflows long before ``d = 439``, so the contraction carries a running
 log-norm and renormalises at every site.  Without it the loss is ``nan`` within a few steps,

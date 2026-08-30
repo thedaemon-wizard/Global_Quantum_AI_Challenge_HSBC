@@ -20,8 +20,11 @@ the protocol's prose: correcting a mis-transcribed count should not require an a
 a gate irritating enough to be bypassed protects nothing. Fields entering no guarantee
 (output paths, fitting seeds, plotting choices) are deliberately outside the hash.
 
-\paragraph{Amendments.} Four were made, each derived from block sizes or from $\Dband$ alone,
-never from $\Dcal$ risks or from $\Dtest$.
+\paragraph{Amendments.} The pre-registration carries \ClaimProtocolAmendments{} of them. The
+first four were derived from block sizes or from $\Dband$ alone, never from $\Dcal$ risks or
+from $\Dtest$. The last three were not, and are listed as what they are: two corrections found
+after the certificate existed, and one disclosure of work that was pre-registered and never
+done.
 
 \begin{enumerate}[label=A\arabic*.]
 \item The band-conditional certificate is sample-starved by construction; the reachable
@@ -30,13 +33,24 @@ never from $\Dcal$ risks or from $\Dtest$.
 \item PSD2 SCA-RTS rates withdrawn as a threshold selector. The ceilings are
   \emph{value}-weighted, measured over a rolling 90 days across a whole portfolio, and govern
   exemption eligibility rather than a decline threshold. IEEE-CIS has a value-weighted fraud
-  rate of \ClaimBandValueFraudRate\,\%, roughly forty times the loosest ceiling; meeting it on this file would
+  rate of \ClaimBandValueFraudRate\,\%, \ClaimBandFraudVersusCeiling{} times the loosest
+  ceiling of \ClaimPsdLoosestCeiling\,\%; meeting it on this file would
   require declining \ClaimPsdDeclineRate\,\% of traffic. Applying a portfolio ceiling to a fraud-enriched
   research benchmark is a category error, and it was ours.
 \item The decline budget moved from 2\,\% to 5\,\%, and the recall floor is reported as a
   frontier rather than a fixed constraint.
 \item The band-conditional $\alpha$ scale, the recall-loss reformulation as a false-negative
   rate, and the exclusion of the decision grid's upper endpoint.
+\item \emph{Dated after the certificate was produced.} H5's pre-registered test was specified
+  for the wrong mechanism --- an exact Beta-Binomial tail is the law for split-conformal
+  coverage, not for a Learn-then-Test certificate applied unchanged to a held-out block.
+\item \emph{Recorded on discovery.} The geometric-difference screen was pre-registered as one
+  of two a-priori screens and never gated on. The arm was rejected by the other screen; the
+  first was computed and not enforced, which is a divergence between protocol and code.
+\item \emph{Disclosure of non-execution.} The protocol's drift section lists five measurements
+  as ``measured, not assumed''. Three were never run --- the conformal test martingale, the
+  block permutation test, and band-conditional against marginal drift. No script exists for any
+  of them, and the two tables they would have written do not exist.
 \end{enumerate}
 
 \paragraph{The single-evaluation rule is a mechanism.} $\Dtest$ is read once, for the one
@@ -45,7 +59,9 @@ configuration hash and its evaluation count in
 \texttt{results/tables/test\_access.json} and raises on a second distinct configuration. A
 reviewer can read the ledger rather than take our word for it.
 
-\paragraph{Hypotheses.} H1--H5 were stated in advance with their tests. H4 --- that the
-tensor network does not improve band-conditional average precision over the tuned baseline
---- is the one the body reports, and it is reported as underpowered against its own
-pre-registered ceiling.
+\paragraph{Hypotheses.} H1--H5 were stated in advance with their tests. Only two were tested.
+H1, H2 and H3 all compare a quantum kernel against a control, and the a-priori screens rejected
+every kernel before any of them could run --- so they are not open questions but questions the
+stopping rule closed. H4 --- that the tensor network does not improve band-conditional average
+precision over the tuned baseline --- is the one the body reports, and it is reported as
+underpowered against its own pre-registered ceiling. H5 is validated on the held-out block.

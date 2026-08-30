@@ -13,6 +13,14 @@
 \usepackage[table]{xcolor}
 \usepackage{caption}
 \usepackage[hidelinks]{hyperref}
+% A \texttt{} URL cannot be broken and silently overflows the margin: the portfolio link
+% overflowed by 146 pt and the last two words of it were clipped off the page.  \url{} breaks,
+% and these settings let it break at hyphens and letters rather than only at slashes.
+\usepackage{url}
+\def\UrlBreaks{\do\/\do\-\do\.\do\_\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h%
+  \do\i\do\j\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t\do\u\do\v%
+  \do\w\do\x\do\y\do\z}
+\urlstyle{tt}
 
 \captionsetup{labelfont=bf,skip=3pt}
 \setlist[itemize]{leftmargin=*,topsep=2pt,itemsep=1pt,parsep=0pt}

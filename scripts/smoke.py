@@ -34,12 +34,15 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from hsbcfraud.paths import display_path
+
 REPO = Path(__file__).resolve().parents[1]
 
 # The only checks permitted to skip, and only for reasons stated in the docstrings below.
 # S1 and S5 both exercise Aer, which lives in the `gpu-crosscheck` extra that `make venv`
 # deliberately does not install (it pulls a proprietary NVIDIA binary; see NOTICE section
-# 4).  S7 needs a dataset that `make data` fetches separately.  Nothing else may skip.
+# 4).  S7 needs the ULB dataset, which is not obtainable from this repository.  Nothing
+# else may skip.
 OPTIONAL = {"S1", "S5", "S7"}
 
 
@@ -463,13 +466,16 @@ def s7_ulb_temporal_feasible() -> str:
     quietly using random CV and hoping the question is not asked.
 
     Skipped, not failed, when the file is absent: this check is about the data, and
-    ``make data`` has its own gate.
+    The dataset is not fetched by anything here; see docs/PROVENANCE.md section 1.2.
     """
     import pandas as pd
 
     path = _find_ulb()
     if path is None:
-        raise SmokeSkip("ULB creditcard.csv not present; run `make data` first")
+        raise SmokeSkip(
+            "ULB creditcard.csv not present, and no script here fetches it "
+            "(docs/PROVENANCE.md 1.2). E15 was not run for this reason."
+        )
 
     df = pd.read_csv(path, usecols=["Time", "Class"]).sort_values("Time", kind="stable")
     df = df.drop_duplicates()
@@ -605,7 +611,7 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 1
-    print(f"\nAll {len(selected)} check(s) accounted for. Record: {args.out.relative_to(REPO)}")
+    print(f"\nAll {len(selected)} check(s) accounted for. Record: {display_path(args.out)}")
     return 0
 
 

@@ -28,9 +28,12 @@ The clean headline did not survive, and the body reports the range instead.
 detectable effect \emph{before} the quantum comparison. The calculation had no caller at all,
 so H4 was going to be observed rather than tested. The fix estimated noise from the baseline
 against itself --- correct reasoning, wrong quantity, because H4 compares model \emph{families}
-and their measured standard error (\ClaimMpsStandardErrorBestChi) is about eightfold larger
-than the seed-to-seed figure. The gate passed a comparison it should have flagged. It now
-computes a cross-family proxy and binds on the larger, and H4 is reported as underpowered.
+and their measured standard error (\ClaimMpsStandardErrorBestChi) is \ClaimPowerSeRatio{}-fold
+larger than the seed-to-seed figure. The gate passed a comparison it should have flagged. It
+now estimates cross-family noise from a second classical family (\ClaimPowerSeCrossFamily{},
+giving a pre-registered minimum detectable effect of \ClaimPowerMde{}) and binds on the larger
+of the two, and H4 is reported as underpowered against the effect the comparison could
+actually resolve.
 
 \paragraph{A claim asserted from theory and withdrawn when measured.} We stated that ignoring
 cluster structure makes intervals too narrow by roughly the square root of the cluster size.

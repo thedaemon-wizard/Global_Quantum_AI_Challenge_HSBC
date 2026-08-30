@@ -21,31 +21,6 @@
 #   align     tabular column specification
 
 tables:
-  - key: coverage
-    source: results/tables/coverage_by_arm.csv
-    caption: >
-      False-decline coverage on $\Dtest$, calibrated on $\Dcal$ and judged against the exact
-      Beta-Binomial law rather than against $\alpha$.  The stratified and card-disjoint
-      control arms sit inside the interval at every level; the temporal arm does not.
-    label: tab:coverage
-    align: llrrrl
-    rows:
-      - {arm: temporal, alpha: 0.01}
-      - {arm: temporal, alpha: 0.005}
-      - {arm: temporal, alpha: 0.002}
-      - {arm: temporal, alpha: 0.001}
-      - {arm: stratified, alpha: 0.01}
-      - {arm: stratified, alpha: 0.001}
-      - {arm: card_disjoint, alpha: 0.01}
-      - {arm: card_disjoint, alpha: 0.001}
-    columns:
-      - {from: arm, header: Arm, format: label}
-      - {from: alpha, header: '$\alpha$', format: "{:.3f}"}
-      - {from: empirical, header: Empirical, format: "{:.5f}"}
-      - {from: ratio, header: Ratio, format: "{:.3f}"}
-      - {from: observed_errors, header: Errors, format: "{:.0f}"}
-      - {derived: interval_verdict, header: Verdict (interval)}
-
   - key: mps
     source: results/tables/mps_h4.csv
     caption: >
@@ -75,23 +50,6 @@ tables:
       - {from: ratio, header: Ratio, format: "{:.3f}"}
       - {from: observed, header: Errors, format: "{:.0f}"}
       - {derived: interval_verdict_rolling, header: Verdict (interval)}
-
-  - key: mpsfull
-    source: results/tables/mps_full.csv
-    caption: >
-      The tensor network at full scale: all 431 features, no band, trained on
-      $\Dtrain$ and scored once on $\Dtest$.  The tuned gradient-boosted baseline reaches
-      0.8837--0.8884 ROC AUC and 0.5055--0.5114 average precision on the same split.  Fit
-      time is flat across the bond dimension because a 431-site chain is bound by the launch
-      overhead of its sequential contractions, not by their arithmetic.
-    label: tab:mpsfull
-    align: rrrrr
-    columns:
-      - {from: bond_dimension, header: '$\chi$', format: "{:.0f}"}
-      - {from: roc_auc, header: ROC AUC, format: "{:.4f}"}
-      - {from: average_precision, header: AP, format: "{:.4f}"}
-      - {from: final_loss, header: Final loss, format: "{:.4f}"}
-      - {from: fit_seconds, header: Fit (s), format: "{:.0f}"}
 
   - key: coverageseeds
     source: results/tables/coverage_seed_summary.csv
@@ -125,9 +83,10 @@ tables:
       The same gradient-boosted model, the same hyperparameters, five seeds, evaluated on the
       test block of three different splits.  A stratified random split inflates average
       precision by 0.316 over a forward holdout, with non-overlapping ranges.  This is the
-      cleanest evidence in the study for why a temporal split is the only honest evaluation of
-      a fraud model, and it costs nothing to obtain -- it is the control arm of the split
-      design, not an extra experiment.
+      cleanest evidence in the study that a random split does not measure what a deployed
+      fraud model faces. It is one model on one file, so it establishes the size of the effect
+      here rather than a general rule, and it costs nothing to obtain: it is the control arm of
+      the split design, not an extra experiment.
     label: tab:splitarm
     align: lrrr
     rows:
@@ -139,3 +98,27 @@ tables:
       - {from: roc_auc_mean, header: ROC AUC, format: "{:.4f}"}
       - {from: average_precision_mean, header: AP, format: "{:.4f}"}
       - {derived: ap_inflation, header: AP vs forward holdout}
+
+  - key: metrics
+    source: results/tables/baselines.csv
+    caption: >
+      The challenge statement's primary evaluation metrics, on the held-out temporal block at
+      the default decision threshold, for the tuned gradient-boosted baseline.  Reported
+      because the statement names all of them and a certificate is not a substitute for any of
+      them.  Recall is low because a forward holdout is a harder task than the
+      cross-validation the published leaderboard figures come from, not because the baseline
+      is untuned; the body measures that difference directly.
+    label: tab:metrics
+    align: rrrrrrrrr
+    rows:
+      - {model: xgboost, arm: temporal, block: test, seed: 20260828}
+    columns:
+      - {from: roc_auc, header: 'ROC AUC', format: "{:.4f}"}
+      - {from: average_precision, header: AUPRC, format: "{:.4f}"}
+      - {from: f1, header: '$F_1$', format: "{:.4f}"}
+      - {from: precision, header: Precision, format: "{:.4f}"}
+      - {from: recall, header: Recall, format: "{:.4f}"}
+      - {from: tp, header: TP, format: "{:.0f}"}
+      - {from: fp, header: FP, format: "{:.0f}"}
+      - {from: fn, header: FN, format: "{:.0f}"}
+      - {from: tn, header: TN, format: "{:.0f}"}

@@ -39,8 +39,8 @@ No result here extrapolates to the declined population.
 | | |
 |---|---|
 | Source | Machine Learning Group, Université Libre de Bruxelles |
-| Licence | **ODbL** on the database itself. Share-alike applies to a derived database; not redistributed here. |
-| In this repository | Never committed; `scripts/fetch_data.py` reconstructs it. |
+| Licence | Two-layer: the **database** under ODbL, its **contents** under DbCL v1.0. Share-alike applies to a derived database; not redistributed here. |
+| In this repository | **Not present, and not reconstructible from this repository.** There is no fetch script; the file was never downloaded to this machine, which is why E15 was not run. Obtain it from the source above if you want to reproduce the stress case. |
 | Role | Stress case only. Its fraud-conditional quantile is degenerate at `alpha = 1e-2` (roughly 98 calibration frauds against the 99 required by the floor `(1/alpha) - 1`), which is precisely why IEEE-CIS is primary. |
 
 ### 1.3 Sparkov
@@ -69,7 +69,7 @@ Every algorithm traces to a numbered entry in [REFERENCES.md](REFERENCES.md):
 | Class-conditional degeneracy floor `(1/alpha) - 1` | CP-4 (Ding et al., NeurIPS 2023) |
 | Non-exchangeable weighted quantile with the `+inf` atom | CP-5 (Barber et al., AoS 51(2), eq. 11) |
 | Geometric difference `g(K_C \|\| K_Q)` screen | QM-1 (Huang et al., 2021) |
-| Matrix-product-state classifier | Stoudenmire and Schwab, NeurIPS 29:4799, 2016 |
+| Matrix-product-state classifier | QM-12 (Stoudenmire and Schwab, NeurIPS 29:4799, 2016) |
 | Corroborating negative result on quantum kernels for card fraud | QM-10 (Faryad, arXiv:2608.15718, August 2026) |
 
 ### 2.2 Third-party software
@@ -81,6 +81,13 @@ rather than a line in a table.
 therefore **not** installed by the default `make venv` target; it has its own `make venv-gpu`
 and its own NOTICE section. Installing it is a deliberate act with a licence consequence, so
 it is not something a first-time `make` should do silently.
+
+E11 is the one experiment that needs it. `scripts/check_parity.py` compares four routes to the
+same overlap and two of them are Aer, so reproducing every row of `parity.csv` requires
+`make venv-gpu`. The script requires only the two routes the default environment provides --
+the exact statevector and Braket -- and reports the others as unavailable rather than
+silently comparing an implementation against itself. No scientific figure in the submission
+depends on the proprietary path.
 
 **`qiskit-aer` and `qiskit-aer-gpu-cu11`** are separate distributions that install the *same*
 package. Whichever pip unpacks last wins. Resolved together, the CPU build can land second and

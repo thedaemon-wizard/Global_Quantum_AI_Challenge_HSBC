@@ -33,8 +33,9 @@ annoying enough to be bypassed, and a bypassed gate protects nothing.
 
 Amendments are legitimate
 -------------------------
-Four protocol amendments were made during this study, each derived from block sizes or from
-``D_band`` alone, never from ``D_cal`` risks or from ``D_test``.  The gate therefore does not
+Protocol amendments were made during this study, each derived from block sizes, from
+``D_band`` alone, or from the record of what was executed -- never from ``D_cal`` risks or
+from ``D_test``.  The gate therefore does not
 forbid change; it forbids **undocumented** change.  A new hash is accepted once
 ``docs/protocol.md`` contains a matching amendment heading and ``docs/decisions.md`` has grown.
 
@@ -47,13 +48,14 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from hsbcfraud.analysis.records import AMENDMENT, numbered_ids
 from hsbcfraud.config import load_config
+from hsbcfraud.paths import display_path
 
 REPO = Path(__file__).resolve().parents[1]
 LEDGER = REPO / "docs" / "protocol.lock.json"
@@ -95,9 +97,14 @@ def digest(payload: object) -> str:
 
 
 def amendment_headings(protocol: Path) -> list[str]:
-    """Amendment headings in docs/protocol.md, in order."""
-    text = protocol.read_text(encoding="utf-8")
-    return re.findall(r"^##\s+Amendment\s+(A\d+)\b", text, flags=re.MULTILINE)
+    """Amendment headings in docs/protocol.md, in order.
+
+    The pattern lives in ``analysis.records`` because the same count is written to
+    ``decision_log.csv`` for the proposal to quote, and two copies of it would be two things
+    to keep in step.
+    """
+    entries = numbered_ids(protocol.read_text(encoding="utf-8"), AMENDMENT)
+    return [identifier for identifier, _ in entries]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -121,19 +128,19 @@ def main(argv: list[str] | None = None) -> int:
         dump = REPO / "configs" / "default.yaml"
         if not dump.exists():
             print(
-                f"{dump.relative_to(REPO)} is missing; run scripts/dump_config.py",
+                f"{display_path(dump)} is missing; run scripts/dump_config.py",
                 file=sys.stderr,
             )
             return 1
         if dump.read_text(encoding="utf-8") != render(None):
             print(
-                f"{dump.relative_to(REPO)} has drifted from the defaults in "
+                f"{display_path(dump)} has drifted from the defaults in "
                 "src/hsbcfraud/config.py. The dataclass is the source of truth; regenerate "
                 "with scripts/dump_config.py.",
                 file=sys.stderr,
             )
             return 1
-        print(f"{dump.relative_to(REPO)} matches the committed defaults.")
+        print(f"{display_path(dump)} matches the committed defaults.")
 
     state = guarantee_state(args.config)
     state_hash = digest(state)
@@ -154,7 +161,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if not LEDGER.exists():
         print(
-            f"{LEDGER.relative_to(REPO)} does not exist. Run with --freeze once to record the "
+            f"{display_path(LEDGER)} does not exist. Run with --freeze once to record the "
             "pre-registered state, then commit it.",
             file=sys.stderr,
         )

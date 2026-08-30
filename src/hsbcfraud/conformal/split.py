@@ -54,9 +54,15 @@ __all__ = [
 def degeneracy_floor(alpha: float) -> float:
     """Smallest calibration count admitting a finite classwise quantile at ``alpha``.
 
-    A class with ``|I^y|`` at or below this value has ``qhat^y = +inf``.  Returned as a
-    float because the bound is ``(1/alpha) - 1`` exactly and rounding it changes which
-    borderline configurations are reported as degenerate.
+    The bound is **strict**: a class with ``|I^y| < floor`` has ``qhat^y = +inf``, and one
+    with ``|I^y| == floor`` already admits a finite quantile.  The algebra is
+    ``ceil((n+1)(1-alpha)) > n  <=>  n < (1/alpha) - 1``, and an earlier version of this
+    docstring said "at or below", which is off by one at exact equality.  No reported
+    configuration sits there -- the smallest headroom in ``degeneracy.csv`` is 1122 rows --
+    so nothing measured changes, but the difference is the whole content of the bound.
+
+    Returned as a float because the bound is ``(1/alpha) - 1`` exactly and rounding it
+    changes which borderline configurations are reported as degenerate.
     """
     if not 0.0 < alpha < 1.0:
         raise ValueError(f"alpha must lie in (0, 1), got {alpha!r}")

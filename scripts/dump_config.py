@@ -26,6 +26,7 @@ from pathlib import Path
 import yaml
 
 from hsbcfraud.config import load_config
+from hsbcfraud.paths import display_path
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -53,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(render(None), encoding="utf-8")
-    print(f"Wrote {args.out.relative_to(REPO)} from the committed defaults")
+    print(f"Wrote {display_path(args.out)} from the committed defaults")
     return 0
 
 

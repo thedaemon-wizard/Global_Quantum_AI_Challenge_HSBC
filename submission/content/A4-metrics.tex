@@ -1,0 +1,21 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{The challenge statement's primary metrics}
+
+\Cited{Section 4.1} of the challenge statement names ROC AUC, AUPRC, $F_1$, precision, recall and a
+confusion matrix as the primary evaluation metrics. The body reports the first two, because
+they are the ones the arguments there turn on. All six are below, for the tuned
+gradient-boosted baseline on the held-out temporal block at the default threshold, so that
+nothing the statement asks for is left to be inferred.
+
+\input{generated/table-metrics}
+
+Precision is \ClaimBaselineTestPrecision{} and recall \ClaimBaselineTestRecall{}, for an
+$F_1$ of \ClaimBaselineTestFOne{} --- which is what a single threshold on a
+\ClaimTestFraudRate\,\% positive rate produces. That trade-off is the reason for the
+three-valued rule: the abstention band exists so that the decision does not have to be taken
+at one point on this curve, and the certificate binds the error the band commits.
+
+These are single-threshold summaries and none of them is a guarantee. A confusion matrix
+describes one operating point on one block; it does not bound the error rate on the next
+block, which is what the body's certificate does and what the temporal coverage result shows
+a point estimate cannot be trusted to do.

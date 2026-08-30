@@ -68,14 +68,31 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 41
+    value: 67
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
     note: >
       Entries in docs/decisions.md, counted from the file.  It was typed into four places and
       went stale in all of them -- the README said 29 twice and both PDF sources said
-      thirty-one against an actual 38.  Computing it is the only version that stays true.
+      thirty-one against an actual 38.  Computing it was necessary and not sufficient: the
+      table was computed once and not regenerated after two entries were appended, so both
+      PDFs printed 61 against an actual 63 while this gate passed -- it compares the value
+      here to the table, and nothing compared the table to the document.  `make derived` now
+      regenerates it inside `make claims`, and
+      test_decision_log_matches_the_decisions_document asserts the two agree.
+
+  - key: ProtocolAmendments
+    value: 7
+    source: results/tables/decision_log.csv
+    column: protocol_amendments
+    tolerance: 0
+    note: >
+      Amendment headings in docs/protocol.md, counted from the file.  The shipped appendix
+      said "Four were made" and enumerated A1-A4 while the protocol carried A1-A7 -- an
+      under-report of the pre-registration's own revision history, in the document a reviewer
+      reads to judge whether the pre-registration was honoured.  Bound here so the appendix
+      cannot restate it.
 
   # --------------------------------------------------------------- split arms (D-016)
   - key: SplitApStratified
@@ -147,39 +164,6 @@ claims:
       configuration certified at alpha = 0.10.
 
   # ------------------------------------------------------------------------- coverage
-  - key: TemporalRatioAlphaOnePct
-    value: 1.494
-    source: results/tables/coverage_by_arm.csv
-    select: {arm: temporal, alpha: 0.01}
-    column: ratio
-    tolerance: 0.0005
-    note: Empirical over nominal false-decline rate, temporal arm, alpha = 0.01.
-
-  - key: TemporalErrorsAlphaOnePct
-    value: 1667
-    source: results/tables/coverage_by_arm.csv
-    select: {arm: temporal, alpha: 0.01}
-    column: observed_errors
-    tolerance: 0
-    note: >
-      Observed errors against a Beta-Binomial band of [973, 1266].  The breach is judged
-      against the exact predictive law, not against alpha.
-
-  - key: StratifiedRatioAlphaOnePct
-    value: 0.952
-    source: results/tables/coverage_by_arm.csv
-    select: {arm: stratified, alpha: 0.01}
-    column: ratio
-    tolerance: 0.0005
-    note: The stratified control arm, inside the band.  Isolates the breach as temporal.
-
-  - key: CardDisjointRatioAlphaOnePct
-    value: 0.896
-    source: results/tables/coverage_by_arm.csv
-    select: {arm: card_disjoint, alpha: 0.01}
-    column: ratio
-    tolerance: 0.0005
-    note: The card-disjoint control arm, also inside the band.
 
   # -------------------------------------------------------------- rolling origin (D-025)
   - key: RollingRatioMin
@@ -340,92 +324,6 @@ claims:
       structurally zero, which is what made an earlier certificate vacuous.
 
   # ------------------------------------------------------ tensor network, full scale
-  - key: MpsFullApSeedMin
-    value: 0.1740
-    source: results/tables/mps_seed_spread.csv
-    reduce: {op: min, column: average_precision, where_equals: {contraction_width: 1}}
-    tolerance: 0.00005
-    note: >
-      Lowest full-scale average precision across four seeds at a FIXED bond dimension of 16.
-      With MpsFullApSeedMax this replaces the earlier "best across the bond-dimension sweep",
-      which took a maximum over four draws whose spread turned out to equal the seed spread.
-
-  - key: MpsFullApSeedMax
-    value: 0.2464
-    source: results/tables/mps_seed_spread.csv
-    reduce: {op: max, column: average_precision, where_equals: {contraction_width: 1}}
-    tolerance: 0.00005
-    note: >
-      Highest of the same four seeds.  It coincides with the committed chi=16 value because
-      that run used this seed; the coincidence is the reproduction check, not a result.
-
-  - key: MpsFullAucSeedMin
-    value: 0.7824
-    source: results/tables/mps_seed_spread.csv
-    reduce: {op: min, column: roc_auc, where_equals: {contraction_width: 1}}
-    tolerance: 0.00005
-    note: Lowest full-scale ROC AUC across four seeds at fixed bond dimension 16.
-
-  - key: MpsFullAucSeedMax
-    value: 0.8012
-    source: results/tables/mps_seed_spread.csv
-    reduce: {op: max, column: roc_auc, where_equals: {contraction_width: 1}}
-    tolerance: 0.00005
-    note: >
-      Highest of the same four seeds.  The spread across these four, 0.0188, is 1.01 times
-      the spread the committed table shows ACROSS bond dimension, 0.0186 -- which is why the
-      per-configuration numbers cannot be read as capacity dependence.
-
-  - key: MpsFullAucSeedSpread
-    value: 0.0188
-    source: results/tables/mps_seed_spread.csv
-    reduce: {op: range, column: roc_auc, where_equals: {contraction_width: 1}}
-    tolerance: 0.00005
-    note: >
-      ROC AUC spread across four seeds at a FIXED bond dimension.  Compare
-      MpsFullAucChiSpread: they are the same size, which is why the sweep cannot be read as
-      capacity dependence.
-
-  - key: MpsFullApSeedSpread
-    value: 0.0724
-    source: results/tables/mps_seed_spread.csv
-    reduce: {op: range, column: average_precision, where_equals: {contraction_width: 1}}
-    tolerance: 0.00005
-    note: Average-precision spread across four seeds at a fixed bond dimension.
-
-  - key: MpsFullAucChiSpread
-    value: 0.0186
-    source: results/tables/mps_full.csv
-    reduce: {op: range, column: roc_auc}
-    tolerance: 0.00005
-    note: >
-      ROC AUC spread ACROSS bond dimension in the committed sweep, one seed each.  It is
-      1.01 times the seed spread at one bond dimension, so it carries no capacity signal.
-
-  - key: MpsFullApChiSpread
-    value: 0.0771
-    source: results/tables/mps_full.csv
-    reduce: {op: range, column: average_precision}
-    tolerance: 0.00005
-    note: Average-precision spread across bond dimension, against a seed spread of 0.0724.
-
-  - key: MpsFullSecondsMin
-    value: 2765
-    source: results/tables/mps_full.csv
-    reduce: {op: min, column: fit_seconds}
-    tolerance: 0.5
-    note: >
-      Fastest full-scale job.  With MpsFullSecondsMax this is the evidence that the sweep is
-      launch-bound rather than governed by the bond dimension: a chi^2 cost model predicts
-      the chi=32 job to cost sixty-four times the chi=4 job.  See D-032.
-
-  - key: MpsFullSecondsMax
-    value: 3071
-    source: results/tables/mps_full.csv
-    reduce: {op: max, column: fit_seconds}
-    tolerance: 0.5
-    note: Slowest full-scale job, 1.11 times the fastest against a predicted 64.
-
   - key: GbdtFullAucMin
     value: 0.8837
     source: results/tables/baselines.csv
@@ -449,7 +347,7 @@ claims:
     tolerance: 0.00005
     note: >
       Lowest tuned baseline average precision on the temporal test block.  The full-scale
-      tensor network reaches MpsFullApBest, roughly half of this.
+      tensor network's best draw reaches SweepBestAp, roughly half of this.
 
   - key: GbdtFullApMax
     value: 0.5114
@@ -576,3 +474,400 @@ claims:
     column: preregistered_ceiling
     tolerance: 0.0000005
     note: The pre-registered MDE ceiling above which H4 is declared underpowered.
+
+  # ------------------------------------------- counts the prose used to spell out in words
+  # Spelling a measurement as a word ("four of five", "sixty-four-fold") hides it from the
+  # literal scan in scripts/check_pdf.py completely.  These bind the ones that were.
+  - key: CoverageSeeds
+    value: 5
+    source: results/tables/coverage_seed_summary.csv
+    reduce: {op: max, column: n_seeds}
+    note: Seeds per arm and level behind every coverage count below.
+
+  - key: TemporalOutsideMid
+    value: 4
+    source: results/tables/coverage_seed_summary.csv
+    select: {arm: temporal, alpha: 0.002}
+    column: n_outside
+    note: >
+      Temporal seeds outside the Beta-Binomial interval at the third-loosest level.  It is
+      five of five at the two loosest and zero of five at the tightest, so the breach is not
+      monotone in alpha and the level has to be named whenever the count is quoted.
+
+  - key: CardDisjointOutsideLoosest
+    value: 2
+    source: results/tables/coverage_seed_summary.csv
+    select: {arm: card_disjoint, alpha: 0.010}
+    column: n_outside
+    note: >
+      Both deviations are CONSERVATIVE -- the arm over-covers, ratio 0.785 and 0.795 against
+      a nominal 1.  It fails a two-sided fit check without breaching the one-sided coverage
+      guarantee, and the prose must say which, or a reader reads it as a control-arm failure.
+
+  - key: CardDisjointOutsideTightest
+    value: 1
+    source: results/tables/coverage_seed_summary.csv
+    select: {arm: card_disjoint, alpha: 0.001}
+    column: n_outside
+    note: >
+      The single deviation at the tightest level is ANTI-conservative -- it under-covers --
+      which is the opposite of the two at alpha = 0.01.  An earlier draft generalised the
+      conservative direction across both levels and printed "in every case it over-covers",
+      which was false of exactly this cell and false in the flattering direction.  The two
+      levels must be described separately.
+
+  - key: CardDisjointTightestWorstRatio
+    value: 1.5245
+    source: results/tables/coverage_by_arm_seeds.csv
+    reduce:
+      op: max
+      column: ratio
+      where_equals: {arm: card_disjoint, alpha: 0.001}
+    tolerance: 0.0005
+    note: >
+      Empirical over nominal for the one seed that breaches at the tightest level.  Above one
+      means under-coverage, the same direction as the temporal arm's failure -- so this cell
+      cannot be reported as a two-sided-fit issue only.
+
+  - key: CardDisjointTightestBestRatio
+    value: 0.6502
+    source: results/tables/coverage_by_arm_seeds.csv
+    reduce:
+      op: min
+      column: ratio
+      where_equals: {arm: card_disjoint, alpha: 0.001}
+    tolerance: 0.0005
+    note: >
+      The other four seeds at that level all sit below one.  Quoted beside the breaching seed
+      so a reader can see it is one against four -- noise rather than a systematic breach,
+      and still not a pass.
+
+  - key: RollingOrigins
+    value: 5
+    source: results/tables/rolling_origin.csv
+    reduce: {op: count}
+    note: Rolling calibration origins behind the origin-dependence result (D-025).
+
+  - key: RollingBreaches
+    value: 2
+    source: results/tables/rolling_origin.csv
+    reduce: {op: count, where_equals: {verdict: BREACHED}}
+    note: >
+      Origins whose deviation exceeds the interval upward.  The earliest is conservative
+      instead, which is why no single ratio characterises the temporal effect.
+
+  - key: SweepChiMin
+    value: 4
+    source: results/tables/mps_seed_sweep_summary.csv
+    reduce: {op: min, column: bond_dimension}
+
+  - key: SweepChiMax
+    value: 32
+    source: results/tables/mps_seed_sweep_summary.csv
+    reduce: {op: max, column: bond_dimension}
+
+  - key: PsdLoosestCeiling
+    value: 0.13
+    source: results/tables/envelope.csv
+    reduce: {op: max, column: reference_value_fraud_rate}
+    scale: 100
+    tolerance: 0.0000005
+    note: The loosest PSD2 SCA-RTS reference fraud rate on the grid, as a percentage.
+
+  - key: MpsMdeRealised
+    value: 0.0557
+    source: results/tables/mps_h4.csv
+    select: {bond_dimension: 32}
+    column: minimum_detectable_effect_realised
+    tolerance: 0.00005
+    note: >
+      What the H4 comparison could actually have detected, from its own bootstrap standard
+      error.  Distinct from the pre-registered PowerMde, which was estimated from proxies
+      before the run and is the commitment rather than the finding.  This is the figure the
+      body reports, because it is the larger and therefore the more conservative of the two.
+
+  # ------------------------------------------------------------ derived from other claims
+  # A ratio typed by hand does not move when its inputs do.  The proposal claimed a
+  # "thousandfold" FLOP span for a grid that spans sixty-four; these cannot drift that way.
+  - key: SweepSpreadRatio
+    value: 2.83
+    derived: {op: ratio, of: [SweepSeedSpread, SweepChiSpread]}
+    tolerance: 0.005
+    note: How much larger seed noise is than the capacity signal at full scale.
+
+  - key: SweepChiFlopSpan
+    value: 64
+    derived: {op: ratio, of: [SweepChiMax, SweepChiMin], power: 2}
+    note: >
+      The arithmetic span a chi-squared cost model predicts across the measured bond
+      dimensions.  Per-step cost is flat against it, which is the launch-bound finding.
+
+  - key: PowerSeRatio
+    value: 8.03
+    derived: {op: ratio, of: [MpsStandardErrorBestChi, PowerSeWithinFamily]}
+    tolerance: 0.005
+    note: Cross-family noise against within-family, the ratio that made H4 underpowered.
+
+  - key: BandFraudVersusCeiling
+    value: 42.7
+    derived: {op: ratio, of: [BandValueFraudRate, PsdLoosestCeiling]}
+    tolerance: 0.05
+    note: How far a fraud-enriched research benchmark sits from a portfolio ceiling.
+
+  - key: MdeSampleFactor
+    value: 7.77
+    derived: {op: ratio, of: [MpsMdeRealised, MpsCiHighBestChi], power: 2}
+    tolerance: 0.005
+    note: >
+      Factor by which the in-band evaluation set would have to grow to resolve an effect the
+      size of the upper interval edge, since the detectable effect scales as n^-1/2.
+
+  # ------------------------------------------------- resource figures for the Phase II plan
+  # Feasibility is scored on whether the resource requirements are realistic.  These are
+  # measured on this study's own runs rather than estimated, which is the whole argument.
+  - key: SweepSecondsMin
+    value: 2747
+    source: results/tables/mps_seed_sweep.csv
+    reduce: {op: min, column: fit_seconds}
+    tolerance: 0.5
+    note: Fastest of the sixteen full-scale tensor-network fits, one GPU, 431 sites.
+
+  - key: SweepSecondsMax
+    value: 3145
+    source: results/tables/mps_seed_sweep.csv
+    reduce: {op: max, column: fit_seconds}
+    tolerance: 0.5
+    note: >
+      Slowest of the same sixteen.  Replaces MpsFullSecondsMin/Max, which described the
+      superseded four-job single-seed sweep and were still quoted in the body.
+
+  - key: SweepTrainRows
+    value: 356216
+    source: results/tables/mps_seed_sweep.csv
+    reduce: {op: max, column: n_train}
+    note: Training rows behind each full-scale fit.
+
+  - key: BandGbdtSeconds
+    value: 0.28
+    source: results/tables/mps_band.csv
+    reduce: {op: min, column: fit_seconds}
+    tolerance: 0.005
+    note: >
+      The tuned gradient-boosted baseline's in-band fit, for scale: the classical core of the
+      pipeline is not the expensive part, which is what makes the abstention band affordable.
+
+  # ------------------------- the challenge statement's primary metrics, on the test block
+  # Section 4.1 of the challenge statement names AUC-ROC, AUPRC, F1, precision, recall and a
+  # confusion matrix as the primary evaluation metrics.  All six were computed by
+  # run_baselines.py from the first run and none of them reached the submission.
+  - key: BaselineTestFOne
+    value: 0.4655
+    source: results/tables/baselines.csv
+    select: {model: xgboost, arm: temporal, block: test, seed: 20260828}
+    column: f1
+    tolerance: 0.00005
+
+  - key: BaselineTestPrecision
+    value: 0.8201
+    source: results/tables/baselines.csv
+    select: {model: xgboost, arm: temporal, block: test, seed: 20260828}
+    column: precision
+    tolerance: 0.00005
+
+  - key: BaselineTestRecall
+    value: 0.325
+    source: results/tables/baselines.csv
+    select: {model: xgboost, arm: temporal, block: test, seed: 20260828}
+    column: recall
+    tolerance: 0.00005
+    note: >
+      Recall at the default threshold.  Low, and honestly so: a forward holdout on this file
+      is a harder task than the cross-validation the published leaderboard numbers use, and
+      the abstention band exists precisely because a single threshold forces this trade-off.
+
+  # ------------------- circuit structure, for the near-term feasibility question (STMT 5.3)
+  - key: CircuitQubitsMax
+    value: 8
+    source: results/tables/circuits.csv
+    reduce: {op: max, column: n_qubits}
+    note: Widest screened encoding.  The band arm caps features at eight by design.
+
+  - key: CircuitDepthMax
+    value: 35
+    source: results/tables/circuits.csv
+    reduce: {op: max, column: transpiled_depth}
+    note: >
+      Deepest screened encoding after decomposition to a portable rz/sx/x/cx basis with
+      all-to-all connectivity.  A device with limited connectivity would be deeper; quoting a
+      figure against a named coupling map would imply a hardware run that was not made.
+
+  - key: CircuitTwoQubitMax
+    value: 28
+    source: results/tables/circuits.csv
+    reduce: {op: max, column: two_qubit_gates}
+    note: Two-qubit gate count of the deepest encoding, the quantity that dominates device error.
+
+  # ---------------------------------- E11 backend parity, E12 attribution (STMT 5.2, 5.3)
+  - key: ParityWorstDifference
+    value: 3.442e-15
+    source: results/tables/parity.csv
+    reduce: {op: max, column: max_abs_difference}
+    tolerance: 1.0e-17
+    note: >
+      Worst disagreement between any simulator backend and the exact statevector reference,
+      over four encodings.  D-022 quoted 2.6e-15 to 4.8e-13 from an uncommitted measurement;
+      this is the committed one, and it is tighter.
+
+  - key: ParityComparisons
+    value: 12
+    source: results/tables/parity.csv
+    reduce: {op: count}
+    note: Backend-by-encoding comparisons behind the parity claim.
+
+  - key: AttributionTopShare
+    value: 0.758
+    source: results/tables/attribution.csv
+    select: {rank: 1}
+    column: share_of_total
+    tolerance: 0.0005
+    scale: 1
+    note: >
+      Share of total absolute attribution carried by the single highest-ranked feature in the
+      in-band model.  It is card1, an anonymised card identifier, and this is the measured
+      form of the limitation that the label is partly an entity flag.
+
+  - key: AttributionFeatures
+    value: 8
+    source: results/tables/attribution.csv
+    reduce: {op: count}
+
+  # ------------------------------------------- E2, the label-censoring audit (DS-2 threat)
+  # Measured from the first round and reported nowhere until 2026-08-30.  It matters because
+  # it is the obvious objection to the temporal result: if recent fraud is simply not yet
+  # labelled, a forward holdout would show a coverage breach that is an artefact.
+  - key: CensoringTau
+    value: -0.2857
+    source: results/tables/label_verdict.csv
+    column: mann_kendall_tau
+    tolerance: 0.00005
+    note: Mann-Kendall trend statistic over the per-bucket fraud rate. No monotone trend.
+
+  - key: CensoringP
+    value: 0.3988
+    source: results/tables/label_verdict.csv
+    column: mann_kendall_p
+    tolerance: 0.00005
+
+  - key: CensoringTrailingRate
+    value: 3.666
+    source: results/tables/label_verdict.csv
+    column: trailing_rate
+    scale: 100
+    tolerance: 0.0005
+    note: >
+      Fraud rate in the trailing label window, as a percentage.  It is *higher* than the
+      earlier rate, which is the opposite of what censoring would produce.
+
+  - key: CensoringEarlierRate
+    value: 3.281
+    source: results/tables/label_verdict.csv
+    column: earlier_rate
+    scale: 100
+    tolerance: 0.0005
+
+  # ---------------------------------------------------- E13 inference latency, added 2026-08-30
+  # The challenge statement names "latency vs. complexity" as a bottleneck and puts the whole
+  # authorisation flow at 100-300 ms with about 130 ms of network.  The proposal's answer had
+  # been volume arithmetic ("a few percent of traffic") with no timing behind it.  These bind it.
+  #
+  # Every figure is from the 1-thread CPU profile, which is the per-request serving shape.  The
+  # all-core rows in the table are ~250x slower at batch 1 and are kept there as the documented
+  # trap: XGBoost defaults its thread count to the core count, and synchronising 20 threads over
+  # one row costs far more than the prediction.  See D-063.
+  - key: LatencyScorerMedian
+    value: 0.0841
+    source: results/tables/latency.csv
+    reduce:
+      op: min
+      column: per_transaction_p50_ms
+      where_equals: {component: classical scorer, profile: 1-thread CPU, batch_size: 1}
+    tolerance: 0.0005
+    note: >
+      Median cost of scoring one authorisation with the full-traffic classical model, single
+      threaded, on all 431 features.  The classical core is not the latency risk.
+
+  - key: LatencyScorerTail
+    value: 0.3197
+    source: results/tables/latency.csv
+    reduce:
+      op: min
+      column: per_transaction_p99_ms
+      where_equals: {component: classical scorer, profile: 1-thread CPU, batch_size: 1}
+    tolerance: 0.002
+    note: Tail cost per authorisation for the full-traffic scorer; a tail is what breaks a timeout.
+
+  - key: LatencyKernelMedian
+    value: 96.577
+    source: results/tables/latency.csv
+    reduce:
+      op: min
+      column: per_transaction_p50_ms
+      where_equals: {component: quantum kernel (screened out), batch_size: 1}
+    tolerance: 0.5
+    note: >
+      What one in-band authorisation would have cost against a 64-row support set, had the
+      kernel arm survived its screens.  This is the figure the abstention band exists to ration.
+
+  - key: LatencyKernelTail
+    value: 129.08
+    source: results/tables/latency.csv
+    reduce:
+      op: min
+      column: per_transaction_p99_ms
+      where_equals: {component: quantum kernel (screened out), batch_size: 1}
+    tolerance: 0.5
+    note: >
+      Tail cost of one in-band kernel evaluation.  Against the residual budget the statement
+      implies -- 300 ms less about 130 ms of network -- this consumes most of what is left, so
+      the band is a necessary condition for affordability rather than a convenience.
+
+  - key: LatencyAuthorisationBudgetMs
+    value: 300
+    source: results/tables/latency.csv
+    reduce: {op: min, column: authorisation_budget_ms}
+    note: >
+      The authorisation ceiling the challenge statement states, carried in the table so the
+      comparison and the measurement cannot drift apart.
+
+  - key: LatencyNetworkMs
+    value: 130
+    source: results/tables/latency.csv
+    reduce: {op: min, column: network_response_ms}
+    note: The network share of that ceiling, as the challenge statement attributes it.
+
+  - key: LatencyBudgetResidualMs
+    value: 170
+    source: results/tables/latency.csv
+    reduce:
+      op: min_margin
+      columns: [authorisation_budget_ms, network_response_ms]
+    note: >
+      Issuer-side budget implied by the challenge statement: the 300 ms authorisation ceiling
+      less the roughly 130 ms it attributes to network response.  Quoted for scale.
+
+  - key: LatencyKernelVersusScorer
+    value: 1148
+    derived: {op: ratio, of: [LatencyKernelMedian, LatencyScorerMedian]}
+    tolerance: 5
+    note: >
+      How much more one in-band kernel evaluation costs than one classical score.  Invisible
+      until the thread count was controlled, because the OpenMP barrier dominated both.
+
+  - key: LatencyKernelBudgetShare
+    value: 75.9
+    derived: {op: ratio, of: [LatencyKernelTail, LatencyBudgetResidualMs]}
+    scale: 100
+    tolerance: 0.5
+    note: >
+      Share of the residual issuer-side budget one in-band kernel evaluation would consume at
+      the tail.  Under one, so it fits -- with little room, and only on the band.

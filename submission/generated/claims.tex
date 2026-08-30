@@ -10,7 +10,9 @@
 % CalLegitCount: splits.csv
 \newcommand{\ClaimCalLegitCount}{58343}
 % DecisionEntries: decision_log.csv
-\newcommand{\ClaimDecisionEntries}{41}
+\newcommand{\ClaimDecisionEntries}{67}
+% ProtocolAmendments: decision_log.csv
+\newcommand{\ClaimProtocolAmendments}{7}
 % SplitApStratified: split_arm_baselines.csv
 \newcommand{\ClaimSplitApStratified}{0.8254}
 % SplitApTemporal: split_arm_baselines.csv
@@ -25,14 +27,6 @@
 \newcommand{\ClaimHFiveConfigsTotal}{5}
 % HFiveWorstRatio: h5_validation.csv
 \newcommand{\ClaimHFiveWorstRatio}{0.856}
-% TemporalRatioAlphaOnePct: coverage_by_arm.csv
-\newcommand{\ClaimTemporalRatioAlphaOnePct}{1.494}
-% TemporalErrorsAlphaOnePct: coverage_by_arm.csv
-\newcommand{\ClaimTemporalErrorsAlphaOnePct}{1667}
-% StratifiedRatioAlphaOnePct: coverage_by_arm.csv
-\newcommand{\ClaimStratifiedRatioAlphaOnePct}{0.952}
-% CardDisjointRatioAlphaOnePct: coverage_by_arm.csv
-\newcommand{\ClaimCardDisjointRatioAlphaOnePct}{0.896}
 % RollingRatioMin: rolling_origin.csv
 \newcommand{\ClaimRollingRatioMin}{0.684}
 % RollingRatioMax: rolling_origin.csv
@@ -69,26 +63,6 @@
 \newcommand{\ClaimScreenConfigs}{120}
 % CertificateMargin: riskcontrol.csv
 \newcommand{\ClaimCertificateMargin}{0.0136}
-% MpsFullApSeedMin: mps_seed_spread.csv
-\newcommand{\ClaimMpsFullApSeedMin}{0.174}
-% MpsFullApSeedMax: mps_seed_spread.csv
-\newcommand{\ClaimMpsFullApSeedMax}{0.2464}
-% MpsFullAucSeedMin: mps_seed_spread.csv
-\newcommand{\ClaimMpsFullAucSeedMin}{0.7824}
-% MpsFullAucSeedMax: mps_seed_spread.csv
-\newcommand{\ClaimMpsFullAucSeedMax}{0.8012}
-% MpsFullAucSeedSpread: mps_seed_spread.csv
-\newcommand{\ClaimMpsFullAucSeedSpread}{0.0188}
-% MpsFullApSeedSpread: mps_seed_spread.csv
-\newcommand{\ClaimMpsFullApSeedSpread}{0.0724}
-% MpsFullAucChiSpread: mps_full.csv
-\newcommand{\ClaimMpsFullAucChiSpread}{0.0186}
-% MpsFullApChiSpread: mps_full.csv
-\newcommand{\ClaimMpsFullApChiSpread}{0.0771}
-% MpsFullSecondsMin: mps_full.csv
-\newcommand{\ClaimMpsFullSecondsMin}{2765}
-% MpsFullSecondsMax: mps_full.csv
-\newcommand{\ClaimMpsFullSecondsMax}{3071}
 % GbdtFullAucMin: baselines.csv
 \newcommand{\ClaimGbdtFullAucMin}{0.8837}
 % GbdtFullAucMax: baselines.csv
@@ -121,3 +95,91 @@
 \newcommand{\ClaimPowerSeWithinFamily}{0.0025}
 % PowerCeiling: power.csv
 \newcommand{\ClaimPowerCeiling}{0.023}
+% CoverageSeeds: coverage_seed_summary.csv
+\newcommand{\ClaimCoverageSeeds}{5}
+% TemporalOutsideMid: coverage_seed_summary.csv
+\newcommand{\ClaimTemporalOutsideMid}{4}
+% CardDisjointOutsideLoosest: coverage_seed_summary.csv
+\newcommand{\ClaimCardDisjointOutsideLoosest}{2}
+% CardDisjointOutsideTightest: coverage_seed_summary.csv
+\newcommand{\ClaimCardDisjointOutsideTightest}{1}
+% CardDisjointTightestWorstRatio: coverage_by_arm_seeds.csv
+\newcommand{\ClaimCardDisjointTightestWorstRatio}{1.5245}
+% CardDisjointTightestBestRatio: coverage_by_arm_seeds.csv
+\newcommand{\ClaimCardDisjointTightestBestRatio}{0.6502}
+% RollingOrigins: rolling_origin.csv
+\newcommand{\ClaimRollingOrigins}{5}
+% RollingBreaches: rolling_origin.csv
+\newcommand{\ClaimRollingBreaches}{2}
+% SweepChiMin: mps_seed_sweep_summary.csv
+\newcommand{\ClaimSweepChiMin}{4}
+% SweepChiMax: mps_seed_sweep_summary.csv
+\newcommand{\ClaimSweepChiMax}{32}
+% PsdLoosestCeiling: envelope.csv
+\newcommand{\ClaimPsdLoosestCeiling}{0.13}
+% MpsMdeRealised: mps_h4.csv
+\newcommand{\ClaimMpsMdeRealised}{0.0557}
+% SweepSpreadRatio: derived: SweepSeedSpread / SweepChiSpread
+\newcommand{\ClaimSweepSpreadRatio}{2.83}
+% SweepChiFlopSpan: derived: (SweepChiMax / SweepChiMin)^2
+\newcommand{\ClaimSweepChiFlopSpan}{64}
+% PowerSeRatio: derived: MpsStandardErrorBestChi / PowerSeWithinFamily
+\newcommand{\ClaimPowerSeRatio}{8.03}
+% BandFraudVersusCeiling: derived: BandValueFraudRate / PsdLoosestCeiling
+\newcommand{\ClaimBandFraudVersusCeiling}{42.7}
+% MdeSampleFactor: derived: (MpsMdeRealised / MpsCiHighBestChi)^2
+\newcommand{\ClaimMdeSampleFactor}{7.77}
+% SweepSecondsMin: mps_seed_sweep.csv
+\newcommand{\ClaimSweepSecondsMin}{2747}
+% SweepSecondsMax: mps_seed_sweep.csv
+\newcommand{\ClaimSweepSecondsMax}{3145}
+% SweepTrainRows: mps_seed_sweep.csv
+\newcommand{\ClaimSweepTrainRows}{356216}
+% BandGbdtSeconds: mps_band.csv
+\newcommand{\ClaimBandGbdtSeconds}{0.28}
+% BaselineTestFOne: baselines.csv
+\newcommand{\ClaimBaselineTestFOne}{0.4655}
+% BaselineTestPrecision: baselines.csv
+\newcommand{\ClaimBaselineTestPrecision}{0.8201}
+% BaselineTestRecall: baselines.csv
+\newcommand{\ClaimBaselineTestRecall}{0.325}
+% CircuitQubitsMax: circuits.csv
+\newcommand{\ClaimCircuitQubitsMax}{8}
+% CircuitDepthMax: circuits.csv
+\newcommand{\ClaimCircuitDepthMax}{35}
+% CircuitTwoQubitMax: circuits.csv
+\newcommand{\ClaimCircuitTwoQubitMax}{28}
+% ParityWorstDifference: parity.csv
+\newcommand{\ClaimParityWorstDifference}{3.442e-15}
+% ParityComparisons: parity.csv
+\newcommand{\ClaimParityComparisons}{12}
+% AttributionTopShare: attribution.csv
+\newcommand{\ClaimAttributionTopShare}{0.758}
+% AttributionFeatures: attribution.csv
+\newcommand{\ClaimAttributionFeatures}{8}
+% CensoringTau: label_verdict.csv
+\newcommand{\ClaimCensoringTau}{$-$0.2857}
+% CensoringP: label_verdict.csv
+\newcommand{\ClaimCensoringP}{0.3988}
+% CensoringTrailingRate: label_verdict.csv
+\newcommand{\ClaimCensoringTrailingRate}{3.666}
+% CensoringEarlierRate: label_verdict.csv
+\newcommand{\ClaimCensoringEarlierRate}{3.281}
+% LatencyScorerMedian: latency.csv
+\newcommand{\ClaimLatencyScorerMedian}{0.0841}
+% LatencyScorerTail: latency.csv
+\newcommand{\ClaimLatencyScorerTail}{0.3197}
+% LatencyKernelMedian: latency.csv
+\newcommand{\ClaimLatencyKernelMedian}{96.577}
+% LatencyKernelTail: latency.csv
+\newcommand{\ClaimLatencyKernelTail}{129.08}
+% LatencyAuthorisationBudgetMs: latency.csv
+\newcommand{\ClaimLatencyAuthorisationBudgetMs}{300}
+% LatencyNetworkMs: latency.csv
+\newcommand{\ClaimLatencyNetworkMs}{130}
+% LatencyBudgetResidualMs: latency.csv
+\newcommand{\ClaimLatencyBudgetResidualMs}{170}
+% LatencyKernelVersusScorer: derived: LatencyKernelMedian / LatencyScorerMedian
+\newcommand{\ClaimLatencyKernelVersusScorer}{1148}
+% LatencyKernelBudgetShare: derived: LatencyKernelTail / LatencyBudgetResidualMs
+\newcommand{\ClaimLatencyKernelBudgetShare}{75.9}

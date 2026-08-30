@@ -25,11 +25,25 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 from pypdf import PdfReader
 
+from hsbcfraud.paths import display_path
+
 REPO = Path(__file__).resolve().parents[1]
+
+# How far a line may exceed the text block before it is treated as a defect rather than as
+# typesetting slack.  A long inline equation routinely overhangs by a few points and remains
+# entirely readable.  The portfolio URL overhung by 146 pt and its last two words were clipped
+# off the page edge, which no other check in this file could see: the page count was right, the
+# paper size was right, the font size was right, and the text was simply gone.
+OVERFULL_TOLERANCE_PT = 60.0
+OVERFULL = re.compile(
+    r"^Overfull \\hbox \(([\d.]+)pt too wide\) in paragraph at lines (\d+)--(\d+)",
+    re.MULTILINE,
+)
 
 # Points, at 72 per inch.  A4 is 210 x 297 mm.
 PAPER_SIZES = {"a4": (595.276, 841.890), "letter": (612.0, 792.0)}
@@ -51,6 +65,50 @@ ALLOWED_LITERALS = {
 # matches; the leading one excludes both word characters and a preceding "letter-hyphen",
 # which is what makes "Apache-2.0" and "3-D Secure" identifiers rather than figures.
 LITERAL = re.compile(r"(?<![\w.\\])(?<![A-Za-z]-)(\d+\.\d+|\d+)(?![\w.])")
+
+# Commands whose braced argument is an identifier or document metadata rather than prose.
+# Their digits belong to a filename, a cross-reference key or the challenge year, none of
+# which can resolve to a table.  Stripping the command name alone is not enough: an earlier
+# version removed "\input" but left "{content/06-hybrid}", and adding two sections to the
+# proposal then failed the whole build on six of its own filenames.
+STRUCTURAL_COMMANDS = (
+    "input", "include", "includegraphics", "label", "ref", "eqref", "cite",
+    "bibliography", "title", "author", "date", "usepackage", "documentclass",
+    # Typesetting configuration.  A float fraction or a margin is a layout constant, not a
+    # measurement, and it can never resolve to a table.  These take two braced arguments,
+    # which is why the pattern below allows more than one.
+    "renewcommand", "setlength", "addtolength", "setcounter",
+)
+# Commands that declare a figure as belonging to another work: a cited paper's result and
+# the author's own biographical record.  Neither can resolve to a table in this repository,
+# so both are declared in the source and removed before scanning.
+DECLARED_EXTERNAL = ("Cited", "Record")
+
+# A command from either group together with its optional and braced arguments.
+ARGUMENT_BEARING = re.compile(
+    r"\\(?:" + "|".join((*DECLARED_EXTERNAL, *STRUCTURAL_COMMANDS)) + r")\b"
+    r"\s*(?:\[[^\]]*\])?\s*(?:\{[^{}]*\}\s*){0,2}"
+)
+
+# Number words, composed from the parts English builds them from rather than enumerated, so
+# that compounds like "sixty-four" and "twenty-five" fall out instead of needing entries.
+_NUMBER_WORD = (
+    r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|"
+    r"fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|"
+    r"sixty|seventy|eighty|ninety|hundred|thousand|million|billion|dozen)"
+)
+_COMPOUND = rf"{_NUMBER_WORD}(?:[-\s]{_NUMBER_WORD})*"
+
+# "sixty-four-fold", "thousandfold", "eight times", "two thirds", "twice".  The separator is
+# optional before "fold" because English writes it closed for the round scales.
+MULTIPLIER = re.compile(
+    rf"\b(?:{_COMPOUND}[-\s]?(?:fold|times)|{_COMPOUND}[-\s](?:thirds|quarters|halves))\b",
+    re.IGNORECASE,
+)
+# "four of five", "one-in-eight", "two of sixteen": a count against a stated total.
+PROPORTION = re.compile(
+    rf"\b{_COMPOUND}[-\s](?:of|in)[-\s]{_COMPOUND}\b", re.IGNORECASE
+)
 
 
 def check_pages(reader: PdfReader, limit: int) -> list[str]:
@@ -153,48 +211,133 @@ def check_fonts(reader: PdfReader, floor: float) -> list[str]:
     return problems
 
 
-def _display(path: Path) -> str:
-    """Repository-relative path when possible, absolute otherwise.
 
-    Sources arrive from the Makefile as relative paths, so `relative_to(REPO)` raises on
-    them; an error formatter must never be the thing that crashes the check.
+def check_overfull(pdf: Path, tolerance: float = OVERFULL_TOLERANCE_PT) -> list[str]:
+    """Lines LaTeX could not fit, read from the build log beside the PDF.
+
+    LaTeX reports these as warnings and carries on, so an overfull line ships silently. Small
+    overhangs are normal; a large one means text has run past the margin and been clipped, and
+    a reader sees a truncated URL or a missing word rather than an error.
     """
-    resolved = path.resolve()
-    try:
-        return str(resolved.relative_to(REPO))
-    except ValueError:
-        return str(path)
+    log = pdf.with_suffix(".log")
+    if not log.exists():
+        return [f"{display_path(log)} is missing; the overfull-line check could not run"]
+
+    problems = []
+    worst = 0.0
+    count = 0
+    for match in OVERFULL.finditer(log.read_text(encoding="utf-8", errors="replace")):
+        width, first, last = float(match.group(1)), match.group(2), match.group(3)
+        count += 1
+        worst = max(worst, width)
+        if width > tolerance:
+            problems.append(
+                f"a line overhangs the text block by {width:.0f} pt at source lines "
+                f"{first}-{last}; text that far past the margin is clipped from the page"
+            )
+    if not problems:
+        print(
+            f"  overfull    {count} line(s) overhang, worst {worst:.0f} pt, "
+            f"tolerance {tolerance:.0f} pt"
+        )
+    return problems
 
 
-def check_literals(sources: list[Path]) -> list[str]:
-    """Numeric literals in the body, which should have arrived through a Claim macro."""
+def _blank_out(match: re.Match[str]) -> str:
+    """Replace a match with blanks, keeping its newlines so line numbers do not shift."""
+    return "".join("\n" if character == "\n" else " " for character in match.group(0))
+
+
+def _strip_markup(text: str) -> str:
+    """Remove the LaTeX that legitimately carries digits, leaving the prose to scan.
+
+    Applied to the **whole document**, not line by line.  A ``\\Record{...}`` or ``\\Cited{...}``
+    wrapped across two source lines would otherwise be stripped on its first line and leak its
+    argument onto the second, which made the check's verdict depend on where the text happened
+    to wrap.  Matches are blanked rather than deleted so that every line keeps its number.
+
+    Argument-bearing commands go first because they are the more specific pattern: removing
+    the bare control sequence first would leave the filename in ``\\input{content/06-hybrid}``
+    behind as free-standing prose.
+    """
+    cleaned = ARGUMENT_BEARING.sub(_blank_out, text)
+    # Remaining control sequences -- \ClaimFoo, \section, \textbf -- and typeset lengths.
+    cleaned = re.sub(r"\\[A-Za-z]+", " ", cleaned)
+    return re.sub(r"\d+(mm|pt|cm|em|ex|in|\\%)", " ", cleaned)
+
+
+def _scan_sources(sources: list[Path], find: Callable[[str], Iterator[str]]) -> list[str]:
+    """Apply a line-level finder to every non-comment line of every source.
+
+    Shared by the literal and number-word checks so that both see exactly the same view of
+    the document; a divergence there would let a figure hide from one check by satisfying the
+    other's idea of what counts as markup.
+    """
     problems = []
     for path in sources:
         if not path.exists():
             problems.append(f"source {path} does not exist")
             continue
-        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-            stripped = line.strip()
-            if stripped.startswith("%"):
+        source = path.read_text(encoding="utf-8")
+        # Stripped once, over the whole file, so a command wrapped across lines is handled.
+        # _strip_markup preserves newlines, so these two lists stay aligned by index.
+        for number, (raw, cleaned) in enumerate(
+            zip(source.splitlines(), _strip_markup(source).splitlines(), strict=True), start=1
+        ):
+            if raw.strip().startswith("%"):
                 continue
-            # Numbers that cannot resolve to a table in this repository: a cited paper's
-            # results (\Cited) and the author's own biographical record (\Record).  Both are
-            # declared in the source and removed before scanning, so the check stays strict
-            # about this study's measurements without forbidding either.
-            cleaned = re.sub(r"\\(?:Cited|Record)\{[^}]*\}", " ", stripped)
-            # Then strip LaTeX control sequences: \ClaimFoo, \section, lengths like 10mm,
-            # and label/ref arguments all legitimately contain digits.
-            cleaned = re.sub(r"\\[A-Za-z]+", " ", cleaned)
-            cleaned = re.sub(r"\d+(mm|pt|cm|em|ex|in|\\%)", " ", cleaned)
-            for match in LITERAL.finditer(cleaned):
-                if match.group(1) not in ALLOWED_LITERALS:
-                    problems.append(
-                        f"{_display(path)}:{number}: numeric literal "
-                        f"{match.group(1)!r} -- should this be a \\Claim macro? "
-                        f"({stripped[:60]})"
-                    )
+            for complaint in find(cleaned):
+                problems.append(
+                    f"{display_path(path)}:{number}: {complaint} ({raw.strip()[:60]})"
+                )
+    return problems
+
+
+def check_literals(sources: list[Path]) -> list[str]:
+    """Numeric literals in the body, which should have arrived through a Claim macro."""
+
+    def find(cleaned: str) -> Iterator[str]:
+        for match in LITERAL.finditer(cleaned):
+            if match.group(1) not in ALLOWED_LITERALS:
+                yield (
+                    f"numeric literal {match.group(1)!r} -- should this be a \\Claim macro?"
+                )
+
+    problems = _scan_sources(sources, find)
     if not problems and sources:
         print(f"  literals    none unaccounted for across {len(sources)} source file(s)")
+    return problems
+
+
+def check_number_words(sources: list[Path]) -> list[str]:
+    """Figures spelled as words, which the literal scan cannot see.
+
+    Spelling a measurement out defeats ``LITERAL`` completely, and the submission accumulated
+    several that way: a "thousandfold" change in FLOPs where the measured grid spans
+    sixty-four, and "roughly eight times" the evaluation set where no table gives eight.
+
+    A blanket ban is not workable -- the body legitimately says "three actions, not two" and
+    "one of five" ninety-odd times -- so this targets the two constructions that are always
+    doing measurement work rather than counting in prose:
+
+    * a **multiplier**: "sixty-four-fold", "thousandfold", "eight times", "two thirds";
+    * a **proportion of a stated total**: "four of five", "one-in-eight".
+
+    Both must arrive through a ``\\Claim`` macro, because both are ratios of measured
+    quantities and both change when the tables change.
+    """
+
+    def find(cleaned: str) -> Iterator[str]:
+        for pattern, kind in ((MULTIPLIER, "multiplier"), (PROPORTION, "proportion")):
+            for match in pattern.finditer(cleaned):
+                yield (
+                    f"{kind} written as words, {match.group(0).strip()!r} -- "
+                    "spell it with a \\Claim macro so it tracks the table"
+                )
+
+    problems = _scan_sources(sources, find)
+    if not problems and sources:
+        print(f"  number words none doing measurement work across {len(sources)} source file(s)")
     return problems
 
 
@@ -212,13 +355,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{args.pdf} does not exist; build it first", file=sys.stderr)
         return 1
 
-    print(_display(args.pdf))
+    print(display_path(args.pdf))
     reader = PdfReader(str(args.pdf))
     problems = [
         *check_pages(reader, args.max_pages),
         *check_paper(reader, args.paper),
         *check_fonts(reader, args.min_font),
+        *check_overfull(args.pdf),
         *check_literals(args.source),
+        *check_number_words(args.source),
     ]
 
     if not problems:

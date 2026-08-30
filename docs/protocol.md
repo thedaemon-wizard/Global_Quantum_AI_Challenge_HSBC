@@ -305,6 +305,22 @@ Stated in advance, in the direction that makes them refutable.
 result of this work does not depend on refuting them. What would make the work wrong is
 claiming a rejection that the statistics do not support.
 
+**Disposition, added 2026-08-30.** Three of the five were never tested, and this table read as
+though they had been.
+
+* **H1, H2 and H3 were not tested, and cannot be.** All three compare a quantum kernel against
+  a control, and section 9's stopping rule fired first: of 120 pre-registered configurations,
+  28 passed conditioning and **none** passed distinctness, so no kernel was carried to the
+  band. There is no kernel to test the nulls against. This is the stopping rule working as
+  designed, not an omission -- but "not tested because the arm stopped" and "tested and not
+  rejected" are different statements, and only the record distinguishes them.
+* **H4 was tested and is reported as underpowered rather than as a null**, which is what the
+  protocol commits to when the minimum detectable effect exceeds its ceiling.
+* **H5 was tested and holds** on the held-out block, for all five certified configurations.
+
+No hypothesis was tested and then left unreported, and no hypothesis is claimed as a null that
+was not tested.
+
 Test statistics are matched to estimands rather than applied uniformly: average precision is
 a threshold-free ranking quantity and is compared by paired bootstrap; decisions at a fixed
 threshold are compared by exact McNemar. Comparing two kernels each at its own operating
@@ -350,7 +366,8 @@ Recorded here so that no later result can be presented as though it had been sou
 * No unqualified use of the phrase "distribution-free finite-sample guarantee" without the
   exchangeability condition and the measured gap attached.
 * No claim that class-conditional conformal prediction with abstention is novel in fraud
-  detection. It is not; §1.2 of the proposal names the prior work.
+  detection. It is not; section 1 of the proposal names the prior work (FR-1 and FR-3) and
+  states what is different here.
 * No claim of EU AI Act high-risk compliance. Annex III point 5(b) explicitly excludes AI
   systems used for detecting financial fraud.
 * No merchant-side false-decline economics presented as issuer benefit.
@@ -462,8 +479,8 @@ two-sided envelope is the right one. What is withdrawn is only the use of those 
 numbers as a threshold selector on this specific dataset.
 
 **The distance measurement is kept as a result.** The decline rate required to bring an
-enriched benchmark down to portfolio-level fraud rates is a quantity no other submission is
-likely to report, and it is the honest way to say how far this data sits from deployment.
+enriched benchmark down to portfolio-level fraud rates is the honest way to say how far this
+data sits from deployment, and it is reported for that reason.
 
 **Guarantee integrity.** As with A1, this was derived from `D_band` alone. No `D_cal` risk
 value and no `D_test` quantity was computed, inspected or used.
@@ -608,3 +625,42 @@ direction of error that flatters the finding.
 The rejection stands on the two screens that were applied — 28 of 120 configurations pass
 conditioning, 0 pass distinctness, and the median RBF correlation is 0.974 with a maximum of
 exactly 1.000 — but the body now says which screens were gated and which was not.
+
+---
+
+## Amendment A7 — 2026-08-30, three pre-registered drift tests were not run
+
+**What changed:** section 7 lists five things as "measured, not assumed". Three of them were
+never executed: the **conformal test martingale** over the `TransactionDT`-ordered stream, the
+**block permutation test**, and **band-conditional drift against marginal drift**. No script
+was written for any of them, and `exchangeability.csv` and `drift.csv` do not exist.
+
+**Why this is recorded rather than quietly dropped.** Section 7 is the part of the protocol
+that says what this study does *instead* of promising a numeric `alpha + eta`. Its whole
+argument is that the degradation is measured rather than bounded. Three of the five
+measurements not existing weakens that argument, and a reader who takes the list at face value
+would over-read what the study established.
+
+**What was measured, and what it does and does not cover.** Two of the five did run, and they
+carry the temporal claim:
+
+* the **realised risk gap per time window** — five rolling calibration origins,
+  `rolling_origin.csv`, reported in the body. This is what establishes that the breach is
+  origin-dependent, and it is the finding that narrowed the central claim;
+* the **temporal arm against the stratified-random control** — three arms, five seeds each,
+  `coverage_seed_summary.csv`, also reported in the body.
+
+What is therefore *not* established: that the deviation is a martingale-detectable drift
+rather than a level shift, and whether band-conditional drift differs from marginal drift. The
+second matters, because section 4 makes the band-conditional quantity the relevant one, and
+this study has not shown that the two behave differently.
+
+**Why no numbers move.** These tests were diagnostic, not gating. No hypothesis, no
+certificate and no reported figure depends on them, so nothing in the results changes. What
+changes is the strength of the claim section 7 can carry, and that is stated here rather than
+left to be inferred from an absent table.
+
+**Where it belongs in Phase II.** All three are cheap on an issuer's own stream and none of
+them touches the guarantee, so they belong in the first stage of the sprint, alongside the
+split-integrity work.
+

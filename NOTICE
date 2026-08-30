@@ -128,10 +128,17 @@ modification and derivative works, prohibits use in a manner that would subject 
 to an open-source licence, excludes life-critical applications absent a separate agreement,
 and caps NVIDIA's cumulative liability at USD 10.00.
 
-This project therefore does not describe cuQuantum as open source, does not redistribute the
-binary, and keeps it off the path that produces reported results. See docs/decisions.md
-D-006 for why the production kernel path uses qiskit-machine-learning's
-FidelityStatevectorKernel -- pure numpy, no Aer, no NVIDIA binary -- instead.
+This project therefore does not describe cuQuantum as open source and does not redistribute
+the binary. No reported *scientific* result depends on it: every kernel figure in the
+submission comes from the exact statevector path, which is pure numpy with no Aer and no
+NVIDIA binary (docs/decisions.md D-006).
+
+One reported table does use it, by design. scripts/check_parity.py compares four independent
+routes to the same overlap, and two of them are Aer on CPU and on GPU; results/tables/
+parity.csv therefore carries rows that only the gpu-crosscheck extra can regenerate. The
+script reports any backend it cannot import rather than substituting one, and the two routes
+that the default environment does provide -- the exact statevector and Braket -- are the two
+it requires. A default install reproduces a smaller parity table, not a wrong one.
 
 
 ------------------------------------------------------------------------------------------

@@ -34,6 +34,8 @@ import json
 import sys
 from pathlib import Path
 
+from hsbcfraud.paths import display_path
+
 REPO = Path(__file__).resolve().parents[1]
 MANIFEST = REPO / "MANIFEST.sha256.json"
 
@@ -102,13 +104,13 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.check:
         MANIFEST.write_text(json.dumps(current, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        print(f"Wrote {MANIFEST.relative_to(REPO)}")
+        print(f"Wrote {display_path(MANIFEST)}")
         for name, count in counts.items():
             print(f"  {name:14s} {count} file(s)")
         return 0
 
     if not MANIFEST.exists():
-        print(f"{MANIFEST.relative_to(REPO)} does not exist; run without --check", file=sys.stderr)
+        print(f"{display_path(MANIFEST)} does not exist; run without --check", file=sys.stderr)
         return 1
 
     recorded = json.loads(MANIFEST.read_text(encoding="utf-8"))

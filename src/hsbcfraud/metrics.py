@@ -14,8 +14,13 @@ buckets.
 Why ROC-AUC is reported but not led with
 ----------------------------------------
 At 0.172 % prevalence on ULB, ROC-AUC saturates near 0.99 for almost any competent model and
-carries very little information.  The dataset's own originating paper recommends AUPRC for
-exactly this reason.  ROC-AUC is reported for comparability with the challenge statement's
+carries very little information.  The dataset's own Kaggle page recommends AUPRC for exactly
+this reason: "Given the class imbalance ratio, we recommend measuring the accuracy using the
+Area Under the Precision-Recall Curve (AUPRC)."  Note that the recommendation is the dataset
+page's and not the originating paper's -- Dal Pozzolo et al. endorse ROC-AUC -- and both this
+module and the challenge statement previously credited the paper with it.
+
+ROC-AUC is reported for comparability with the challenge statement's
 baseline table, and AUPRC is the primary metric.
 """
 

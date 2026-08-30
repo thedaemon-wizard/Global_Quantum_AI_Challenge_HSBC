@@ -22,17 +22,33 @@ import shutil
 import sys
 from pathlib import Path
 
+from hsbcfraud.paths import display_path
+
 REPO = Path(__file__).resolve().parents[1]
 MANIFEST = REPO / "MANIFEST.sha256.json"
 
-# What is uploaded, and under what name.  The portal sees these names, so they carry the
-# track and the artefact rather than the repository's internal layout.
+# Formats the portal's upload control accepts, verified in a browser against the live form.
+# Markdown is NOT among them, which is what this list exists to catch: three of the five files
+# staged here were .md, so the set could never have been uploaded.  A staging script whose
+# output the portal rejects is worse than no staging script, because it looks finished.
+PORTAL_FORMATS = frozenset({
+    ".pdf", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".py",
+    ".json", ".js", ".xls", ".xlsx", ".csv", ".doc", ".docx",
+})
+# The portal exposes five upload slots.
+PORTAL_SLOTS = 5
+
+# What is uploaded, and under what name.  The portal sees these names, so they carry the track
+# and the artefact rather than the repository's internal layout.  Five artefacts, chosen so
+# that a reviewer who opens only one still gets something self-contained: the two documents,
+# the certificate itself as data, the implementation that produces it, and the one picture
+# that shows how little of the pre-registered grid actually certifies.
 STAGED: tuple[tuple[str, str], ...] = (
     ("submission/proposal.pdf", "HSBC-proposal.pdf"),
     ("submission/appendix.pdf", "HSBC-appendix.pdf"),
-    ("README.md", "README.md"),
-    ("docs/protocol.md", "protocol.md"),
-    ("docs/decisions.md", "decisions.md"),
+    ("results/tables/riskcontrol.csv", "HSBC-certificate.csv"),
+    ("src/hsbcfraud/conformal/riskcontrol.py", "HSBC-riskcontrol.py"),
+    ("results/figures/certified_region.png", "HSBC-certified-region.png"),
 )
 
 # Artefacts whose hash must still match the manifest.  Documents that are expected to move
@@ -54,9 +70,17 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     problems: list[str] = []
-    for source, _ in STAGED:
+    if len(STAGED) > PORTAL_SLOTS:
+        problems.append(f"{len(STAGED)} files staged for {PORTAL_SLOTS} upload slots")
+    for source, name in STAGED:
         if not (REPO / source).exists():
             problems.append(f"{source} does not exist; run `make pdf` first")
+        suffix = Path(name).suffix.lower()
+        if suffix not in PORTAL_FORMATS:
+            problems.append(
+                f"{name} is a {suffix or 'no-extension'} file, which the portal's upload "
+                f"control rejects. Accepted: {' '.join(sorted(PORTAL_FORMATS))}"
+            )
 
     if MANIFEST.exists():
         recorded = json.loads(MANIFEST.read_text(encoding="utf-8")).get("scientific", {})
@@ -87,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         shutil.copy2(REPO / source, args.out / name)
         print(f"  {name:24s} <- {source}")
 
-    print(f"\nStaged {len(STAGED)} file(s) in {args.out.relative_to(REPO)}.")
+    print(f"\nStaged {len(STAGED)} file(s) in {display_path(args.out)}.")
     print("Re-verify the portal URLs in a browser before uploading.")
     return 0
 

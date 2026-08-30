@@ -5,7 +5,7 @@
     "subject": "dependency resolution"
   },
   "S1": {
-    "detail": "28q statevector in 2.97s; Aer reports device=GPU cuStateVec=True; device memory 629 -> 5565 MiB (+4936, 4096 expected)",
+    "detail": "28q statevector in 3.02s; Aer reports device=GPU cuStateVec=True; device memory 406 -> 5342 MiB (+4936, 4096 expected)",
     "status": "PASS",
     "subject": "Aer GPU on sm_120"
   },
@@ -20,7 +20,7 @@
     "subject": "SHAP TreeExplainer"
   },
   "S4": {
-    "detail": "braket_sv ran offline with no credentials; Bell counts {'11': 136, '00': 120}",
+    "detail": "braket_sv ran offline with no credentials; Bell counts {'11': 130, '00': 126}",
     "status": "PASS",
     "subject": "Braket LocalSimulator offline"
   },
@@ -35,7 +35,7 @@
     "subject": "pandas chained assignment"
   },
   "S7": {
-    "detail": "ULB creditcard.csv not present; run `make data` first",
+    "detail": "ULB creditcard.csv not present, and no script here fetches it (docs/PROVENANCE.md 1.2). E15 was not run for this reason.",
     "status": "SKIP",
     "subject": "ULB temporal split feasibility"
   },

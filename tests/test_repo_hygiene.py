@@ -9,10 +9,12 @@ nothing raised.
 from __future__ import annotations
 
 import ast
+import re
 import subprocess
 import sys
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
@@ -64,6 +66,53 @@ def test_results_tables_are_tracked() -> None:
         if p.relative_to(REPO).as_posix() not in tracked
     ]
     assert not missing, f"result tables exist but are untracked: {missing}"
+
+
+def test_decision_log_matches_the_decisions_document() -> None:
+    """The decision count is derived from the document, and stays derived.
+
+    ``decision_log.csv`` is the only table in the repository that summarises a *document*
+    rather than a run, which makes it the only one a normal editing session can invalidate
+    without touching any code.  It did: two entries were appended to ``docs/decisions.md``
+    and the table was not regenerated, so both PDFs printed 61 against an actual 63 while
+    every gate passed -- ``check_claims.py`` compares ``claims.yaml`` to the table, and
+    nothing compared the table to its source.
+
+    This closes the loop the claim gate cannot see, so the count is wrong in the test suite
+    before it is wrong in the submission.
+    """
+    recorded = pd.read_csv(REPO / "results" / "tables" / "decision_log.csv")
+
+    for document, pattern, column, first in (
+        ("docs/decisions.md", r"^### D-(\d+)\b", "decision_entries", "D-001"),
+        ("docs/protocol.md", r"^##\s+Amendment\s+A(\d+)\b", "protocol_amendments", "A1"),
+    ):
+        found = re.findall(pattern, (REPO / document).read_text(encoding="utf-8"), re.M)
+        assert int(recorded[column].iloc[0]) == len(found), (
+            f"{document} holds {len(found)} entries, decision_log.csv records "
+            f"{int(recorded[column].iloc[0])} in {column}. Regenerate it with: make derived"
+        )
+
+        # Contiguity, asserted rather than assumed: a gap or a duplicate leaves the count
+        # looking plausible while the record has lost or doubled an entry.
+        numbers = [int(n) for n in found]
+        assert numbers == list(range(1, len(numbers) + 1)), (
+            f"{document} identifiers are not contiguous from {first}: {numbers}"
+        )
+
+
+def test_every_document_is_linked_from_the_readme() -> None:
+    """No document in docs/ is orphaned.
+
+    COMPLIANCE_CHECKLIST P3 asserts the README links the supporting documents. It stated a
+    count, and the count drifted the moment a document was added. The property is what was
+    meant, so the property is what is checked.
+    """
+    readme = (REPO / "README.md").read_text(encoding="utf-8")
+    section = readme[readme.index("**Supporting documents**") : readme.index("## 2.")]
+    linked = set(re.findall(r"\[`docs/([^`]+)`\]", section))
+    orphaned = sorted({p.name for p in (REPO / "docs").glob("*.md")} - linked)
+    assert not orphaned, f"documents in docs/ not linked from README section 1: {orphaned}"
 
 
 def test_no_bare_python3_invocation() -> None:

@@ -22,6 +22,8 @@ from typing import Any
 import pandas as pd
 import yaml
 
+from hsbcfraud.paths import display_path
+
 REPO = Path(__file__).resolve().parents[1]
 
 # LaTeX macro names may contain only letters, so digits in a key would silently produce an
@@ -126,7 +128,11 @@ def render_table(spec: dict[str, Any], repo: Path) -> str:
     return "\n".join(
         [
             f"% Generated from {source} by scripts/make_tex.py. Do not edit.",
-            r"\begin{table}[t]\centering",
+            # [tb], not [t]: pinning every table to the top of a page leaves the bottom
+            # unusable, and with four tables and a figure in six pages that whitespace
+            # cost a whole page.  Bottom placement is equally readable for a table this
+            # size and lets LaTeX pack the floats.
+            r"\begin{table}[tb]\centering",
             f"\\caption{{{spec['caption'].strip()}}}",
             f"\\label{{{spec['label']}}}",
             f"\\begin{{tabular}}{{{spec['align']}}}",
@@ -165,7 +171,15 @@ def main(argv: list[str] | None = None) -> int:
         "",
     ]
     for claim in claims:
-        source = claim["source"].replace("results/tables/", "")
+        # A derived claim has no table of its own; its provenance is the claims it divides,
+        # which is the more useful thing to record next to the macro anyway.
+        if "derived" in claim:
+            numerator, denominator = claim["derived"]["of"]
+            power = claim["derived"].get("power", 1)
+            ratio = f"{numerator} / {denominator}"
+            source = f"derived: ({ratio})^{power}" if power != 1 else f"derived: {ratio}"
+        else:
+            source = claim["source"].replace("results/tables/", "")
         lines.append(f"% {claim['key']}: {source}")
         lines.append(f"\\newcommand{{\\Claim{claim['key']}}}{{{format_value(claim['value'])}}}")
     lines.append("")
@@ -173,14 +187,14 @@ def main(argv: list[str] | None = None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     target = args.out / "claims.tex"
     target.write_text("\n".join(lines), encoding="utf-8")
-    print(f"Wrote {len(claims)} macros to {target.relative_to(REPO)}")
+    print(f"Wrote {len(claims)} macros to {display_path(target)}")
 
     tables = yaml.safe_load(args.tables.read_text(encoding="utf-8"))["tables"]
     for spec in tables:
         rendered = render_table(spec, REPO)
         out = args.out / f"table-{spec['key']}.tex"
         out.write_text(rendered, encoding="utf-8")
-        print(f"Wrote {out.relative_to(REPO)}")
+        print(f"Wrote {display_path(out)}")
     print(f"{len(tables)} table(s) generated from their source CSVs")
     return 0
 

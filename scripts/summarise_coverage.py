@@ -30,6 +30,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from hsbcfraud.paths import display_path
+
 REPO = Path(__file__).resolve().parents[1]
 
 LABELS = {"temporal": "temporal", "stratified": "stratified", "card_disjoint": "card-disjoint"}
@@ -63,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
     target = args.tables / "coverage_seed_summary.csv"
     frame.to_csv(target, index=False)
 
-    print(f"Wrote {target.relative_to(REPO)}\n")
+    print(f"Wrote {display_path(target)}\n")
     header = (
         f"{'arm':>14s} {'alpha':>7s} {'outside':>9s} {'ratio mean':>11s} {'sd':>7s} {'range':>18s}"
     )

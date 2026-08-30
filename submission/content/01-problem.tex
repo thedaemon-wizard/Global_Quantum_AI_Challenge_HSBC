@@ -2,27 +2,50 @@
 \section{The decision, and what is missing from it}
 
 An issuer authorising a card transaction has three actions, not two: approve, decline, or
-challenge the cardholder through 3-D Secure. The middle action is what makes the problem
-tractable at scale --- routing even one percent of authorisation volume to human analysts is
-not operationally possible, while a step-up challenge is --- and it is the action that
-published fraud-detection work almost never certifies. Models are reported by AUC or average
-precision on a held-out fold. Neither is a statement about a decision, and neither carries a
-finite-sample guarantee.
+challenge the cardholder through 3-D Secure. The middle one is what makes the problem tractable
+at scale --- routing even one percent of authorisation volume to human analysts is not
+operationally possible, while a step-up challenge is. Fraud models are reported by AUC or
+average precision; neither is a statement about a decision, and neither carries a finite-sample
+guarantee. Conformal methods reach this problem closely ---
+\Cited{Singh et al.} pair class-conditional prediction with cost-controlled abstention, and
+\Cited{Zhu et al.} certify a false-negative rate on card fraud --- but neither conditions the
+guarantee on the abstention region it routes to, nor evaluates it under a split that orders
+time. Both are what this submission adds, and the second turns out to matter.
 
 \textbf{What we contribute.} A three-valued rule whose \emph{abstention band} carries a
-distribution-free, finite-sample risk certificate, evaluated under a pre-registration frozen
-before any model was fitted; and an honest measurement of where two quantum approaches sit
-against a tuned classical baseline on the same decision.
+distribution-free, finite-sample risk certificate under a pre-registration frozen before any
+model was fitted, and an honest measurement of where two quantum approaches sit against a tuned
+classical baseline on the same decision.
 
-\textbf{Both quantum arms returned negative results.} A fidelity quantum kernel was rejected
-by its own a-priori screens before it was run on the task. A matrix-product-state classifier
-ran and did not beat gradient boosting. We report both in the body rather than the appendix,
-because a screen that only ever passes is not a screen, and because the pre-registration
-committed us to reporting whatever it returned.
+\textbf{What a successful PoC would demonstrate.} A step-up decision whose false-decline rate
+carries a distribution-free, finite-sample certificate at a level the bank sets, validated on a
+block it never saw --- the artefact a model-risk function can audit, which an AUC cannot
+provide. This study meets that target on public data, at loose levels only
+($\alpha \ge 0.10$) and at the band budgets the sample size permits; the PoC target is the same
+property at the budget the business chooses rather than the one the data forces.
+
+\textbf{Expected impact.} The deliverable is an operating guarantee, not a score, and three
+consequences follow from that --- none of which needs a quantum result. A model-risk function
+can review a bound instead of a metric, which is what supervisory revalidation
+\Cited{[RG-4]} and the AI Act's documentation duties \Cited{[RG-2]} ask of a decisioning model
+and what an AUC cannot supply. The operating point becomes an input: $\alpha$ and the band
+budget are chosen by the business, and the certificate reports whether that choice is
+attainable rather than asserting it. And the band bounds what the expensive component costs ---
+Section~\ref{sec:feasibility} prices it against the authorisation budget --- which is what makes
+a quantum re-ranker discussable at all. We attach no monetary figure: issuer-side false-decline
+costs are not public, so the study certifies the \emph{rate} and leaves the bank to multiply it
+by a number only the bank has.
+
+\textbf{Neither quantum arm produced a usable result, and they failed differently.} A fidelity
+quantum kernel was rejected by its own a-priori screens before it was run on the task --- a
+decisive negative. A matrix-product-state classifier ran and did not beat gradient boosting, but
+that comparison is underpowered, so what it yields is a non-superiority bound rather than a null
+result. We report both in the body rather than the appendix, because a screen that only ever
+passes is not a screen, and because the pre-registration committed us to reporting whatever it
+returned.
 
 \textbf{What we do not claim.} No quantum advantage of any kind. No portfolio-level PSD2
-compliance figure --- the SCA-RTS ceilings govern exemption eligibility across a whole
-portfolio, not a decline threshold on a fraud-enriched research benchmark, and treating them
-as a threshold selector is a category error we made and withdrew. No claim that the
-certificate binds the \emph{unconditional} false-decline rate: it does not, and
+compliance figure --- the SCA-RTS ceilings govern exemption eligibility, not a decline
+threshold, and the appendix records that category error as one we made and withdrew. No claim
+that the certificate binds the \emph{unconditional} false-decline rate: it does not, and
 Section~\ref{sec:method} says why that distinction is the point rather than a caveat.

@@ -67,6 +67,17 @@ dev = [
 # qiskit-aer-gpu-cu11 depends on `cuquantum-cu11`, whose cuStateVec binary is NVIDIA
 # proprietary under the NVIDIA Software License Agreement.  Installing the GPU extra
 # therefore changes this project's licence surface; NOTICE records what it adds.
+# torch is a REAL dependency: src/hsbcfraud/quantum/mps.py imports it at module scope, so
+# `pip install -e ".[dev]"` alone yields an environment where that module raises
+# ModuleNotFoundError.  It is declared here rather than in `dependencies` because installing it
+# from PyPI is worse than not installing it: the default build carries no `sm_120` kernels, so
+# it imports cleanly and then cannot use this project's GPU -- a silent wrong answer in place of
+# a loud missing one.  `make venv` installs it first from the CUDA 13.0 index; this extra exists
+# so the requirement appears in the package metadata rather than only in a Makefile line.
+torch = [
+    "torch==2.13.0",
+]
+
 gpu-crosscheck = [
     "qiskit-aer==0.17.2",
     "qiskit-aer-gpu-cu11==0.17.2",

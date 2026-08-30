@@ -1,0 +1,46 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{Validation plan}
+\label{sec:validation}
+
+The plan below is not aspirational. Every step of the certification pipeline --- split, band,
+calibration, certificate, held-out validation --- was executed in this study on public data, and
+the results are in Section~\ref{sec:results}; what a PoC sprint changes is the data, not the
+protocol. Some pre-registered items were \emph{not} executed, and are named here rather than
+left to be discovered: the two kernel hypotheses and the entanglement ablation, all closed by
+the screens before they could run, and the drift measurements recorded in amendment~A7, for
+which no script was written. The appendix enumerates both. A validation plan that cannot say
+which of its own steps ran is not a plan, and it is why the negative quantum results are in the
+body rather than buried.
+
+\textbf{The success metric is a certificate, not a score.} A PoC succeeds if the
+band-conditional false-decline rate is certified at a level the business names, with
+family-wise error control, and the certificate then holds on a block that was never used to
+build it. Average precision and ROC AUC are reported alongside, but they decide nothing: they
+are not statements about a decision and they carry no finite-sample guarantee. The
+corresponding failure is equally well defined --- the admissible set comes back empty, which is
+a real outcome and is what happens here at the tightest band budget.
+
+\textbf{Held-out validation is the acceptance test.} The certificate is selected on
+calibration data and then read once on a fold protected by a persisted ledger that refuses a
+second distinct configuration. In this study \ClaimHFiveConfigsHolding{} of
+\ClaimHFiveConfigsTotal{} certified configurations held their risk on that fold, the worst
+realised risk being \ClaimHFiveWorstRatio{} of its budget. A PoC would run exactly this test
+and report it whichever way it came out.
+
+\textbf{Benchmarking is against a tuned baseline, replicated, with the power stated first.}
+The comparator is a tuned gradient-boosted model, not a straw man, fitted on identical rows and
+features. Intervals resample entities rather than rows, because transactions on one card are
+not independent. Crucially, the minimum detectable effect is computed \emph{before} the
+comparison and reported with it: here that figure is \ClaimMpsMdeRealised{} average precision
+against a pre-registered ceiling of \ClaimPowerCeiling{}, which is why H4 is reported as
+underpowered rather than as a null. A PoC would size its evaluation block to that ceiling
+first, which is the single change that would make a quantum-versus-classical comparison on this
+problem informative.
+
+\textbf{What keeps the plan honest.} Hypotheses, grids, splits and decision thresholds are
+frozen and hashed before any model is fitted, and a gate refuses undocumented change; multiple
+comparisons carry Holm correction; coverage is judged against the exact law of
+Section~\ref{sec:method} rather than against $\alpha$. Every retraction is recorded --- this
+submission carries \ClaimDecisionEntries{} decision entries, including the ones that removed
+results we had already written down --- and reproduction is
+\texttt{make smoke \&\& make reproduce \&\& make check}.

@@ -10,13 +10,27 @@ script recomputes it.
 Exit codes: 0 all claims verified; 1 at least one mismatch, missing table or ambiguous
 selector.  There is no partial success -- a proposal containing one wrong number is wrong.
 
+Two further gates share this entry point because they answer the same question -- does a
+statement in the documents resolve to something the repository can produce?
+
+``--citations``  every citation-shaped string in the documents resolves to an entry in
+                 ``docs/REFERENCES.md``.  Four documents claimed this gate existed before it
+                 did.
+``--unused``     every claim defined in ``docs/claims.yaml`` is used somewhere.  An unused
+                 claim is either dead weight or a number that lost its home when the prose
+                 changed, and one of them was a figure a decision entry had retracted.
+
     .venv/bin/python scripts/check_claims.py
+    .venv/bin/python scripts/check_claims.py --citations
+    .venv/bin/python scripts/check_claims.py --unused
     .venv/bin/python scripts/check_claims.py --update   # rewrite values from the tables
 """
 
 from __future__ import annotations
 
 import argparse
+import contextlib
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -24,7 +38,31 @@ from typing import Any
 import pandas as pd
 import yaml
 
+from hsbcfraud.analysis.citations import find_misses
+from hsbcfraud.paths import display_path
+
 REPO = Path(__file__).resolve().parents[1]
+
+# Documents whose citations must resolve.  The reference list itself is excluded: an entry may
+# legitimately mention a neighbouring one in its annotation.
+CITED_DOCUMENTS = (
+    "README.md",
+    "docs/protocol.md",
+    "docs/decisions.md",
+    "docs/PROVENANCE.md",
+    "docs/COMPLIANCE_CHECKLIST.md",
+    "docs/SUBMISSION_CHECKLIST.md",
+)
+# LaTeX sources, where a claim is consumed as a \Claim macro.
+CLAIM_MACRO_CONSUMERS = ("submission/content/*.tex",)
+# Markdown documents, which have no macro mechanism and quote the value as text instead.
+# Scanning them for the value serves two purposes: a claim quoted only in prose is not dead,
+# and a prose figure that has drifted from its claim stops matching and is reported.
+#
+# docs/decisions.md is deliberately NOT here. It is a historical log and quotes superseded
+# figures on purpose, so matching against it would mark a retracted claim as live -- which is
+# the exact failure this check exists to catch.
+CLAIM_TEXT_CONSUMERS = ("README.md", "docs/PROVENANCE.md", "docs/protocol.md")
 
 
 class ClaimError(Exception):
@@ -48,6 +86,39 @@ def select_rows(frame: pd.DataFrame, selectors: dict[str, Any]) -> pd.DataFrame:
         else:
             mask &= series.astype(str) == str(wanted)
     return frame[mask]
+
+
+def resolve_derived(claim: dict[str, Any], resolved: dict[str, float]) -> float:
+    """A claim computed from other claims rather than read from a table.
+
+    Several figures in the prose are ratios of two measured quantities -- seed spread against
+    capacity spread, cross-family standard error against within-family, the sample-size factor
+    implied by a minimum detectable effect, a kernel's share of a latency budget.  Typing those
+    by hand puts a number in the document that does not move when its inputs do, which is the
+    exact failure this file exists to prevent: the proposal claimed a "thousandfold" FLOP span
+    for a grid that spans sixty-four.
+
+    Derived claims may only reference table-backed claims, not other derived ones.  One level
+    keeps the resolution order trivial -- position in the file does not matter -- and keeps the
+    dependency legible without tracing a chain.
+
+    The referenced values are the ones the document prints, ``scale`` already applied, so a
+    ratio of two percentages is the ratio a reader would compute from the page.
+    """
+    spec = claim["derived"]
+    op = spec["op"]
+    if op != "ratio":
+        raise ClaimError(f"unknown derived op {op!r}")
+    left, right = spec["of"]
+    for key in (left, right):
+        if key not in resolved:
+            raise ClaimError(
+                f"derived claim references {key!r}, which did not resolve to a "
+                "table-backed claim"
+            )
+    if resolved[right] == 0:
+        raise ClaimError(f"derived claim divides by {right!r}, which resolved to zero")
+    return (resolved[left] / resolved[right]) ** float(spec.get("power", 1))
 
 
 def resolve(claim: dict[str, Any]) -> float:
@@ -80,7 +151,12 @@ def resolve(claim: dict[str, Any]) -> float:
             # Smallest gap between two columns, over rows passing a boolean filter.  Used
             # for the certificate margin, where the quantity of interest is a distance the
             # table does not store as a column.
-            subset = frame[frame[reduce_spec["where"]].astype(bool)]
+            #
+            # The boolean filter is optional, as ``where_equals`` already is: a margin between
+            # two columns that are constant down the table -- a budget and the part of it
+            # already committed -- has no subset to restrict to.
+            boolean_filter = reduce_spec.get("where")
+            subset = frame[frame[boolean_filter].astype(bool)] if boolean_filter else frame
             left, right = reduce_spec["columns"]
             return float((subset[left] - subset[right]).min())
         if op == "sum_values":
@@ -153,9 +229,101 @@ def apply_updates(path: Path, updates: list[tuple[str, object, float]]) -> str:
     return "".join(lines)
 
 
+def check_citations() -> int:
+    """Every citation-shaped string in the documents resolves to a reference entry."""
+    references = REPO / "docs" / "REFERENCES.md"
+    if not references.exists():
+        print(f"{display_path(references)} does not exist", file=sys.stderr)
+        return 1
+
+    documents = {}
+    for name in CITED_DOCUMENTS:
+        path = REPO / name
+        if path.exists():
+            documents[name] = path.read_text(encoding="utf-8")
+    for path in sorted((REPO / "submission" / "content").glob("*.tex")):
+        documents[str(path.relative_to(REPO))] = path.read_text(encoding="utf-8")
+
+    misses = find_misses(documents, references.read_text(encoding="utf-8"))
+    print(f"{len(documents)} document(s) checked against {display_path(references)}")
+    if misses:
+        print(f"\n{len(misses)} citation(s) do not resolve:", file=sys.stderr)
+        for miss in misses:
+            print(f"  {miss}", file=sys.stderr)
+        return 1
+    print("  every citation resolves to a reference entry")
+    return 0
+
+
+def _value_appears(value: Any, text: str) -> bool:
+    """Whether a claim's value, exactly as written, appears as a standalone number in ``text``.
+
+    Bounded on both sides so that 0.05 does not match inside 0.058, and 5 does not match inside
+    58,343.  A thousands separator is allowed on the left because prose writes large counts
+    that way.
+    """
+    literal = re.escape(str(value))
+    return re.search(rf"(?<![\d.]){literal}(?![\d.])", text) is not None or (
+        re.search(rf"(?<![\d.]){re.escape(f'{int(value):,}')}(?![\d.])", text) is not None
+        if str(value).isdigit()
+        else False
+    )
+
+
+def check_unused(claims: list[dict[str, Any]]) -> int:
+    """Claims defined in claims.yaml and reachable from no document.
+
+    A claim counts as used if a document names its macro, *or* if a derived claim divides by
+    it and that derived claim is itself used.  Missing the second case would report the inputs
+    of every ratio as dead, which is how a correct check gets switched off.
+
+    Reported, and fatal, because the last unused claim in this file was a figure a decision
+    entry had already retracted and which the next edit could have reached for.
+    """
+    latex = "\n".join(
+        path.read_text(encoding="utf-8")
+        for pattern in CLAIM_MACRO_CONSUMERS
+        for path in sorted(REPO.glob(pattern))
+    )
+    markdown = "\n".join(
+        path.read_text(encoding="utf-8")
+        for pattern in CLAIM_TEXT_CONSUMERS
+        for path in sorted(REPO.glob(pattern))
+    )
+    keys = [c["key"] for c in claims]
+    cited = {c["key"] for c in claims if f"Claim{c['key']}" in latex}
+    # A markdown document quotes the value rather than the macro.  Matching the value exactly
+    # as claims.yaml writes it is what makes this a check and not a guess: a README figure that
+    # has drifted from its claim no longer matches, and the claim is reported as unused.
+    cited.update(c["key"] for c in claims if _value_appears(c["value"], markdown))
+    # One level of indirection, matching the one level resolve_derived permits.
+    for claim in claims:
+        if "derived" in claim and claim["key"] in cited:
+            cited.update(claim["derived"]["of"])
+    unused = [key for key in keys if key not in cited]
+    print(f"{len(keys)} claim(s) defined, {len(keys) - len(unused)} used")
+    if unused:
+        print(f"\n{len(unused)} claim(s) are defined and used nowhere:", file=sys.stderr)
+        for key in unused:
+            print(f"  {key}", file=sys.stderr)
+        return 1
+    print("  every claim is used")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--claims", type=Path, default=REPO / "docs" / "claims.yaml")
+    parser.add_argument(
+        "--citations",
+        action="store_true",
+        help="check that every citation in the documents resolves to a reference entry",
+    )
+    parser.add_argument(
+        "--unused",
+        action="store_true",
+        help="report claims defined in claims.yaml and used in no document",
+    )
     parser.add_argument(
         "--update",
         action="store_true",
@@ -163,18 +331,34 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    if args.citations:
+        return check_citations()
+
     document = yaml.safe_load(args.claims.read_text(encoding="utf-8"))
     claims = document["claims"]
+
+    if args.unused:
+        return check_unused(claims)
 
     failures: list[str] = []
     pending: list[tuple[str, object, float]] = []
     updated = 0
-    print(f"{len(claims)} claims in {args.claims.relative_to(REPO)}\n")
+    print(f"{len(claims)} claims in {display_path(args.claims)}\n")
+
+    # Table-backed claims resolve first so that a derived claim can reference any of them
+    # regardless of where it sits in the file.
+    resolved: dict[str, float] = {}
+    for claim in claims:
+        if "derived" not in claim:
+            # A failure here is reported by the main loop below, where it can be attributed
+            # to its own claim rather than to whichever derived claim happened to need it.
+            with contextlib.suppress(ClaimError, KeyError):
+                resolved[claim["key"]] = resolve(claim) * float(claim.get("scale", 1.0))
 
     for claim in claims:
         key = claim["key"]
         try:
-            actual = resolve(claim)
+            actual = resolve_derived(claim, resolved) if "derived" in claim else resolve(claim)
         except ClaimError as error:
             failures.append(f"{key}: {error}")
             print(f"  UNRESOLVED  {key:32s} {error}")
@@ -190,15 +374,14 @@ def main(argv: list[str] | None = None) -> int:
         # Round to the stated precision before comparing.  A claim of 1.494 against a
         # measured 1.4938 is correct at the precision it is printed; comparing raw would
         # reject every rounded figure in the document.
-        agrees = abs(round(actual, _decimals(claim["value"])) - stated) <= tolerance
+        agrees = abs(_round_like(actual, claim["value"]) - stated) <= tolerance
 
         if args.update and not agrees:
             # Formatted to the SAME number of decimals as the value it replaces.  Plain
             # rounding writes 0.02 where the claim said 0.0222, and _decimals then reads two
             # places instead of four on the next run, so every update would quietly loosen
             # the precision the claim is checked at.
-            places = _decimals(claim["value"])
-            replacement = f"{actual:.{places}f}" if places else f"{round(actual):d}"
+            replacement = _format_like(actual, claim["value"])
             pending.append((key, claim["value"], replacement))
             updated += 1
             print(f"  UPDATED     {key:32s} {claim['value']} -> {replacement}")
@@ -211,7 +394,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.update:
         if pending:
             args.claims.write_text(apply_updates(args.claims, pending), encoding="utf-8")
-        print(f"\nRewrote {updated} value(s) in {args.claims.relative_to(REPO)}.")
+        print(f"\nRewrote {updated} value(s) in {display_path(args.claims)}.")
         print("Review the diff: an updated claim means the prose around it may also be stale.")
         return 0
 
@@ -225,10 +408,44 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+def _is_exponential(value: Any) -> bool:
+    """Whether the claim is written in exponent notation, e.g. ``3.442e-15``."""
+    return "e" in str(value).lower()
+
+
 def _decimals(value: Any) -> int:
-    """Decimal places in the value as written, so comparison happens at printed precision."""
-    text = str(value)
+    """Decimal places in the value as written, so comparison happens at printed precision.
+
+    For a value in exponent notation the significant digits are what is printed, not the
+    decimal places: ``3.442e-15`` shows four significant figures and *fifteen* leading zeros,
+    and reading "442e-15" as eighteen decimal places is meaningless.
+    """
+    text = str(value).lower()
+    if _is_exponential(text):
+        mantissa = text.split("e")[0]
+        return len(mantissa.split(".")[1]) if "." in mantissa else 0
     return len(text.split(".")[1]) if "." in text else 0
+
+
+def _round_like(value: float, template: Any) -> float:
+    """``value`` rounded to the precision ``template`` is printed at."""
+    places = _decimals(template)
+    if _is_exponential(template):
+        return float(f"{value:.{places}e}")
+    return round(value, places)
+
+
+def _format_like(value: float, template: Any) -> str:
+    """``value`` rendered in the same notation and precision as ``template``.
+
+    Formatting a value of 3.4e-15 with ``:.3f`` yields ``0.000``, which silently replaces a
+    measurement with zero and then compares equal to it forever after. The notation has to
+    follow the claim.
+    """
+    places = _decimals(template)
+    if _is_exponential(template):
+        return f"{value:.{places}e}"
+    return f"{value:.{places}f}" if places else f"{round(value):d}"
 
 
 if __name__ == "__main__":

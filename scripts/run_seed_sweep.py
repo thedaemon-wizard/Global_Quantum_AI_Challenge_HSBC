@@ -40,6 +40,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
+from hsbcfraud.paths import display_path
 from hsbcfraud.progress import run_log
 from hsbcfraud.quantum.mps import MPSConfig, fit_mps
 
@@ -56,10 +57,7 @@ def display(path: Path) -> str:
     An `--out` outside the tree is legitimate for a smoke run, and a path formatter must not
     be the thing that fails after fourteen hours of compute.
     """
-    try:
-        return str(path.resolve().relative_to(REPO))
-    except ValueError:
-        return str(path)
+    return display_path(path)
 
 
 def require_idle_gpu() -> None:

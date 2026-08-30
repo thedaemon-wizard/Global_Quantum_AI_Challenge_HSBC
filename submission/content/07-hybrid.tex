@@ -1,0 +1,32 @@
+% SPDX-License-Identifier: Apache-2.0
+\section{Where the quantum method sits, and why there}
+\label{sec:hybrid}
+
+\textbf{Classical, on all traffic.} A gradient-boosted scorer runs on every transaction --- the
+only component that sees full volume, and deliberately the strongest available baseline rather
+than a straw man, at \ClaimGbdtFullAucMin--\ClaimGbdtFullAucMax{} ROC AUC over five seeds. A
+hybrid design whose classical half is weak proves nothing about its quantum half.
+
+\textbf{Conformal, on the decision.} The certificate wraps whatever scores the band, so the
+deliverable an issuer can act on survives a negative quantum result --- as it had to here.
+
+\textbf{Quantum, on the band only.} The abstention band is a few percent of traffic, which is
+why a quantum re-ranker is conceivable here and nowhere else in the pipeline. At a
+\ClaimTestFraudRate\,\% positive rate and a 3-D Secure challenge budget the band holds
+thousands of rows rather than hundreds of thousands, and a kernel whose Gram matrix costs
+$O(n^2)$ circuit evaluations is affordable on thousands. The band is not a convenience; it is
+the only place the arithmetic works.
+
+\textbf{The compute path.} Both quantum arms run on simulators, which the statement permits and
+does not penalise: no number in this proposal comes from a QPU. The fidelity
+kernel's reference implementation is an exact statevector, with Braket's
+\texttt{LocalSimulator} and Aer on CPU and GPU agreeing to within
+\ClaimParityWorstDifference{} over \ClaimParityComparisons{} comparisons. The tensor network
+runs in PyTorch on a single GPU, bound by kernel-launch overhead rather than arithmetic
+(Section~\ref{sec:quantum}). On the sample count the statement asks for: the screens ran on
+\ClaimScreenSamples{} stratified rows per configuration across \ClaimScreenConfigs{}
+configurations, and the kernel arm was rejected before any downstream evaluation, so no larger
+quantum execution took place. The circuits are within near-term reach --- at most
+\ClaimCircuitQubitsMax{} qubits, transpiled depth \ClaimCircuitDepthMax{} and
+\ClaimCircuitTwoQubitMax{} two-qubit gates on a portable basis --- so what stopped this arm was
+the screens, not the hardware.

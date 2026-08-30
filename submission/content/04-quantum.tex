@@ -1,35 +1,26 @@
 % SPDX-License-Identifier: Apache-2.0
-\section{Two quantum arms, both negative}
+\section{Two quantum arms, and how each failed}
+\label{sec:quantum}
 
 \paragraph{The kernel never reached the task.} Before running a fidelity quantum kernel we
-pre-registered screens over \ClaimScreenConfigs{} configurations and gated on two of them (encoding $\times$ qubits $\times$ bandwidth
-$\times$ entanglement). A kernel is usable only if it is not exponentially concentrated ---
-effective rank $r_{\mathrm{eff}} = (\sum_i \sigma_i)^2 / (n \sum_i \sigma_i^2)$ inside a
-usable band --- \emph{and} not reproducible by a tuned RBF, $\rho_{\mathrm{RBF}} < 0.60$.
+pre-registered screens over \ClaimScreenConfigs{} configurations of encoding $\times$ qubits
+$\times$ bandwidth $\times$ entanglement, and gated on two: a kernel is usable only if it is
+not exponentially concentrated --- effective rank
+$r_{\mathrm{eff}} = (\sum_i \sigma_i)^2 / (n \sum_i \sigma_i^2)$ inside a usable band ---
+\emph{and} not reproducible by a tuned RBF, $\rho_{\mathrm{RBF}} < 0.60$.
 
-\ClaimScreenPassConditioning{} of \ClaimScreenConfigs{} pass conditioning. \textbf{\ClaimScreenPassBoth{} pass
-both.} The closest any configuration came to distinctness was
-$\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$. Every kernel we could construct on
-this data is, to within measurement, a classical RBF in disguise: the median correlation is
-\ClaimScreenMedianRbf{} and the maximum is \ClaimScreenMaxRbf{}, indistinguishable to
-floating point. We would not have known had we reported a downstream accuracy instead.
-
-\textbf{One pre-registered screen was not gated, and it is the one that would have helped.}
-The protocol names the Huang geometric difference first; the implementation gates on the
-conditioning and distinctness screens and computes the geometric difference without
-consulting it. Huang treats a \emph{large} difference as favourable, so gating on it would
-have made this rejection less decisive rather than more. It was found in an audit rather than
-decided, and amendment~A6 records it. The screens are also computed on
-\ClaimScreenSamples{} stratified rows with at most eight features, which bounds how far
-"every kernel we could construct" reaches.
-
-The closest published comparator agrees. A controlled benchmark of quantum kernel methods on
-real card-transaction data \Cited{(Faryad, arXiv:2608.15718, August 2026)} reports no robust
-quantum advantage, with \Cited{all effect sizes below 0.013 ARI}, the sign of the difference dependent on
-register size, and additional qubits degrading performance through kernel concentration. Its
-methodological finding is the more useful one for us: a search-budget ablation turned that
-paper's one significant advantage into a procedural artefact. Matching search budgets and
-fixing the screens in advance is what stops the same thing happening here.
+\ClaimScreenPassConditioning{} of \ClaimScreenConfigs{} pass conditioning.
+\textbf{\ClaimScreenPassBoth{} pass both.} The closest any configuration came to distinctness
+was $\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$; the median correlation is
+\ClaimScreenMedianRbf{} and the maximum \ClaimScreenMaxRbf{}, indistinguishable to floating
+point. On \ClaimScreenSamples{} stratified rows with at most eight features, every kernel we
+could construct is to within measurement a classical RBF in disguise --- which we would not have
+known had we reported a downstream accuracy instead. One caveat: the protocol names the Huang
+geometric difference first and the implementation computes it without gating on it
+(amendment~A6); since Huang treats a \emph{large} difference as favourable, gating would have
+made this rejection less decisive, not more. The closest published comparator agrees: a controlled benchmark on real
+card-transaction data \Cited{(Faryad, arXiv:2608.15718, 2026)} reports no robust quantum
+advantage, and finds one apparent advantage to be an artefact of unequal search budgets.
 
 \paragraph{The tensor network ran, and did not win.} A matrix-product-state classifier
 contracts $f(\mathbf{x}) = \sum_{\{s\}} A^{s_1} \cdots A^{s_N} \prod_j \phi^{s_j}(x_j)$ with
@@ -37,54 +28,39 @@ $\phi(x) = [\cos\frac{\pi x}{2}, \sin\frac{\pi x}{2}]$, sweeping the bond dimens
 rather than tuning it. In the band, on identical rows and features, it reaches average
 precision \ClaimMpsApBestChi{} at the largest bond dimension against \ClaimGbdtApBand{} for
 the tuned gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi.
-Table~\ref{tab:mps} gives the sweep.
 
 \input{generated/table-mps}
 
-\paragraph{At full scale it loses by a wider margin, and now with replication behind it.}
-On all 431 features, trained on $\Dtrain$ and scored once on $\Dtest$, across
-\ClaimSweepJobs{} fits --- four bond dimensions at four seeds each --- the tensor network's
-best draw reaches \ClaimSweepBestAp{} average precision against
-\ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the tuned baseline. Every one of the
-\ClaimSweepJobs{} loses by a factor of two or more on the metric that matters at a
-\ClaimTestFraudRate\,\% positive rate, so which draw is reported does not change the
-conclusion.
+\paragraph{At full scale it loses by a wider margin, with replication behind it.} On all 431
+features, trained on $\Dtrain$ and scored once on $\Dtest$, across \ClaimSweepJobs{} fits ---
+four bond dimensions at four seeds each --- the best draw reaches \ClaimSweepBestAp{} average
+precision against \ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the tuned baseline. Every one
+of the \ClaimSweepJobs{} loses by a factor of two or more at a \ClaimTestFraudRate\,\% positive
+rate, so which draw is reported does not change the conclusion.
 
-\textbf{Capacity is not resolvable, and replication is how we know.} The largest spread
-across seeds at a fixed bond dimension is \ClaimSweepSeedSpread{} average precision; the
-spread of the seed \emph{means} across bond dimension is \ClaimSweepChiSpread. Seed noise is
-nearly three times the capacity signal. An earlier draft quoted the best of four draws as
-though the ordering meant something --- selection on a maximum from a distribution whose
-spread exceeds the quantity reported.
+\textbf{Capacity is not resolvable, and replication is how we know.} The largest spread across
+seeds at a fixed bond dimension is \ClaimSweepSeedSpread{} average precision; the spread of the
+seed \emph{means} across bond dimension is \ClaimSweepChiSpread{} --- seed noise is
+\ClaimSweepSpreadRatio{} times the capacity signal, so a per-$\chi$ ordering is selection on a
+maximum. \textbf{And \ClaimSweepStalled{} of
+\ClaimSweepJobs{} fits never left chance}, both at one seed and at two different bond
+dimensions, on the sequential contraction --- the stable path. Failure to train at that rate is
+a property of this ansatz on this data, and a reader choosing a method for a payment system
+should be told.
 
-\textbf{And \ClaimSweepStalled{} of \ClaimSweepJobs{} fits never left chance.} Both at one
-seed, at two different bond dimensions, on the sequential contraction --- the stable path. A
-one-in-eight failure to train is a property of this ansatz on this data, and a reader choosing
-a method for a payment system should be told.
+The sweep is affordable because cost does not follow the bond dimension the way the ansatz
+suggests: the jobs took \ClaimSweepSecondsMin{} to \ClaimSweepSecondsMax{} seconds against the
+\ClaimSweepChiFlopSpan{}-fold spread a $\chi^2$ model predicts. A 431-site chain is bound by
+the launch overhead of its sequential contractions, not their arithmetic, so capacity is nearly
+free and depth is the cost.
 
-The seed sweep is affordable only because a matrix product state has no qubit ceiling, and
-because its cost turns out not to depend on the bond dimension the way the ansatz suggests:
-the four jobs took \ClaimMpsFullSecondsMin{} to \ClaimMpsFullSecondsMax{} seconds against
-the sixty-four-fold spread a $\chi^2$ model predicts. A 431-site chain is bound by the launch
-overhead of its sequential contractions, not by their arithmetic, so capacity is nearly free
-and depth is the cost.
-
-\paragraph{The gate meant to tell us whether that was informative was itself wrong.} The
-pre-registration requires the minimum detectable effect to be computed \emph{before} the
-comparison, and commits to declaring the test underpowered if it exceeds \ClaimPowerCeiling{}
-average precision. Two defects followed. First, the calculation had no caller at all, so the
-comparison would have been \emph{observed} rather than tested; the script now refuses to
-start without it. Second, our noise estimate was the seed-to-seed spread of the baseline
-against itself, standard error \ClaimPowerSeWithinFamily. But this comparison is between
-model \emph{families}, whose measured standard error is \ClaimMpsStandardErrorBestChi{} ---
-\ClaimPowerSeCrossFamily{} once measured against a second classical family --- roughly
-eightfold larger --- so the minimum detectable effect this comparison actually supports is
-\ClaimPowerMde{}, which \emph{exceeds} the pre-registered ceiling of \ClaimPowerCeiling.
-
-\input{generated/table-mpsfull}
-
-\textbf{H4 is therefore reported as underpowered}, which is what the protocol commits to when
-this happens. What survives is weaker than a null result and we state it as such: every
-interval contains zero, so any improvement from the tensor network is bounded above by
-$+\ClaimMpsCiHighBestChi{}$ average precision. That is a non-superiority bound. It is not evidence of
-equivalence, and it is not evidence that the tensor network is worse.
+\paragraph{The comparison is underpowered, and the gate that should have said so was itself
+wrong.} It is a comparison between model \emph{families}, whose measured standard error is
+\ClaimMpsStandardErrorBestChi{} --- \ClaimPowerSeRatio{}-fold the baseline-against-itself
+figure the gate originally used. The effect it can resolve is
+\ClaimMpsMdeRealised{} average precision, against a pre-registered ceiling of
+\ClaimPowerCeiling{}; the appendix gives both defects in full. So H4 is reported as
+underpowered, which is what the protocol commits to. Every interval contains zero, so any
+improvement is bounded above by $+\ClaimMpsCiHighBestChi{}$ average precision --- a
+non-superiority bound, not evidence of equivalence and not evidence that the tensor network is
+worse.

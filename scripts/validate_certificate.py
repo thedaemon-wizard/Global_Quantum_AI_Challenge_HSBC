@@ -43,6 +43,7 @@ from scipy import stats
 from hsbcfraud.config import load_config
 from hsbcfraud.conformal.coverage import tail_probability
 from hsbcfraud.data.splits import TestFoldGuard
+from hsbcfraud.paths import display_path
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -142,7 +143,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     held = int((frame["realised_risk"] <= frame["alpha"]).sum())
     print(f"\n  {held} of {len(frame)} certified configurations hold their risk on D_test.")
-    print(f"  Wrote {target.relative_to(REPO)}")
+    print(f"  Wrote {display_path(target)}")
     return 0
 
 
