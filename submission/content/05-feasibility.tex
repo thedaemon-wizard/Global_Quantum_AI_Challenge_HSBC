@@ -11,15 +11,14 @@ certification, then the quantum re-ranker, which is deliberately last because it
 stage that can fail to produce a result.
 
 \textbf{Compute, measured rather than estimated.} The classical core is cheap: the tuned
-baseline fits the in-band problem in \ClaimBandGbdtSeconds{} seconds, and conformal calibration
-is a sort over the calibration block. The expensive component is the quantum-inspired arm, and
-its cost is known --- \ClaimSweepJobs{} full-scale tensor-network fits over
-\ClaimSweepTrainRows{} training rows and 431 sites took \ClaimSweepSecondsMin{} to
-\ClaimSweepSecondsMax{} seconds each on the one
+baseline fits the in-band problem in \ClaimBandGbdtSeconds{} seconds, and calibration is a sort.
+The expensive component is the quantum-inspired arm: \ClaimSweepJobs{} full-scale
+tensor-network fits over \ClaimSweepTrainRows{} rows and 431 sites took
+\ClaimSweepSecondsMin{}--\ClaimSweepSecondsMax{} seconds each on the one
 \Record{RTX~6000 PRO Blackwell (96\,GB), CUDA 13, Python 3.12} workstation every number here was
-measured on. Because per-step cost is flat in the bond dimension (Section~\ref{sec:hybrid}),
-capacity is nearly free and chain length is the cost, so a resource estimate scales with the
-feature count and not with the ansatz. No QPU is required: both arms are simulator-only, which the
+measured on. Per-step cost is flat in the bond dimension (Section~\ref{sec:hybrid}), so capacity
+is nearly free, chain length is the cost, and a resource estimate scales with the feature count
+rather than the ansatz. No QPU is required: both arms are simulator-only, which the
 statement permits, and the screens ran on \ClaimScreenSamples{} stratified rows across
 \ClaimScreenConfigs{} configurations.
 
@@ -33,9 +32,10 @@ one in-band kernel evaluation would cost \ClaimLatencyKernelMedian{}\,ms ---
 risk and the kernel is: it fits only because the band rations it. Both figures bound model cost
 on this workstation, single-threaded, rather than production latency.
 
-\textbf{Data.} The method needs settled labels --- a chargeback window closed before the block
-boundary --- and an entity key to cluster on. Both are ordinary in an issuer's data and only
-approximated here.
+\textbf{Data, and why the PoC cannot reuse this file.} The method needs settled labels and an
+entity key to cluster on; both are ordinary in an issuer's data and only approximated here. And
+the benchmark's competition rules permit non-commercial research use only, so a commercial proof
+of concept \emph{must} move to the bank's stream. The protocol ports; the data does not.
 
 \textbf{Constraints we have measured, and would carry into Phase II.} The population is
 conditional on an incumbent: this file contains only transactions an existing stack approved,
@@ -52,13 +52,10 @@ component we care about, and also what leaves \ClaimBandLegitCalMin{} legitimate
 with. A larger calibration block or a wider band buys tighter $\alpha$; the method is unchanged.
 
 \textbf{What would change the quantum conclusion.} An encoding demonstrably outside the RBF
-family, at a bandwidth that does not concentrate, would pass the same screens unmodified --- we
-did not find one. For the tensor network the honest requirement is a comparison powered for
-cross-family noise: resolving an effect the size of the interval in Section~\ref{sec:quantum}
-needs about \ClaimMdeSampleFactor{} times the in-band evaluation set, which a wider band or a
-longer window would supply. And the negative is about aggregate discrimination, not the
-operating point --- the screens read the Gram spectrum and H4 compares average precision across
-the band, while H2, which would have tested decisions at the certified threshold, never ran. A
-method that does not improve ranking can still improve a decision at a low false-positive
-threshold, which is the regime this certificate operates in and which this study did not
-measure.
+family, at a bandwidth that does not concentrate, would pass the same screens unmodified; we did
+not find one. For the tensor network the requirement is a comparison powered for cross-family
+noise --- about \ClaimMdeSampleFactor{} times the in-band evaluation set, which a wider band or
+a longer window supplies. And the negative is about aggregate discrimination, not the operating
+point: H2, which would have tested decisions at the certified threshold, never ran, and a method
+that does not improve ranking can still improve a decision at a low false-positive threshold ---
+the regime this certificate operates in, and one this study did not measure.

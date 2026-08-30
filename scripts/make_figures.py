@@ -28,6 +28,78 @@ REPO = Path(__file__).resolve().parents[1]
 # Print-safe and legible in greyscale: the submission may well be read on paper.
 INSIDE, BREACH, REFERENCE = "#3b6ea5", "#b03a2e", "#555555"
 
+# The proposal's text block, in inches: A4 at an 18 mm margin.  Figures are authored at exactly
+# this width so that `\includegraphics[width=\textwidth]` scales them by 1.0 and the point sizes
+# below are the point sizes that reach the page.  Authoring wider and letting LaTeX shrink is
+# what put 5.1 % of the document's characters under the 10 pt floor -- the gate tolerated it
+# because its small-text allowance exists for mathematical sub- and superscripts, not for
+# figure labels that were simply authored too small.
+TEXT_WIDTH_IN = (210.0 - 2 * 18.0) / 25.4
+
+
+# Neutral fill for the blocks that carry no verdict, so colour is reserved for the two that do.
+NEUTRAL = "#dfe6ee"
+
+
+def architecture_figure(tables: Path) -> Figure:
+    """The four-block temporal split, and which block may touch which parameter.
+
+    This is the argument for why the guarantee holds, not decoration.  Two exchangeability
+    breaks have to be kept apart: the temporal one, that calibration precedes test, and the
+    selective one, that conditioning on band membership is conditioning on a data-dependent
+    event *if* the edges were estimated on the data used to certify.  Freezing the edges on
+    their own block removes the second by construction, and that is a fact about the geometry
+    of the split -- which a reader absorbs from this picture and reconstructs only slowly from
+    prose.
+
+    Row counts and day ranges are read from ``splits.csv``, so the figure cannot disagree with
+    the table it illustrates.
+
+    Two deliberate constraints.  It is **not to scale**: an earlier version sized each block by
+    its day span, and the two narrow blocks are precisely the two that carry the guarantee, so
+    their labels collided.  And it is authored at ``TEXT_WIDTH_IN`` so LaTeX includes it at
+    scale 1.0; authoring wider and letting LaTeX shrink is what drives figure labels under the
+    document's 10 pt floor.
+    """
+    frame = pd.read_csv(tables / "splits.csv")
+    temporal = frame[frame["arm"] == "temporal"].set_index("block")
+
+    blocks = [
+        ("train", "fits the scorer $f$", False),
+        ("band", "sets the band edges\nand every threshold", True),
+        ("cal", "certifies $\\lambda$", True),
+        ("test", "read once; nothing\nis selected here", False),
+    ]
+
+    figure = plt.figure(figsize=(TEXT_WIDTH_IN, 1.24))
+    axis = figure.add_axes([0.005, 0.02, 0.99, 0.84])
+    axis.set_xlim(0, 100)
+    axis.set_ylim(0, 10)
+    axis.axis("off")
+
+    width, gap = 22.3, 2.9
+    for index, (name, role, carries) in enumerate(blocks):
+        row = temporal.loc[name]
+        x = index * (width + gap)
+        axis.add_patch(
+            plt.Rectangle((x, 1.6), width, 6.9, facecolor=INSIDE if carries else NEUTRAL,
+                          edgecolor=REFERENCE, linewidth=0.9)
+        )
+        ink = "white" if carries else "black"
+        axis.text(x + width / 2, 7.15, f"$D_{{\\mathrm{{{name}}}}}$   {int(row['n_rows']):,}",
+                  ha="center", va="center", fontsize=10.5, color=ink, fontweight="bold")
+        axis.text(x + width / 2, 4.35, role, ha="center", va="center", fontsize=9.5,
+                  color=ink, linespacing=1.35)
+        axis.text(x + width / 2, 2.25, f"days {int(row['day_first'])}-{int(row['day_last'])}",
+                  ha="center", va="center", fontsize=9, color=ink)
+        if index < len(blocks) - 1:
+            axis.annotate("", xy=(x + width + gap, 5.0), xytext=(x + width, 5.0),
+                          arrowprops={"arrowstyle": "-|>", "color": REFERENCE, "linewidth": 1.1,
+                                      "shrinkA": 0, "shrinkB": 0})
+    axis.text(50, 9.6, "time, forward only --- blocks are contiguous and never shuffled",
+              ha="center", va="center", fontsize=9.2, color=REFERENCE)
+    return figure, "architecture"
+
 
 def coverage_figure(tables: Path) -> Figure:
     """Empirical over nominal rate by arm, against the Beta-Binomial interval.
@@ -44,7 +116,7 @@ def coverage_figure(tables: Path) -> Figure:
     # the figure had to be shrunk to about two thirds of the text block to leave room on the
     # page, which took its 8 pt tick labels below 5 pt in the rendered PDF -- legible on screen
     # at 400 % and not on paper.  A narrower figure with larger type renders larger.
-    figure, axes = plt.subplots(1, 3, figsize=(8.6, 2.0), sharey=True)
+    figure, axes = plt.subplots(1, 3, figsize=(TEXT_WIDTH_IN, 1.95), sharey=True)
     for axis, arm in zip(axes, arms, strict=True):
         rows = frame[frame["arm"] == arm].sort_values("alpha")
         alphas = rows["alpha"].to_numpy()
@@ -157,7 +229,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     args.out.mkdir(parents=True, exist_ok=True)
-    for builder in (coverage_figure, mps_figure, tradeoff_figure):
+    for builder in (architecture_figure, coverage_figure, mps_figure, tradeoff_figure):
         figure, stem = builder(args.tables)
         for suffix, options in FORMATS:
             target = args.out / f"{stem}{suffix}"

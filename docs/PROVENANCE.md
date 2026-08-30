@@ -13,9 +13,32 @@ it was used. Nothing here is taken on trust from a filename.
 |---|---|
 | Source | Kaggle competition `ieee-fraud-detection`, `train_transaction.csv` and `train_identity.csv` |
 | Obtained | Downloaded by the project owner from the competition data page; staged locally as `datasets/ieee-fraud-detection.zip` |
-| Licence | **Kaggle competition rules**, not an open licence. Redistribution is not permitted. |
+| Licence | **Kaggle competition rules**, not an open licence. Section 7.A restricts use to **non-commercial purposes only**; section 7.B forbids redistribution. See the note below. |
 | In this repository | **Never committed.** `.gitignore` carries an anchored `/datasets/` pattern. |
 | Verified | 590,540 rows, 20,663 frauds (3.4990 %), 394 columns, `TransactionDT` strictly increasing, spanning exactly 182.00 days. Asserted at load time by `src/hsbcfraud/data/ieee_cis.py`, so a substituted or truncated file fails immediately rather than producing plausible numbers. |
+
+**The licence bounds what this dataset can ever be used for, and that shapes Phase II.**
+Competition rules section 7.A, read at
+<https://www.kaggle.com/competitions/ieee-fraud-detection/rules> on 2026-08-30:
+
+> "You may access and use the Competition Data for **non-commercial purposes only**, including
+> for participating in the Competition and on Kaggle.com forums, and for **academic research and
+> education**. The Competition Sponsor reserves the right to disqualify any participant who uses
+> the Competition Data other than as permitted by the Competition Website and these Rules."
+
+Section 7.B adds: "You agree not to transmit, duplicate, publish, redistribute or otherwise
+provide or make available the Competition Data to any party not participating in the
+Competition."
+
+Phase I is research, which 7.A permits. **A commercial proof of concept is not**, and no amount
+of care with this file would make it so. That is not a limitation the proposal works around --
+it is a second, independent reason the Phase II sprint must run on the issuer's own
+authorisation stream, alongside the scientific reasons (a settled chargeback window, a real
+entity key, and a population not conditioned on someone else's incumbent). The protocol ports;
+the data does not.
+
+Practical consequence for a reviewer: every number in this submission is reproducible by anyone
+who accepts the same competition rules, and none of it may be carried into a deployed system.
 
 **The label is not what its name suggests.** `isFraud` is set on a reported chargeback and
 then propagated to subsequent transactions sharing a user account, email address or billing

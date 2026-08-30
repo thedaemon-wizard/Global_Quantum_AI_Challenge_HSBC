@@ -2276,3 +2276,35 @@ among the cheapest errors for a reviewer to find and the most expensive to make.
 This is the same shape one level up: **a pre-registration is only as good as the narrowest
 sentence in it**, and the sentences most worth auditing are the ones describing enforcement,
 because those are the ones a reader will test against the code.
+
+### D-069 The proposal had one figure, and its labels were under the font floor
+
+The assessment criteria ask the Technical Approach section for "a clear description of the
+proposed method, algorithm, or **workflow**", and the pre-registration's own argument turns on a
+fact about geometry: which block may touch which parameter. Until now the body carried a single
+figure, on coverage, and the method was prose only.
+
+**What the figure had to be, and what it stopped being.** The first version drew both the
+four-block split and the three-valued decision rule, sized each block by its day span, and
+collided four labels: the two narrow blocks are exactly the two that carry the guarantee, so
+their names overprinted each other and their roles overflowed. The second dropped scale for
+equal boxes and fixed the collisions. The third dropped the decision-rule panel entirely --- the
+rule is three lines of prose and an estimand in display maths, whereas the split geometry is the
+part a reader reconstructs slowly and wrongly. One panel, four boxes, no arrows to misplace.
+
+**A font defect the gate was tolerating.** `check_pdf.py` asserts a 10 pt floor and allows 8 % of
+characters below it for mathematical sub- and superscripts. Adding the figure took that share
+from 1.8 % to **5.1 %** --- still passing, and for the wrong reason. The cause was that figures
+were authored at 8.6 in and included at `width=\textwidth`, which on A4 at an 18 mm margin is
+6.85 in: LaTeX scaled them by 0.80 and every label lost a fifth of its size. Figures are now
+authored at `TEXT_WIDTH_IN`, computed from the geometry rather than guessed, so the point sizes
+in the source are the point sizes on the page. The share is **1.7 %**, below where it started,
+with a figure more than before.
+
+That is the general lesson and it is not about figures: **an allowance sized for one cause will
+silently absorb another.** The 8 % was reasoned about mathematical scripts. Nothing checked that
+what it was actually absorbing was mathematical scripts.
+
+**What it cost.** About thirty lines of prose across six sections, none of it a measured result.
+The body is 4,016 words against 4,166 before, and every figure in the submission is still
+generated from a committed table rather than drawn.

@@ -1,20 +1,19 @@
 % SPDX-License-Identifier: Apache-2.0
 \section{Results}\label{sec:results}
 
-\paragraph{What a random split buys you, measured.} Before any conformal machinery, the
-split itself. Table~\ref{tab:splitarm} runs one gradient-boosted model at fixed
-hyperparameters over five seeds on three splits of the same file. A stratified random split
-reports \ClaimSplitApInflation{} more average precision than a forward holdout ---
-\ClaimSplitApStratified{} against \ClaimSplitApTemporal{} --- with ranges that do not overlap
-across seeds. That is the largest effect in this study, larger than anything either quantum arm
-could have contributed and visible without any quantum method, and it is why what follows
-reports a temporal split.
+\paragraph{What a random split buys you, measured.} Before any conformal machinery, the split
+itself. Table~\ref{tab:splitarm} runs one gradient-boosted model at fixed hyperparameters over
+five seeds on three splits of the same file. A stratified random split reports
+\ClaimSplitApInflation{} more average precision than a forward holdout ---
+\ClaimSplitApStratified{} against \ClaimSplitApTemporal{} --- with non-overlapping ranges. That
+is the largest effect in this study, larger than anything either quantum arm could have
+contributed, and it is why what follows reports a temporal split.
 
 It is also what separates this baseline from the published leaderboard: the 1st-place IEEE-CIS
 solution \Cited{reports ROC AUC 0.9459} under time-based cross-validation over the training
-file, against \ClaimGbdtFullAucMin--\ClaimGbdtFullAucMax{} here on a strict forward holdout.
-Different tasks, and the difference is measured above rather than assumed. The appendix carries
-the statement's primary metrics in full, confusion matrix included.
+file, against \ClaimGbdtFullAucMin--\ClaimGbdtFullAucMax{} here on a strict forward holdout ---
+different tasks, and the difference is measured above rather than assumed. The appendix carries
+the primary metrics in full.
 
 \input{generated/table-splitarm}
 
@@ -27,17 +26,16 @@ stratified arm falls outside on none, at any level.
 
 The card-disjoint arm is not clean, and the two levels fail differently. At $\alpha = 0.01$ it
 is outside on \ClaimCardDisjointOutsideLoosest{} of \ClaimCoverageSeeds{} seeds and both
-\emph{over}-cover --- a two-sided fit failure that leaves the one-sided guarantee intact. At
+\emph{over}-cover --- a two-sided fit failure leaving the one-sided guarantee intact. At
 $\alpha = 0.001$ it is outside on \ClaimCardDisjointOutsideTightest{} of
 \ClaimCoverageSeeds{}, and that seed runs the other way: ratio
-\ClaimCardDisjointTightestWorstRatio{} against four seeds that all sit below one, the lowest at
-\ClaimCardDisjointTightestBestRatio{}. One seed against four reads as noise rather than a
-systematic breach, but it is under-coverage, so we do not report this arm as a pass. Its
-seed-to-seed spread (sd \ClaimCardDisjointSdTightest) is an order of magnitude wider than the
-stratified arm's. What the controls establish is therefore narrower than an earlier draft
-claimed, and still sufficient: neither reproduces the temporal arm's systematic, every-seed
-breach. That is weaker than ``the breach is temporal'' --- the arms differ in more than time ---
-and it is what three arms can support.
+\ClaimCardDisjointTightestWorstRatio{} against four below one, the lowest
+\ClaimCardDisjointTightestBestRatio{}. One against four reads as noise, but it is
+under-coverage, so this arm is not reported as a pass; its spread
+(sd \ClaimCardDisjointSdTightest) is an order of magnitude wider than the stratified arm's.
+What the controls establish is narrower than an earlier draft claimed and still sufficient:
+neither reproduces the temporal arm's every-seed breach. That is weaker than ``the breach is
+temporal'' --- the arms differ in more than time --- and it is what three arms support.
 
 It is not label censoring: the trailing-window fraud rate is
 \ClaimCensoringTrailingRate\,\% against \ClaimCensoringEarlierRate\,\% earlier --- higher, not
@@ -47,11 +45,10 @@ lower --- with no monotone trend ($\tau = \ClaimCensoringTau$, $p = \ClaimCensor
 \input{generated/table-coverageseeds}
 
 \begin{figure}[tb]\centering
-\includegraphics[width=0.98\textwidth]{../results/figures/coverage_by_arm.pdf}
+\includegraphics[width=\textwidth]{../results/figures/coverage_by_arm.pdf}
 \caption{One seed, with the exact Beta-Binomial interval to scale;
-Table~\ref{tab:coverageseeds} gives all five.  The interval widens sharply as $\alpha$
-tightens, which is why the temporal arm's compliance at the tightest level is weak evidence
-rather than a pass.}
+Table~\ref{tab:coverageseeds} gives all five.  The interval widens sharply as $\alpha$ tightens,
+which is why the temporal arm's compliance at the tightest level is weak evidence.}
 \label{fig:coverage}
 \end{figure}
 
@@ -66,18 +63,17 @@ window falls, and a single origin cannot establish its size.
 \input{generated/table-rolling}
 
 \paragraph{And it holds on the held-out block.} This is H5. All \ClaimHFiveConfigsTotal{}
-certified configurations were applied unchanged to $\Dtest$ --- same band edges, same
-$\lambda$, no recalibration --- and \ClaimHFiveConfigsHolding{} of \ClaimHFiveConfigsTotal{}
-realised a band-conditional false-decline rate at or below the $\alpha$ they were certified at,
-the tightest using \ClaimHFiveWorstRatio{} of its budget. Holding a ceiling that loose is a
-real check that the machinery transfers and a weak one, which is what amendment~A1 predicted
-from the band's sample size before the arm ran.
+certified configurations were applied to $\Dtest$ unchanged --- same edges, same $\lambda$, no
+recalibration --- and \ClaimHFiveConfigsHolding{} of \ClaimHFiveConfigsTotal{} realised a
+band-conditional false-decline rate at or below their certified $\alpha$, the tightest using
+\ClaimHFiveWorstRatio{} of its budget. Holding a ceiling that loose is a real check that the
+machinery transfers and a weak one, which amendment~A1 predicted from the band's sample size
+before the arm ran.
 
 \paragraph{What the certificate actually reaches.} \ClaimCertifiedConfigs{} of \ClaimRiskConfigs{} configurations certify, all
 strictly inside the band --- the smallest margin below $\tauhi$ is \ClaimCertificateMargin{}.
-That is not automatic: a certificate whose $\lambda$ sits at the band edge flags nothing, so
-its risk is structurally zero and the guarantee is vacuous. An earlier version of this table
-was exactly that, and the margin above is what rules it out.
+That is not automatic: a $\lambda$ at the band edge flags nothing, so its risk is structurally
+zero and the guarantee vacuous. An earlier version of this table was exactly that.
 
 The survivors need $\alpha \ge 0.10$ and $\alpha_{\mathrm{FN}} = 0.45$, and nothing certifies
 at the tightest band budget --- where $\Dcal$ contributes only \ClaimBandLegitCalMin{}

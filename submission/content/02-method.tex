@@ -5,17 +5,19 @@
 \emph{quantum-inspired} matrix-product-state classifier, both confined to an abstention band and
 wrapped in a classical certificate that depends on neither.
 
-\paragraph{The rule.} With a classical scorer $f$ and thresholds $\taulo < \tauhi$ fixed in
-advance,
-\[
-D(x) = \begin{cases}
-\textsc{decline} & f(x) \ge \tauhi\\
-\textsc{step-up}, \text{ then } g(x) \ge \lambda \Rightarrow \textsc{decline} & \taulo < f(x) < \tauhi\\
-\textsc{approve} & f(x) \le \taulo
-\end{cases}
-\]
-The band is $B = \{x : \taulo < f(x) < \tauhi\}$ and $g$ is the in-band re-scorer, which is
-where a quantum model would enter if one were usable.
+\paragraph{The rule, and which block may touch which parameter.} Figure~\ref{fig:architecture}
+is the whole method. A classical scorer $f$ splits traffic three ways against thresholds fixed
+in advance; the band is $B = \{x : \taulo < f(x) < \tauhi\}$ and $g$ is the in-band re-scorer,
+where a quantum model would enter if one were usable. Which block sets what is what carries the
+guarantee: edges and thresholds from $\Dband$, $\lambda$ certified on $\Dcal$, nothing selected
+on $\Dtest$.
+
+\begin{figure}[!ht]\centering
+\includegraphics[width=\textwidth]{../results/figures/architecture.pdf}
+\caption{The four-block temporal split; shaded blocks carry the guarantee. Counts and day
+ranges are read from \texttt{splits.csv}, not typed.}
+\label{fig:architecture}
+\end{figure}
 
 \paragraph{The estimand is band-conditional, deliberately.} We certify
 \[
@@ -27,17 +29,13 @@ component it is said to license is not evidence about that component --- so the 
 smaller-sample quantity is the one we bound, and the cost of that choice is reported in
 Section~\ref{sec:results} rather than hidden.
 
-\paragraph{Four blocks, and two distinct breaks of exchangeability.} $\Dtrain$ (60\,\%) fits
-$f$; $\Dband$ (10\,\%) is the \emph{only} data that may set the band edges, $g$'s
-hyperparameters or any screen threshold; $\Dcal$ (10\,\%) certifies the composite rule;
-$\Dtest$ (20\,\%) is read once. Blocks are contiguous and snapped to day boundaries.
-
-Two breaks must not be conflated. The \textbf{temporal} break is that $\Dcal$ precedes
-$\Dtest$. The \textbf{selective} break is that band membership is a data-dependent event, if
-the edges were estimated on the data used to certify. Freezing the edges on $\Dband$ removes
-the second by construction: membership becomes a fixed measurable predicate, and filtering a
-sequence by one preserves exchangeability of what remains. Only the temporal break survives,
-and we measure it.
+\paragraph{Two distinct breaks of exchangeability, and the split separates them.} The blocks are
+60/10/10/20\,\%, contiguous and snapped to day boundaries. The \textbf{temporal} break is that
+$\Dcal$ precedes $\Dtest$. The \textbf{selective} break is that band membership is a
+data-dependent event, if the edges were estimated on the data used to certify. Freezing the
+edges on $\Dband$ removes the second by construction: membership becomes a fixed measurable
+predicate, and filtering a sequence by one preserves exchangeability of what remains. Only the
+temporal break survives, and we measure it.
 
 \paragraph{Risk control.} Learn-then-Test controls family-wise error over a finite grid fixed
 in advance, using Hoeffding--Bentkus $p$-values with Holm. Two risks are controlled jointly:

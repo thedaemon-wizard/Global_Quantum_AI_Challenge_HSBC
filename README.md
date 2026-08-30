@@ -161,6 +161,17 @@ have contributed, and observing it required no quantum method — only the disci
 running the control. It is also why every number below comes from a temporal split, though a
 random one would flatter all of them.
 
+### 4.1a The split, and which block may touch which parameter
+
+![The four-block temporal split](results/figures/architecture.png)
+
+Shaded blocks carry the guarantee. Band edges and every threshold come from
+$D_{\mathrm{band}}$; $\lambda$ is certified on $D_{\mathrm{cal}}$; nothing is selected on
+$D_{\mathrm{test}}$. This geometry is what removes the *selective* break in exchangeability —
+conditioning on band membership would be conditioning on a data-dependent event if the edges
+had been estimated on the data used to certify. Only the temporal break survives, and §4.2
+measures it.
+
 ### 4.2 Coverage by split arm
 
 Nominal versus empirical false-decline rate on $D_{\mathrm{test}}$, calibrated on

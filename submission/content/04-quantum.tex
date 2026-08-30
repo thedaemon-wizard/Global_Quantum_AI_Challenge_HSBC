@@ -11,14 +11,14 @@ $r_{\mathrm{eff}} = (\sum_i \sigma_i)^2 / (n \sum_i \sigma_i^2)$ inside a usable
 
 \ClaimScreenPassConditioning{} of \ClaimScreenConfigs{} pass conditioning.
 \textbf{\ClaimScreenPassBoth{} pass both.} The closest any configuration came to distinctness
-was $\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$; the median correlation is
+was $\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$; the median is
 \ClaimScreenMedianRbf{} and the maximum \ClaimScreenMaxRbf{}, indistinguishable to floating
 point. On \ClaimScreenSamples{} stratified rows with at most eight features, every kernel we
-could construct is to within measurement a classical RBF in disguise --- which we would not have
-known had we reported a downstream accuracy instead. One caveat: the protocol names the Huang
-geometric difference first and the implementation computes it without gating on it
-(amendment~A6); since Huang treats a \emph{large} difference as favourable, gating would have
-made this rejection less decisive, not more. The closest published comparator agrees: a controlled benchmark on real
+could construct is to within measurement a classical RBF in disguise --- which reporting a
+downstream accuracy would have hidden. One caveat: the protocol names the Huang geometric
+difference first and the implementation computes it without gating on it (amendment~A6); since
+Huang treats a \emph{large} difference as favourable, gating would have made this rejection
+less decisive, not more. The closest published comparator agrees: a controlled benchmark on real
 card-transaction data \Cited{(Faryad, arXiv:2608.15718, 2026)} reports no robust quantum
 advantage, and finds one apparent advantage to be an artefact of unequal search budgets.
 
@@ -39,7 +39,7 @@ of the \ClaimSweepJobs{} loses by a factor of two or more at a \ClaimTestFraudRa
 rate, so which draw is reported does not change the conclusion.
 
 \textbf{Capacity is not resolvable, and replication is how we know.} The largest spread across
-seeds at a fixed bond dimension is \ClaimSweepSeedSpread{} average precision; the spread of the
+seeds at fixed bond dimension is \ClaimSweepSeedSpread{} average precision; the spread of the
 seed \emph{means} across bond dimension is \ClaimSweepChiSpread{} --- seed noise is
 \ClaimSweepSpreadRatio{} times the capacity signal, so a per-$\chi$ ordering is selection on a
 maximum. \textbf{And \ClaimSweepStalled{} of

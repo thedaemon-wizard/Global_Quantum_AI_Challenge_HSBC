@@ -13,24 +13,22 @@ which of its own steps ran is not a plan, and it is why the negative quantum res
 body rather than buried.
 
 \textbf{The success metric is a certificate, not a score.} A PoC succeeds if the
-band-conditional false-decline rate is certified at a level the business names, with
-family-wise error control, and the certificate then holds on a block that was never used to
-build it. Average precision and ROC AUC are reported alongside, but they decide nothing: they
-are not statements about a decision and they carry no finite-sample guarantee. The
-corresponding failure is equally well defined --- the admissible set comes back empty, which is
-a real outcome and is what happens here at the tightest band budget.
+band-conditional false-decline rate is certified at a level the business names, with family-wise
+error control, and the certificate then holds on a block never used to build it. Average
+precision and ROC AUC are reported alongside but decide nothing: they are not statements about a
+decision and carry no finite-sample guarantee. The corresponding failure is equally well
+defined --- the admissible set comes back empty, which is what happens here at the tightest band
+budget.
 
-\textbf{Held-out validation is the acceptance test.} The certificate is selected on
-calibration data and then read once on a fold protected by a persisted ledger that refuses a
-second distinct configuration. In this study \ClaimHFiveConfigsHolding{} of
-\ClaimHFiveConfigsTotal{} certified configurations held their risk on that fold, the worst
-realised risk being \ClaimHFiveWorstRatio{} of its budget. A PoC would run exactly this test
-and report it whichever way it came out.
+\textbf{Held-out validation is the acceptance test.} The certificate is selected on calibration
+data, then read on a fold protected by a ledger that refuses a second distinct configuration.
+Here \ClaimHFiveConfigsHolding{} of \ClaimHFiveConfigsTotal{} held their risk, the worst at
+\ClaimHFiveWorstRatio{} of its budget. A PoC would run exactly this test and report it whichever
+way it came out.
 
-\textbf{Benchmarking is against a tuned baseline, replicated, with the power stated first.}
-The comparator is a tuned gradient-boosted model, not a straw man, fitted on identical rows and
-features. Intervals resample entities rather than rows, because transactions on one card are
-not independent. Crucially, a detectable-effect ceiling is fixed \emph{before} the comparison: here
+\textbf{Benchmarking is against a tuned baseline, replicated, with the power stated first.} The
+comparator is a tuned gradient-boosted model, not a straw man, on identical rows and features,
+and intervals resample entities rather than rows. Crucially, a detectable-effect ceiling is fixed \emph{before} the comparison: here
 \ClaimPowerCeiling{}, against an effect the comparison could actually resolve of
 \ClaimMpsMdeRealised{}, computed afterwards from its own bootstrap standard error. That gap is
 why H4 is reported as underpowered rather than as a null. A PoC would size its evaluation block to that ceiling
