@@ -104,6 +104,35 @@ def build(scores: pd.DataFrame, configuration: pd.Series) -> pd.DataFrame:
     return frame[list(COLUMNS)].sort_values("transaction_row", ignore_index=True)
 
 
+def operating_point(frame: pd.DataFrame, configuration: pd.Series) -> pd.DataFrame:
+    """What the rule does to a day of traffic, as shares of the held-out block.
+
+    The proposal argues that a three-valued rule is what makes the problem tractable, and this
+    is the sentence that argument needs: how much traffic each branch actually takes. It is an
+    aggregate of the per-transaction file rather than a new measurement.
+    """
+    counts = frame["decision"].value_counts()
+    total = len(frame)
+    rows = [
+        {
+            "decision": name,
+            "n": int(counts.get(name, 0)),
+            "share": counts.get(name, 0) / total,
+        }
+        for name in ("approve", "step-up", "step-up-declined", "decline")
+    ]
+    rows.append({"decision": "declined overall", "n": int(frame["predicted_fraud"].sum()),
+                 "share": float(frame["predicted_fraud"].mean())})
+    rows.append({"decision": "stepped up overall", "n": int(counts.get("step-up", 0)
+                                                            + counts.get("step-up-declined", 0)),
+                 "share": float((counts.get("step-up", 0)
+                                 + counts.get("step-up-declined", 0)) / total)})
+    summary = pd.DataFrame(rows)
+    summary["n_transactions"] = total
+    summary["alpha"] = configuration["alpha"]
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--config", type=Path, default=None)
@@ -118,6 +147,8 @@ def main(argv: list[str] | None = None) -> int:
     configuration = certified_configuration(pd.read_csv(args.out / "riskcontrol.csv"))
 
     frame = build(scores, configuration)
+    summary = operating_point(frame, configuration)
+    summary.to_csv(args.out / "operating_point.csv", index=False)
     target = args.out / "predictions.csv"
     # No rounding. A reader must be able to recompute `decision` from `fraud_probability` and
     # the three thresholds in the same row; six decimal places broke that at the boundary and

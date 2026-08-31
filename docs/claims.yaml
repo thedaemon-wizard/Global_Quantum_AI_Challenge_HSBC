@@ -320,6 +320,41 @@ claims:
       two were conflated in the feasibility section, attaching the shipped certificate to a
       sample size no certificate was issued at.
 
+  # ------------------------------------------------ the operating point (predictions.csv)
+  - key: OperatingApproveShare
+    value: 86.72
+    scale: 100
+    source: results/tables/operating_point.csv
+    select: {decision: approve}
+    column: share
+    tolerance: 0.01
+    note: >
+      Share of held-out traffic the rule approves outright, at the certified configuration
+      with the tightest alpha.  The proposal argues a three-valued rule is what makes the
+      problem tractable at scale; this is the number that argument needs.
+
+  - key: OperatingStepUpShare
+    value: 9.35
+    scale: 100
+    source: results/tables/operating_point.csv
+    select: {decision: stepped up overall}
+    column: share
+    tolerance: 0.01
+    note: >
+      Share routed to a 3-D Secure challenge.  Under ten per cent is the point: routing this
+      volume to human analysts is not possible and a step-up is.
+
+  - key: OperatingDeclineShare
+    value: 4.80
+    scale: 100
+    source: results/tables/operating_point.csv
+    select: {decision: declined overall}
+    column: share
+    tolerance: 0.01
+    note: >
+      Share declined, counting both the outer threshold and the in-band rule.  Reported so the
+      operating point can be read against the decline budget the protocol fixes.
+
   - key: ScreenConfigs
     value: 120
     source: results/tables/screens.csv
