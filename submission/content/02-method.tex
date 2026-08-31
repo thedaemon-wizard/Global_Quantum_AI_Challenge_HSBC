@@ -7,10 +7,11 @@ wrapped in a classical certificate that depends on neither.
 
 \paragraph{The rule, and which block may touch which parameter.} Figure~\ref{fig:architecture}
 is the whole method. A classical scorer $f$ splits traffic three ways against thresholds fixed
-in advance; the band is $B = \{x : \taulo \le f(x) < \tauhi\}$ and $g$ is the in-band re-scorer,
-where a quantum model would enter if one were usable. Which block sets what is what carries the
-guarantee: edges and thresholds from $\Dband$, $\lambda$ certified on $\Dcal$, nothing selected
-on $\Dtest$.
+in advance; the band is $B = \{x : \taulo \le f(x) < \tauhi\}$ and $g$ is the in-band
+re-scorer, where a quantum model would enter if one were usable. None was, so the certified rule
+takes $g = f$ and $\lambda$ is a third threshold on the same score. Which block sets what
+carries the guarantee: edges and thresholds from $\Dband$, $\lambda$ certified on $\Dcal$,
+nothing selected on $\Dtest$.
 
 \begin{figure}[!ht]\centering
 \includegraphics[width=\textwidth]{../results/figures/architecture.pdf}

@@ -23,9 +23,20 @@ refuses to stage anything outside that list.
 |---|---|---|---|
 | 1 | `HSBC-proposal.pdf` | PDF, 6 pp. | The concept proposal. Built from [`submission/content/`](submission/content) with every figure bound to a table |
 | 2 | `HSBC-appendix.pdf` | PDF, 3 pp. | Pre-registration and amendments, what we got wrong, the reproduction record, and the challenge statement's primary metrics in full (ROC AUC, AUPRC, $F_1$, precision, recall, confusion matrix) |
-| 3 | `HSBC-certificate.csv` | CSV | The certificate itself: all 48 pre-registered configurations, which certify, the selected threshold and the band edges — [`riskcontrol.csv`](results/tables/riskcontrol.csv) |
+| 3 | `HSBC-predictions.csv` | CSV, 115,534 rows | Per-transaction output on the held-out block: the fraud probability in $[0, 1]$, the three-valued decision, and the binary decline it implies, with the band edges and certified threshold on every row so the decision is recomputable from the file — [`predictions.csv`](results/tables/predictions.csv) |
 | 4 | `HSBC-riskcontrol.py` | PY | The Learn-then-Test implementation the certificate rests on — [`riskcontrol.py`](src/hsbcfraud/conformal/riskcontrol.py) |
 | 5 | `HSBC-certified-region.png` | PNG | Which (band budget, $\alpha$, $\alpha_{\mathrm{FN}}$) cells certify and which do not — [`certified_region.png`](results/figures/certified_region.png) |
+
+The challenge statement's four Expected Outcomes are each answered by a named artefact:
+per-transaction probabilities and binary predictions by upload 3; feature attribution by §5 of
+the proposal and [`attribution_examples.csv`](results/tables/attribution_examples.csv), which
+carries the Shapley contributions behind ten individual predictions; the classical-baseline
+comparison by §3 against tuned XGBoost and LightGBM; and the quantum encoding and circuit-design
+documentation by §4 and §7.
+
+Upload 3 replaced the certificate table, which every certified row of the appendix already
+prints and which upload 5 plots in full. It was the only staged file a reviewer could read
+somewhere else.
 
 The proposal maps to the six assessment criteria as: problem framing and expected impact (§1),
 technical approach (§2, §4), feasibility and resources (§5), validation plan (§6), hybrid

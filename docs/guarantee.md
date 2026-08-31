@@ -33,6 +33,18 @@ D(x) = \begin{cases}
 \end{cases}
 ```
 
+**What fills $g$ in the configuration certified here.** Nothing did. No in-band re-scorer beat
+the outer scorer on its own band, so the certified rule takes $g = f$: $\lambda$ is a third
+threshold on the same score, and for the reported configuration it sits at $0.0582$, strictly
+inside the band $[0.0320, 0.0718)$. `run_conformal.py` selects $\lambda$ over the calibration
+scores and `validate_certificate.py` applies it to the test scores, both on $f$.
+
+That is a property of this run rather than of the method. `band_conditional_false_decline` takes
+whichever score ranks the band, so the certificate is valid for any $g$ put in its place, and
+$g$ is named separately because it is the slot a quantum model would occupy in Phase II. The
+in-band eight-feature model compared against the tensor network in the results is a different
+object: it exists for that comparison, and no part of the certificate depends on it.
+
 ## 2. The estimand, and why it is conditional
 
 The certified quantity is the **band-conditional** false-decline rate:

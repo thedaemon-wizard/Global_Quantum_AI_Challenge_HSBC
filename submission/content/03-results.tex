@@ -27,21 +27,16 @@ stratified arm falls outside on none, at any level.
 
 The card-disjoint arm is not clean, and the two levels fail differently. At $\alpha = 0.01$ it
 is outside on \ClaimCardDisjointOutsideLoosest{} of \ClaimCoverageSeeds{} seeds and both
-\emph{over}-cover --- a two-sided fit failure leaving the one-sided guarantee intact. At
-$\alpha = 0.001$ it is outside on \ClaimCardDisjointOutsideTightest{} of
-\ClaimCoverageSeeds{}, and that seed runs the other way: ratio
+\emph{over}-cover --- a two-sided fit failure, not a one-sided breach. At $\alpha = 0.001$ it is
+outside on \ClaimCardDisjointOutsideTightest{}, and that seed runs the other way: ratio
 \ClaimCardDisjointTightestWorstRatio{} against four below one, the lowest
 \ClaimCardDisjointTightestBestRatio{}. One against four reads as noise, but it is
-under-coverage, so this arm is not reported as a pass; its spread
-(sd \ClaimCardDisjointSdTightest) is an order of magnitude wider than the temporal arm's.
-What the controls establish is narrower than an earlier draft claimed and still sufficient:
-neither reproduces the temporal arm's every-seed breach. That is weaker than ``the breach is
-temporal'', because the arms differ in more than time.
-
-It is not label censoring: the trailing-window fraud rate is
+under-coverage, so this arm is not a pass; its spread (sd \ClaimCardDisjointSdTightest) is an
+order of magnitude wider than the temporal arm's. Neither control reproduces the temporal arm's
+every-seed breach, which is weaker than ``the breach is temporal'' because the arms differ in
+more than time. Label censoring is ruled out separately: the trailing-window fraud rate is
 \ClaimCensoringTrailingRate\,\% against \ClaimCensoringEarlierRate\,\% earlier --- higher, not
-lower --- with no monotone trend ($\tau = \ClaimCensoringTau$, $p = \ClaimCensoringP$).
-
+lower.
 
 \input{generated/table-coverageseeds}
 

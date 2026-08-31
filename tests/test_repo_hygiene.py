@@ -286,3 +286,45 @@ def test_markdown_math_survives_the_github_renderer() -> None:
     assert spans, "no math found in any document; the extractor has stopped working"
     problems = check_markdown_math.check_spans(spans) + check_markdown_math.check_unbalanced(REPO)
     assert not problems, "\n".join(problems)
+
+
+def test_exported_predictions_agree_with_the_held_out_validation() -> None:
+    """The per-transaction file must not drift from the table the proposal quotes.
+
+    ``predictions.csv`` is a portal deliverable and is derived rather than measured: the score
+    comes from the frozen scorer output and the three thresholds from the certificate. That
+    makes it exactly the kind of artefact that can silently stop agreeing with its source, and
+    a reviewer holding the CSV and the appendix would be the one to notice.
+
+    The comparison is on the legitimate subset because that is what H5 certifies; the CSV
+    additionally carries fraudulent rows, which the certificate says nothing about.
+    """
+    tables = REPO / "results" / "tables"
+    predictions = pd.read_csv(tables / "predictions.csv")
+    riskcontrol = pd.read_csv(tables / "riskcontrol.csv")
+    validation = pd.read_csv(tables / "h5_validation.csv")
+
+    certified = riskcontrol[riskcontrol["certified"].astype(bool)]
+    chosen = certified.sort_values(["alpha", "budget"], ascending=[True, False]).iloc[0]
+
+    # The exported file must name the configuration it was built from.
+    assert predictions["band_low"].nunique() == 1
+    assert predictions["band_low"].iloc[0] == pytest.approx(chosen["band_lo"])
+    assert predictions["band_high"].iloc[0] == pytest.approx(chosen["band_hi"])
+    assert predictions["in_band_threshold"].iloc[0] == pytest.approx(chosen["selected_lambda"])
+
+    row = validation[
+        (validation["alpha"] == chosen["alpha"]) & (validation["band_budget"] == chosen["budget"])
+    ]
+    assert len(row) == 1, "the chosen configuration has no held-out validation row"
+
+    in_band = predictions["decision"].isin(["step-up", "step-up-declined"])
+    assert in_band.sum() >= int(row["n_legit_band_test"].iloc[0]), (
+        "fewer in-band rows than the validation counts as legitimate alone"
+    )
+    assert (predictions["fraud_probability"].between(0.0, 1.0)).all(), (
+        "the statement asks for a float in [0, 1]"
+    )
+    # The binary column has to be the decision, not a second opinion about it.
+    terminal = predictions["decision"].isin(["decline", "step-up-declined"]).astype(int)
+    assert (predictions["predicted_fraud"] == terminal).all()

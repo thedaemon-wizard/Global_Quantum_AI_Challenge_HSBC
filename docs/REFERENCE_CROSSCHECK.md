@@ -62,11 +62,11 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **SW-3** | Amazon Braket SDK 1.126.0 and amazon-braket-default-simulator 1.40.1 | `NOTICE`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `pyproject.toml`, `scripts/check_parity.py` and 2 more |
 | **SW-4** | MAPIE 1.5.0 | `NOTICE`, `pyproject.toml`, `scripts/smoke.py` |
 | **SW-5** | crepes 0.9.1 | `docs/decisions.md`, `NOTICE`, `pyproject.toml`, `scripts/smoke.py` |
-| **SW-6** | XGBoost 3.4.1 | `Makefile`, `NOTICE`, `docs/CLEANROOM.md`, `docs/CREDENTIALS.md`, `docs/ENVIRONMENT.md`, `docs/FACTCHECK_LOG.md` and 12 more |
+| **SW-6** | XGBoost 3.4.1 | `Makefile`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/CREDENTIALS.md`, `docs/ENVIRONMENT.md` and 13 more |
 | **SW-7** | SHAP 0.52.0 | `NOTICE`, `pyproject.toml`, `scripts/run_baselines.py`, `scripts/run_explain.py`, `scripts/smoke.py`, `src/hsbcfraud/features/engineering.py` |
 | **SW-8** | scikit-learn 1.9.0 | `docs/decisions.md`, `NOTICE`, `docs/CREDENTIALS.md`, `docs/ENVIRONMENT.md`, `pyproject.toml`, `scripts/smoke.py` |
 | **SW-9** | PyTorch 2.13.0+cu130 | `Makefile`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/ENVIRONMENT.md`, `docs/decisions.md`, `scripts/smoke.py` and 1 more |
-| **SW-10** | LightGBM 4.7.0 | `docs/FACTCHECK_LOG.md`, `NOTICE`, `docs/decisions.md`, `pyproject.toml`, `scripts/run_baselines.py`, `scripts/smoke.py` |
+| **SW-10** | LightGBM 4.7.0 | `docs/FACTCHECK_LOG.md`, `NOTICE`, `README.md`, `docs/decisions.md`, `pyproject.toml`, `scripts/run_baselines.py` and 1 more |
 
 ## Cited nowhere
 

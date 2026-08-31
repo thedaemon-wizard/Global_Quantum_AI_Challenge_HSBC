@@ -88,6 +88,12 @@ classifier the card-disjoint arm is the *most* distinguishable of the three (0.6
 the temporal arm's 0.5525). What the data supports is that the breach appears only in the arm
 ordered by time, on every seed, and that neither control reproduces it.
 
+The censoring control in full. The trailing-window fraud rate is 3.666 % against 3.281 %
+earlier -- higher, not lower, which is the opposite of what unresolved chargebacks would
+produce. The Mann-Kendall trend statistic over the per-bucket rates is -0.2857 at p = 0.3988,
+so there is no monotone trend either. The proposal states the two rates; the trend statistics
+are here, which is why this file rather than the six-page body carries them.
+
 ## The certificate holds on held-out data
 
 All five certified configurations, applied unchanged to $D_{\mathrm{test}}$:

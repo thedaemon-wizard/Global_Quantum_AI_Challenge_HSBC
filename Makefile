@@ -9,7 +9,7 @@ RUFF    := .venv/bin/ruff
 BOOT    := /usr/bin/python3.12
 
 .PHONY: help venv venv-gpu smoke test fast lint baseline conformal quantum mps explain \
-        latency seedsweep figures walkthrough freeze derived claims tex pdf pdf-draft \
+        latency predictions seedsweep figures walkthrough freeze derived claims tex pdf pdf-draft \
         submission check reproduce clean
 
 help:
@@ -25,6 +25,7 @@ help:
 	@echo "mps        E10 tensor-network arm"
 	@echo "explain    E12 feature attribution over the calibration band"
 	@echo "latency    E13 per-transaction inference latency against the authorisation budget"
+	@echo "predictions per-transaction scores and decisions, the statement's first outcome"
 	@echo "figures    submission figures, generated from the tables"
 	@echo "walkthrough trace the certificate end to end against the committed tables"
 	@echo "freeze     write the SHA-256 manifest"
@@ -120,6 +121,9 @@ explain:
 latency:
 	$(PY) scripts/measure_latency.py
 
+predictions:
+	$(PY) scripts/export_predictions.py
+
 figures:
 	$(PY) scripts/make_figures.py
 
@@ -160,7 +164,7 @@ KATEX = $(if $(KATEX_DIR),--render $(KATEX_DIR),)
 check: pdf claims
 	$(PY) scripts/freeze.py --check
 
-reproduce: baseline conformal quantum mps explain latency figures freeze
+reproduce: baseline conformal quantum mps explain latency predictions figures freeze
 	@echo
 	@echo "Reproduction complete.  Verify a later run against this one with: make check"
 	@echo "Not included: the full-scale tensor-network sweep behind section 4.8, which is"

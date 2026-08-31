@@ -41,12 +41,17 @@ PORTAL_SLOTS = 5
 # What is uploaded, and under what name.  The portal sees these names, so they carry the track
 # and the artefact rather than the repository's internal layout.  Five artefacts, chosen so
 # that a reviewer who opens only one still gets something self-contained: the two documents,
-# the certificate itself as data, the implementation that produces it, and the one picture
-# that shows how little of the pre-registered grid actually certifies.
+# the per-transaction output the challenge statement names as its first expected outcome, the
+# implementation that produces the certificate, and the one picture that shows how little of the
+# pre-registered grid actually certifies.
+#
+# The certificate table held this slot and was dropped for the predictions: every one of its
+# certified rows is printed in the appendix and its full 48-cell grid is what the figure plots,
+# so it was the only staged file whose content a reviewer could already read elsewhere.
 STAGED: tuple[tuple[str, str], ...] = (
     ("submission/proposal.pdf", "HSBC-proposal.pdf"),
     ("submission/appendix.pdf", "HSBC-appendix.pdf"),
-    ("results/tables/riskcontrol.csv", "HSBC-certificate.csv"),
+    ("results/tables/predictions.csv", "HSBC-predictions.csv"),
     ("src/hsbcfraud/conformal/riskcontrol.py", "HSBC-riskcontrol.py"),
     ("results/figures/certified_region.png", "HSBC-certified-region.png"),
 )

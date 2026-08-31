@@ -2697,3 +2697,82 @@ because the estimand is the whole content of the guarantee: a certificate on
 $\mathbb{P}(D(X) = \texttt{DECLINE} \mid Y = 0, X \in B)$ is a statement about a specific $B$,
 and a reader checking the code against the document would have found them disagreeing about
 which one.
+
+### D-086 The documents describe a two-model rule; the certified path thresholds one score
+
+`docs/guarantee.md` prints the decision rule as `STEP-UP, then g(x) >= lambda => DECLINE`, and
+section 2 of the proposal introduces `g` as the in-band re-scorer. `run_conformal.py` selects
+`lambda` from a grid over `s_cal` and `validate_certificate.py` applies it to `s_test` -- both
+the **same** full-traffic score `f`. `band_conditional_false_decline` takes one score array and
+thresholds it. There is no second model anywhere in the certified path.
+
+For the reported configuration the band is `[0.0320, 0.0718)` and `lambda = 0.0582`, strictly
+inside it. So `lambda` is a **third threshold on `f`**, not a threshold on a different score.
+
+Nothing here is wrong mathematically. `band_conditional_false_decline` accepts whichever score
+ranks the band, so the certificate is valid for any `g` put in its place, and the two-stage
+description is the design. What was missing is the sentence saying that in this run **nothing
+filled the slot** -- no in-band re-scorer beat the outer scorer on its own band, so `g = f`. A
+reviewer who opened `run_conformal.py` beside the guarantee document would have found a
+two-model story and a one-model implementation, with no note reconciling them.
+
+Both statements now say so. The related conflation is worth naming too: the in-band
+eight-feature model that the tensor network is compared against in the results is a **different
+object** from the certified rule. It exists for that comparison and no part of the certificate
+depends on it.
+
+**The lesson.** The three formula defects of the previous round were documents disagreeing with
+code about a *computation*. This one is documents disagreeing with code about *how many models
+there are*, which is a larger claim and was harder to see precisely because every individual
+sentence was defensible.
+
+### D-087 Numbers typed into a document by hand, three of four wrong, caught in one command
+
+Relocating the label-censoring control out of the six-page body and into `RESULTS.md`, the
+replacement paragraph was written by hand rather than read off `claims.yaml`. The trailing-window
+rate was written 3.978 against an actual 3.666, the earlier rate 3.297 against 3.281, and the
+p-value 3.666 -- which is the trailing rate, transposed into a field where any value above one
+is impossible on its face.
+
+`make claims` failed on the next run, because `CensoringP` went unused the moment its real value
+stopped appearing anywhere. The gate did its job in one command and nothing reached a built
+artefact.
+
+Recorded rather than quietly fixed, because it is the same failure the whole claim mechanism
+exists to prevent and it happened while *moving* a passage rather than writing one -- the case
+that feels safest. **Text that carries a bound number is not prose and must not be retyped; it
+has to be read off the source or moved verbatim.**
+
+### D-088 The statement's first Expected Outcome had no artefact a reviewer could open
+
+The portal's challenge panel lists four Expected Outcomes, and the first is "fraud probability
+scores (float [0,1]) and binary predictions for each transaction". Both existed here. Neither
+was reachable from the submission.
+
+The scores lived in `results/runs/scores_*.parquet`, and parquet is not among the formats the
+portal accepts -- PDF, PNG, JPG, WEBP, GIF, PY, JSON, JS, XLS, XLSX, CSV, DOC, DOCX, confirmed
+in a browser against the live form. The binary decision existed only as a count in appendix §A4.
+`COMPLIANCE_CHECKLIST.md` marked both rows met and cited exactly those two things, so the
+checklist was true about the repository and wrong about the upload.
+
+`scripts/export_predictions.py` now writes one row per held-out transaction under the certified
+configuration at the tightest level that certifies: the probability, the three-valued decision,
+and the binary decline it implies, with the band edges and threshold repeated on every row so a
+reader can recompute the decision from the file alone. It derives and measures nothing: the
+score is the frozen scorer output and the thresholds come from the certificate. Verified against
+`h5_validation.csv` -- 10,021 legitimate in-band rows and 858 declines, both exact -- and a test
+pins the agreement, because a derived deliverable is precisely the kind that stops agreeing with
+its source quietly.
+
+**Float formatting was the one place this nearly went wrong.** The first version wrote six
+decimal places, which put rows near the threshold on the wrong side of their own stated
+boundary: the file disagreed with its own columns. It is written at full precision now, at a
+cost of 11 MB against a 20 MB cap.
+
+It takes the fifth slot from the certificate table, which was the only staged file whose content
+a reviewer could already read elsewhere -- every certified row is printed in the appendix and
+the full 48-cell grid is what the certified-region figure plots.
+
+**The lesson.** Four rounds of audit checked whether the documents were true. None checked
+whether the *upload* answered the question the challenge asked, and the checklist row that
+should have caught it was satisfied by evidence in a format the portal rejects.
