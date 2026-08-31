@@ -59,6 +59,7 @@ repository:
 | [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) | The machine, the pinned versions, and the measured wall-clock cost of each stage |
 | [`docs/COMPLIANCE_CHECKLIST.md`](docs/COMPLIANCE_CHECKLIST.md) | Every requirement in the four official documents, with where it is met |
 | [`docs/REFERENCES.md`](docs/REFERENCES.md) | The reference list |
+| [`docs/REFERENCE_IMPLEMENTATION.md`](docs/REFERENCE_IMPLEMENTATION.md) | Which reference each module realises, and whether the code does what the reference says |
 | [`docs/REFERENCE_CROSSCHECK.md`](docs/REFERENCE_CROSSCHECK.md) | Which module or document reaches each reference — generated, not written |
 | [`docs/REGULATORY_SOURCES.md`](docs/REGULATORY_SOURCES.md) | Official locators for every instrument, and what was verified at the issuing authority |
 | [`docs/PROVENANCE.md`](docs/PROVENANCE.md) | Where every algorithm and dataset came from |

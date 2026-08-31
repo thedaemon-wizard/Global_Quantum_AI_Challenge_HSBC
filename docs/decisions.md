@@ -2812,3 +2812,32 @@ test. Reproducing it costs eight GPU fits and buys a number nothing quotes.
 **The lesson.** A hash check answers "has this changed since I recorded it", which is not the
 question "can this be produced again". The second needs a different test, and it is now
 `test_every_committed_table_has_a_producer`, with an exemption list that has to state a reason.
+
+### D-090 A map from each reference to the code that realises it
+
+`REFERENCES.md` records what is cited and `REFERENCE_CROSSCHECK.md` records, automatically,
+which files reach each entry. Neither answers the question a reviewer has, which is whether the
+mathematics in the documents is the mathematics in the code.
+
+That question is not rhetorical. Asking it this round found three formulas the documents printed
+and the code did not compute (D-083) and a decision rule described with two models and
+implemented with one (D-086). None of those was reachable by any gate here: every number agreed
+with its table and every table agreed with the code. What disagreed was the formula printed
+beside the number.
+
+`docs/REFERENCE_IMPLEMENTATION.md` records the mapping. Twenty of the forty-nine entries reach an
+implementation file; the other twenty-nine are cited for context, prior art, regulation or a
+software version, which the crosscheck already reports. Five carry the guarantee and were read
+line by line against the cited source:
+
+* **Learn-then-Test** — the Hoeffding-Bentkus p-value matches the printed form term for term,
+  with two conservative additions the formula does not show and neither changes the bound.
+* **The exact coverage law** — called as `BetaBinomial(m, n+1-k, k)` at both sites, as printed.
+* **Ding et al.** — matches after this round's strict-inequality correction.
+* **Stoudenmire and Schwab** — matches after the output index was restored to the contraction.
+* **Huang et al.** — computed and not gated, which amendment A6 already discloses, and its
+  companion effective-rank definition was one of the three corrected.
+
+Section 2 of that file is checked for attribution rather than line by line, and says so. The
+judgement half of this check cannot be generated, which is the reason to write down where it has
+been done and where it has not.
