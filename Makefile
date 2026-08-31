@@ -9,7 +9,8 @@ RUFF    := .venv/bin/ruff
 BOOT    := /usr/bin/python3.12
 
 .PHONY: help venv venv-gpu smoke test fast lint baseline conformal quantum mps explain \
-        latency predictions seedsweep figures walkthrough freeze derived claims tex pdf pdf-draft \
+        latency predictions summaries seedsweep figures walkthrough freeze derived claims tex \
+        pdf pdf-draft \
         submission check reproduce clean
 
 help:
@@ -26,6 +27,7 @@ help:
 	@echo "explain    E12 feature attribution over the calibration band"
 	@echo "latency    E13 per-transaction inference latency against the authorisation budget"
 	@echo "predictions per-transaction scores and decisions, the statement's first outcome"
+	@echo "summaries  the split-arm, bond-dimension and rolling-origin tables the documents quote"
 	@echo "figures    submission figures, generated from the tables"
 	@echo "walkthrough trace the certificate end to end against the committed tables"
 	@echo "freeze     write the SHA-256 manifest"
@@ -124,6 +126,15 @@ latency:
 predictions:
 	$(PY) scripts/export_predictions.py
 
+# Aggregations of tables the long runs produce.  They are targets rather than inline steps
+# because each backs a table in the shipped documents and neither had a producer in the tree
+# at all: `make reproduce` carried them forward and the manifest check passed them trivially,
+# since a file nothing rewrites cannot differ from its own hash.
+summaries:
+	$(PY) scripts/summarise_split_arms.py
+	$(PY) scripts/summarise_seed_sweep.py
+	$(PY) scripts/run_rolling_origin.py
+
 figures:
 	$(PY) scripts/make_figures.py
 
@@ -164,7 +175,7 @@ KATEX = $(if $(KATEX_DIR),--render $(KATEX_DIR),)
 check: pdf claims
 	$(PY) scripts/freeze.py --check
 
-reproduce: baseline conformal quantum mps explain latency predictions figures freeze
+reproduce: baseline conformal quantum mps explain latency predictions summaries figures freeze
 	@echo
 	@echo "Reproduction complete.  Verify a later run against this one with: make check"
 	@echo "Not included: the full-scale tensor-network sweep behind section 4.8, which is"

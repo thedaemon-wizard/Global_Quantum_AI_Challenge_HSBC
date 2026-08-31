@@ -20,7 +20,7 @@
     "results/tables/coverage_by_arm_seeds.csv": "2c3b386b1af7309d68eccbc4aa54bbdeadfbc1d9e789a3956f33f5e3b8923065",
     "results/tables/coverage_seed_summary.csv": "856b9fc36895a5b53a0c2089381f72efc143afa0e8f6b3310dccabbb0c016b4f",
     "results/tables/data_integrity.csv": "79622ed7e5aecf1fad2256ec89b21f7498e5df4e27caa12d8471375a4ebc7e7c",
-    "results/tables/decision_log.csv": "655cb46e24133810f64d7bb59cb5dffdea2a958b816da7e27ce79834da7b4e5b",
+    "results/tables/decision_log.csv": "0e7083dd351f936bda3d0a31e175fd1315a7ce790e601d6a28a49ac136315d17",
     "results/tables/degeneracy.csv": "276f74f149e4e327dcecd1eed963c38a0355fddd719f63fe76e74861fff5f74c",
     "results/tables/envelope.csv": "f2ea606df51028d851162a79d8b7e7ef113e2713a8b9b0ed891b8957508e588d",
     "results/tables/h5_validation.csv": "26496256782729eec5cad65fd1a2a3dcaa2a38cae531e6f4863e8916a0c48a74",
@@ -32,7 +32,7 @@
     "results/tables/mps_h4.csv": "d496ec98ff8bd4d95962209d411ce86bb24a081175876156013c22813fe84976",
     "results/tables/mps_seed_spread.csv": "729609e7b977716af46793cf48fdb899da62a26e1dc4b79cfe435a4132ef5c2c",
     "results/tables/mps_seed_sweep.csv": "b653820ee82855bf61b580fbb6a2a2a021f38873770d86030e2fd2b674315ad6",
-    "results/tables/mps_seed_sweep_summary.csv": "5d5f2463c251201f6d0a354b6c896b7f22bdadefba5756e3c0d0f8d96d6fed13",
+    "results/tables/mps_seed_sweep_summary.csv": "fcfaf560917b73a8f85811567f457bd4b13116272125aa13c522bca08e692fa6",
     "results/tables/parity.csv": "f82defbc8664e4edba4b78286bc52d88714f9c519fe6744285801fe48afb03a2",
     "results/tables/power.csv": "97410392d26eddeef0d73e313d86037ed4bdcd1b7fe6e54bc95cc309367caf3e",
     "results/tables/predictions.csv": "ed32e7cdd26f89fb12d9babd70fb799ab014822e57b1c81a8797f4f11ca54a75",
@@ -44,16 +44,16 @@
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
     "results/tables/test_access.json": "e83c79936cc9c734e823cc30f9dc44462c089466c255a59dc4a109ed30a5a448",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "816d6a32f07ad7bafa47f56fbeaa7fc566dee236fe53a57fb9140ac36e09bc6a",
-    "submission/proposal.pdf": "3b1a77b736cdad2385413386e9f5397f2874b64666cdba49f2c1a57197d097fe"
+    "submission/appendix.pdf": "ebe325ff52e62df0d87323756d675a0725bd86604a90f6510e10818358bd110a",
+    "submission/proposal.pdf": "1698f30afee934ba3453e5f619f7910042cb1e5249cc2b7dcffa76d92d5dbf25"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
     "docs/REFERENCES.md": "8eaca8bc214f90bc7154827e0651a719221d620a50f1289330468af83aeab1a4",
-    "docs/claims.yaml": "12d16c0ace3e9db4d08930c2ac5a84373e3f780224a9b379467f5f62c9819015",
-    "docs/decisions.md": "59e3fe46e664baea8eab3eab45152517005c2bb6926903350ed4577df4cf0987",
-    "docs/protocol.lock.json": "77c7339e70828c37faa4c89e70a4232148c9d521c25504e28ba83e7e3ddfa1f5",
-    "docs/protocol.md": "f00730b427aaa9ed5f5ca7d333d76b72783a6d3d1a26f693f8e2c890e8f2eeb5",
+    "docs/claims.yaml": "70b414bcbf06815ddcb13de1385c0428d938e2a84acfffdccc58e357c3ad0cce",
+    "docs/decisions.md": "c02d1cd4a5f65003b37a04f6f94db8377c430c64e04e7df03094ccfd538573b9",
+    "docs/protocol.lock.json": "0d58b46f703353b93a4127abb45ec36d30fe7491c4afdde57259cf6c4246eb95",
+    "docs/protocol.md": "b172613266b42161f4297c2e096b7f9d2fb51edc5e1e31dba5eacb4391153ec4",
     "docs/tables.yaml": "e2fb8155cc8875ea7614685bbaf76b89ef63f762dd05bee40c1966ce6ab3f981"
   }
 }

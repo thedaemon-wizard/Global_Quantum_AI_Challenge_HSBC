@@ -66,6 +66,20 @@ No result here extrapolates to the declined population.
 | In this repository | **Not present, and not reconstructible from this repository.** There is no fetch script; the file was never downloaded to this machine, which is why E15 was not run. Obtain it from the source above if you want to reproduce the stress case. |
 | Role | Stress case only, and **withdrawn** by amendment A9. The figure previously quoted here -- roughly 98 calibration frauds against the 99 the floor `(1/alpha) - 1` requires -- did not follow from this protocol's own split fractions, and was withdrawn rather than recomputed because replacing it would assert a measurement never made. The degeneracy argument it was to support is made directly on IEEE-CIS instead. |
 
+### 1.4 One measurement whose producer is not in the tree
+
+`results/tables/mps_seed_spread.csv` records eight full-scale tensor-network fits at bond
+dimension 16 -- four seeds at contraction width 1 and four at width 128 -- and is the measured
+evidence behind [D-038](decisions.md)'s choice of the sequential contraction: at width 128 two
+of four fits never left chance, at width 1 none did.
+
+The variant of `run_seed_sweep.py` that produced it is not in the repository, so `make reproduce`
+cannot regenerate it. It is retained rather than deleted because the results section asserts the
+reason for that design choice and this file is what supports it, and it is named here rather
+than left silent because a committed table nothing rewrites passes `freeze.py --check`
+trivially. Reproducing it costs eight GPU fits. `tests/test_repo_hygiene.py` carries it as the
+single exemption to the rule that every committed table has a producer.
+
 ### 1.3 Sparkov
 
 Not used in Phase I. Listed here so its absence is a decision on the record rather than an

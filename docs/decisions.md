@@ -2776,3 +2776,39 @@ the full 48-cell grid is what the certified-region figure plots.
 **The lesson.** Four rounds of audit checked whether the documents were true. None checked
 whether the *upload* answered the question the challenge asked, and the checklist row that
 should have caught it was satisfied by evidence in a format the portal rejects.
+
+### D-089 Four committed tables had no producer, and the manifest could not see it
+
+`freeze.py --check` compares each committed table to its recorded hash. A table that no target
+rewrites always matches, so the reproducibility gate is blind to exactly the failure it looks
+like it covers: a result carried forward rather than regenerated.
+
+Four tables were in that blind spot, and two of them are printed in the proposal.
+
+| table | backs | status |
+|---|---|---|
+| `split_arm_baselines.csv` | Table 1, the study's largest measured effect | producer written, reproduces bit-identically |
+| `rolling_origin.csv` | Table 3 and four bound claims | producer written, reproduces bit-identically |
+| `mps_seed_sweep_summary.csv` | six bound claims | producer written, agrees to 1.1e-16 |
+| `mps_seed_spread.csv` | nothing; evidence behind D-038 | retained and disclosed |
+
+The rolling-origin reproduction is the one worth reporting. Its procedure existed only in the
+prose of D-025 -- a 20-day calibration window and a 20-day test window stepped by ten days over
+the frozen scores at `alpha = 1e-2`, judged against the exact 99 % Beta-Binomial interval -- and
+implementing it from that description reproduces all five rows, ratios and interval bounds
+exactly. A decision entry turned out to be a sufficient specification, which is the strongest
+evidence so far that the record is doing its job.
+
+The seed-sweep summary differs from the committed file in the last bit of two cells,
+1.1e-16, which is float summation order rather than a disagreement; every claim resolves
+unchanged.
+
+`mps_seed_spread.csv` is kept. It is a contraction-width comparison whose producing variant of
+`run_seed_sweep.py` is gone, it is consumed by no claim, and it is the measured evidence behind
+D-038's choice of the sequential contraction -- so `RESULTS.md` now cites it, `PROVENANCE.md`
+§1.4 records that it cannot be regenerated, and it is the single named exemption in the new
+test. Reproducing it costs eight GPU fits and buys a number nothing quotes.
+
+**The lesson.** A hash check answers "has this changed since I recorded it", which is not the
+question "can this be produced again". The second needs a different test, and it is now
+`test_every_committed_table_has_a_producer`, with an exemption list that has to state a reason.

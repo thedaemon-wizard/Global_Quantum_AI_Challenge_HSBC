@@ -683,7 +683,7 @@ split-integrity work.
 ## Amendment A8 — 2026-08-30, the single-evaluation rule described more than the code enforces
 
 **What changed:** section 2.2 stated that "every sweep, ladder and ablation runs on held-out
-slices of `D_band` or `D_cal`". Four scripts read the test block, and three of them do not go
+slices of `D_band` or `D_cal`". Six scripts read the test block, and four of them do not go
 through `TestFoldGuard`:
 
 | Script | What it reads from `D_test` | Guard |
@@ -693,7 +693,7 @@ through `TestFoldGuard`:
 | `run_baselines.py` | descriptive metrics, 3 arms x 5 seeds | none |
 | `run_ablations.py` | 4 leakage-ablation variants x 5 seeds | none |
 | `run_seed_sweep.py` | the 16-job full-scale arm | none |
-| `run_mps.py` | the in-band comparison | `authorise()` |
+| `run_mps.py` | the in-band comparison | none |
 
 **Why the guarantee is unaffected, and why this is still a defect.** The rule that protects a
 finite-sample guarantee is that nothing may be *selected* on the test fold. Nothing was:
@@ -743,8 +743,11 @@ S7 has skipped for that reason throughout.
 **Why ULB is out of scope rather than deferred.** The comparison it was meant to supply — that a
 fraud-conditional quantile degenerates on a small, heavily imbalanced file where IEEE-CIS's does
 not — is an argument about sample size that the IEEE-CIS measurements already make directly:
-section 6.1's own degeneracy table shows the floor at 19 rows against 847 available, two orders
-of magnitude clear. ULB would have been a second illustration of a point already carried.
+the class-conditional floor at the band-conditional scale is 19 rows at `alpha = 0.05` against
+the 847 legitimate in-band calibration rows the tightest band budget leaves, nearly two orders
+of magnitude clear. (`degeneracy.csv` tabulates the *unconditional* scale, where the floors are
+99, 199, 499 and 999 against 58,343 legitimate calibration rows; neither 19 nor 847 appears
+there, and an earlier version of this sentence cited it as the source.) ULB would have been a second illustration of a point already carried.
 
 **What this changes in the submission.** Nothing. No claim in either PDF, no figure and no table
 rests on ULB; `grep` finds it in no `.tex` file. `docs/PROVENANCE.md` §1.2 already records that

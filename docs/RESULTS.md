@@ -260,7 +260,9 @@ ordering as though it meant something.
 
 **Two of sixteen fits never trained.** Both at seed 20260831, at $\chi = 8$ and $\chi = 32$,
 on the sequential contraction that [D-038](decisions.md) chose *because* the reduction
-tree destabilised training. A one-in-eight failure rate is a property of the ansatz on this
+tree destabilised training -- measured in
+[`mps_seed_spread.csv`](../results/tables/mps_seed_spread.csv), where two of four fits at
+contraction width 128 never left chance against none of four at width 1. A one-in-eight failure rate is a property of the ansatz on this
 data, not of the optimisation. The per-epoch AUC shows the shape: 0.6521 at epoch 1, falling
 to 0.4761 by epoch 30 — below chance. A loss-only log would have shown a flat curve and left
 open whether it was slow learning or none ([D-039](decisions.md), [D-040](decisions.md)).

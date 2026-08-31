@@ -16,6 +16,7 @@ document and the checker agree by construction rather than by two independent ro
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 from typing import Any
 
@@ -39,17 +40,56 @@ ALLOWED = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 THOUSANDS_FROM = 10_000
 
 
-def format_value(value: Any) -> str:
+# The literal as it is written in claims.yaml, keyed by claim.  YAML parses `1.0000` to the
+# float 1.0, and `str()` then prints "1.0" -- which in a sentence about values indistinguishable
+# to floating point asserts exactly one, where the measurement is 0.99999975.  The trailing
+# zeros are the author recording the precision of the claim, so they have to survive to the page.
+VALUE_LITERAL = re.compile(r"^\s*-\s*key:\s*(\w+)\s*$|^\s*value:\s*(\S+)\s*$")
+
+
+def literal_values(text: str) -> dict[str, str]:
+    """Map each claim key to the value exactly as it is spelled in the file."""
+    literals: dict[str, str] = {}
+    key: str | None = None
+    for line in text.splitlines():
+        match = VALUE_LITERAL.match(line)
+        if match is None:
+            continue
+        if match.group(1) is not None:
+            key = match.group(1)
+        elif key is not None:
+            literals[key] = match.group(2)
+            key = None
+    return literals
+
+
+def format_value(value: Any, spelled: str | None = None) -> str:
     """The value as claims.yaml records it, grouped if it is a large count.
 
-    A bare ``-`` in text mode renders as a hyphen, which is wrong for a numeric difference
-    and is the kind of typographic error that survives every proofread.
+    ``spelled`` is the literal from the file, which preserves trailing zeros that YAML parsing
+    discards.  A bare ``-`` in text mode renders as a hyphen, which is wrong for a numeric
+    difference and is the kind of typographic error that survives every proofread.
     """
     if isinstance(value, int) and not isinstance(value, bool) and abs(value) >= THOUSANDS_FROM:
         text = f"{value:,}"
+    elif spelled is not None and _is_same_number(spelled, value):
+        text = spelled
     else:
         text = str(value)
     return f"$-${text[1:]}" if text.startswith("-") else text
+
+
+def _is_same_number(spelled: str, value: Any) -> bool:
+    """Whether the literal and the parsed value are the same number.
+
+    Guards against a literal that has drifted from the value ``check_claims.py`` verified --
+    scientific notation, a quoted string, a stale hand edit.  When they disagree the parsed
+    value wins, because that is the one the gate compared against the table.
+    """
+    try:
+        return float(spelled) == float(value)
+    except (TypeError, ValueError):
+        return False
 
 
 LATEX_LABELS = {
@@ -165,7 +205,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=REPO / "submission" / "generated")
     args = parser.parse_args(argv)
 
-    document = yaml.safe_load(args.claims.read_text(encoding="utf-8"))
+    claims_text = args.claims.read_text(encoding="utf-8")
+    literals = literal_values(claims_text)
+    document = yaml.safe_load(claims_text)
     claims = document["claims"]
 
     bad = [c["key"] for c in claims if not set(c["key"]) <= ALLOWED]
@@ -191,7 +233,9 @@ def main(argv: list[str] | None = None) -> int:
         else:
             source = claim["source"].replace("results/tables/", "")
         lines.append(f"% {claim['key']}: {source}")
-        lines.append(f"\\newcommand{{\\Claim{claim['key']}}}{{{format_value(claim['value'])}}}")
+        spelled = literals.get(claim["key"])
+        rendered = format_value(claim["value"], spelled)
+        lines.append(f"\\newcommand{{\\Claim{claim['key']}}}{{{rendered}}}")
     lines.append("")
 
     args.out.mkdir(parents=True, exist_ok=True)

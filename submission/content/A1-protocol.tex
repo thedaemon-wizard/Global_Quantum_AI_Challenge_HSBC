@@ -20,11 +20,13 @@ the protocol's prose: correcting a mis-transcribed count should not require an a
 a gate irritating enough to be bypassed protects nothing. Fields entering no guarantee
 (output paths, fitting seeds, plotting choices) are deliberately outside the hash.
 
-\paragraph{Amendments.} The pre-registration carries \ClaimProtocolAmendments{} of them. The
-first four were derived from block sizes or from $\Dband$ alone, never from $\Dcal$ risks or
-from $\Dtest$. The last five were not, and are listed as what they are: two corrections found
-after the certificate existed, and three disclosures --- of work pre-registered and never done,
-of a rule stated more strongly than the code enforces it, and of a dataset never obtained.
+\paragraph{Amendments.} The pre-registration carries \ClaimProtocolAmendments{} of them, and
+none was derived from $\Dtest$. A1 and A2 come from block sizes and from $\Dband$; A3 and A4
+also used quantities measured on $\Dcal$ --- outer-threshold recall, and the band-conditional
+rate that fixes its own $\alpha$ scale --- which is disclosed rather than treated as free. The
+last five are one correction and four disclosures: a test specified for the wrong mechanism, a
+screen computed and never gated, work pre-registered and never done, a rule stated more
+strongly than the code enforces it, and a dataset never obtained.
 
 \begin{enumerate}[label=A\arabic*.]
 \item The band-conditional certificate is sample-starved by construction; the reachable
@@ -52,8 +54,8 @@ of a rule stated more strongly than the code enforces it, and of a dataset never
   block permutation test, and band-conditional against marginal drift. No script exists for any
   of them, and the two tables they would have written do not exist.
 \item \emph{The single-evaluation rule described more than the code enforces.} The rule said
-  every sweep and ablation runs on held-out slices of $\Dband$ or $\Dcal$; three scripts read
-  $\Dtest$ without the guard. Nothing was \emph{selected} there --- the ablation table feeds no
+  every sweep and ablation runs on held-out slices of $\Dband$ or $\Dcal$; of the six scripts
+  that read $\Dtest$, four do so without the guard. Nothing was \emph{selected} there --- the ablation table feeds no
   claim, and every threshold comes from $\Dband$ and $\Dcal$ --- so the guarantee stands, but
   the sentence did not. The protocol was corrected rather than the scripts, which would have
   changed committed tables to retire a wording defect.

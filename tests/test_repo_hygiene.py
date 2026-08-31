@@ -238,11 +238,14 @@ def test_makefile_scripts_exist() -> None:
         }
     )
     missing = [s for s in referenced if not (REPO / s).exists()]
-    if missing:
-        pytest.xfail(
-            f"{len(missing)} of {len(referenced)} Makefile-referenced scripts are not yet "
-            f"written: {missing}"
-        )
+    # An assertion, not pytest.xfail: xfail marks the test as expected-to-fail, which the
+    # runner counts as a pass, so this check could not fail and had not been able to for as
+    # long as it has existed. It happens to be satisfied -- every referenced script is
+    # present -- which is exactly why nothing noticed.
+    assert not missing, (
+        f"{len(missing)} of {len(referenced)} scripts referenced by the Makefile do not "
+        f"exist, so the target that names them cannot run: {missing}"
+    )
 
 
 def test_protocol_lock_matches_configuration() -> None:
@@ -328,3 +331,96 @@ def test_exported_predictions_agree_with_the_held_out_validation() -> None:
     # The binary column has to be the decision, not a second opinion about it.
     terminal = predictions["decision"].isin(["decline", "step-up-declined"]).astype(int)
     assert (predictions["predicted_fraud"] == terminal).all()
+
+
+# The protocol names the scripts that read the held-out block and marks which route through the
+# guard. A regex over the sources cannot decide "reads the test block for a result" -- the
+# string appears in figure code and in the smoke check too -- so the table is taken as the
+# claim and verified against the code, which is the direction that matters: the appendix said
+# three unguarded scripts against an actual four, a disclosure document under-reporting a
+# disclosure, and it is the second time a count in that paragraph has drifted.
+GUARD = "TestFoldGuard"
+GUARD_ROW = re.compile(r"^\| `(\w+\.py)` \| [^|]+ \| (`authorise\(\)`|none) \|$", re.M)
+
+
+def test_the_disclosure_names_the_right_number_of_unguarded_scripts() -> None:
+    """Amendment A8's table and counts must match the tree they describe.
+
+    A8 exists because the pre-registration claimed nothing reads the test fold outside the
+    guard. Getting its arithmetic wrong turns a disclosure into a smaller version of the thing
+    being disclosed.
+    """
+    protocol = (REPO / "docs" / "protocol.md").read_text(encoding="utf-8")
+    rows = GUARD_ROW.findall(protocol)
+    assert rows, "the guard table in docs/protocol.md no longer parses"
+
+    unguarded = []
+    for name, marker in rows:
+        path = REPO / "scripts" / name
+        assert path.exists(), f"the guard table names {name}, which does not exist"
+        authorises = GUARD in path.read_text(encoding="utf-8")
+        expected = marker == "`authorise()`"
+        assert authorises == expected, (
+            f"docs/protocol.md marks {name} as {marker} and the source says otherwise"
+        )
+        if not authorises:
+            unguarded.append(name)
+
+    assert f"{_WORDS[len(rows)]} scripts read the test block" in protocol.lower(), (
+        f"the table lists {len(rows)} scripts and the sentence above it disagrees"
+    )
+    assert f"and {_WORDS[len(unguarded)]} of them do not go" in protocol.lower(), (
+        f"{len(unguarded)} of them are unguarded and the sentence above the table disagrees"
+    )
+
+    appendix = (REPO / "submission" / "content" / "A1-protocol.tex").read_text(encoding="utf-8")
+    assert f"of the {_WORDS[len(rows)]} scripts" in appendix, (
+        "the appendix states a different number of test-block readers than the protocol table"
+    )
+    assert f"{_WORDS[len(unguarded)]} do so without the guard" in appendix
+
+
+_WORDS = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight"}
+
+
+# Committed tables whose producer is deliberately not in the tree, with the reason. Anything
+# else must be regenerable, because `freeze.py --check` cannot detect a stale table that no
+# target rewrites: a file nothing touches trivially matches its own hash. Four tables sat in
+# that blind spot, two of them backing tables printed in the proposal.
+TABLES_WITHOUT_A_PRODUCER = {
+    "mps_seed_spread.csv": (
+        "a contraction-width comparison at chi=16, eight GPU fits, whose producing variant of "
+        "run_seed_sweep.py is not in the tree. Retained because it is the measured evidence "
+        "behind D-038's choice of the sequential contraction; see docs/PROVENANCE.md."
+    ),
+}
+
+
+def test_every_committed_table_has_a_producer() -> None:
+    """Some script must write each results table, or it is not reproducible.
+
+    The manifest check compares a table to its own recorded hash, which a table nothing
+    rewrites always passes. Reproducibility is the property that a target regenerates it, and
+    that is what this asserts.
+    """
+    writers = "\n".join(
+        path.read_text(encoding="utf-8")
+        for directory in ("scripts", "src")
+        for path in sorted((REPO / directory).rglob("*.py"))
+    )
+    orphaned = sorted(
+        path.name
+        for path in sorted((REPO / "results" / "tables").glob("*.csv"))
+        if path.name not in writers and path.name not in TABLES_WITHOUT_A_PRODUCER
+    )
+    assert not orphaned, (
+        f"these committed tables are written by no script, so `make reproduce` carries them "
+        f"forward rather than regenerating them: {orphaned}. Write the producer, or record the "
+        f"reason in TABLES_WITHOUT_A_PRODUCER."
+    )
+
+    stale = sorted(
+        name for name in TABLES_WITHOUT_A_PRODUCER
+        if not (REPO / "results" / "tables" / name).exists()
+    )
+    assert not stale, f"the exemption list names tables that no longer exist: {stale}"
