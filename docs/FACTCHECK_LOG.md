@@ -58,6 +58,24 @@ Verdicts are **supported**, **not supported** (the claim was wrong and was chang
 | 31 | My first attempt at row 30: "the two records are different problem sets, 2025 vs 2026" | third-party `README.md:174-185` | **also not supported** | That README carries a Yale-2026 table with all ten problems, which I did not read — I had looked only at the `data/*.txt` files. Recorded because it is the second wrong explanation for the same item |
 | 27 | Sole-proprietor filing date | confirmed by the author, 2026-08-30 | **settled: 1 August 2026** | The submission states the status without a date, so nothing in it turns on this. `Resume_Amon_Koike2026_CV` says "Jul 2026" and is the document that is wrong — see [CREDENTIALS.md](CREDENTIALS.md) §7 |
 
+
+## 1b. Claims checked in this round — 2026-08-31
+
+Checked against the live portal, the official PDFs and the repository itself. The portal rows
+were read in a browser from the HSBC challenge panel while signed in.
+
+| # | Claim as written | Source consulted | Verdict | What changed |
+|---|---|---|---|---|
+| 15 | COMPLIANCE C8/C9: fraud probability and binary prediction "met", evidenced by `scores_*.parquet` and an appendix count | HSBC challenge panel, upload control; [Phase 1 Submission Guidelines](https://quantumaiportal.thequantuminsider.com/wp-content/uploads/2026/04/2026-04-06-Phase-1-Submission-Guidelines-VF.pdf) | **not supported for the upload** | Parquet is not among the accepted formats, so the first Expected Outcome had no artefact a reviewer could open. `predictions.csv` now carries one row per held-out transaction and takes a portal slot ([D-088](decisions.md)) |
+| 16 | The certified rule applies an in-band re-scorer `g` at threshold λ | `scripts/run_conformal.py:181`, `scripts/validate_certificate.py:90-93`, `conformal/riskcontrol.py:108` | **not supported as written** | λ is selected over, and applied to, the same full-traffic score. For the reported configuration λ = 0.0582 inside a band of [0.0320, 0.0718). Nothing is wrong mathematically; no sentence said `g = f` in this run ([D-086](decisions.md)) |
+| 17 | Appendix A8: "three scripts read `D_test` without the guard" | `grep -l TestFoldGuard scripts/*.py` against the scripts that read the block | **not supported** | Six read it and four are unguarded; the protocol table also listed `run_mps.py` as authorising when it never imports the guard. A test now verifies the table against the tree ([D-089](decisions.md)) |
+| 18 | Appendix: the first four amendments never used `D_cal` risks | `docs/protocol.md` A3 ("Measured on `D_band` and `D_cal`") and A4 ("Measured on `D_cal` at a 5 % band") | **not supported** | A3 and A4 both used calibration-set quantities. The sentence now names them and A6 is reclassified from correction to disclosure |
+| 19 | `make reproduce` regenerates the committed results | `grep` for each table name across `scripts/` and `src/` | **not supported for four tables** | `split_arm_baselines.csv`, `rolling_origin.csv`, `mps_seed_sweep_summary.csv` and `mps_seed_spread.csv` had no producer. Three now have one and reproduce the committed values; the fourth is disclosed ([D-089](decisions.md)) |
+| 20 | Proposal §4: "the maximum 1.0" RBF correlation | [`screens.csv`](../results/tables/screens.csv) | **not supported as printed** | The measurement is 0.99999975. `claims.yaml` recorded `1.0000` and YAML parsing dropped the trailing zeros, so the page asserted exactly one in a sentence about values indistinguishable to floating point |
+| 21 | `test_makefile_scripts_exist` enforces that referenced scripts exist | `tests/test_repo_hygiene.py` | **not supported** | It called `pytest.xfail`, which the runner counts as a pass, so it could not fail. Now an assertion |
+| 22 | Phase II runs from 17 November 2026 | [Program roadmap](https://quantumai.thequantuminsider.com/program/) | **supported** | Phase I closes 15 Sep 2026; review 16 Sep – 14 Nov; Phase II PoC 17 Nov 2026 – 28 Feb 2027 with AWS credits and Classiq tooling; winners announced 30 Apr 2027 |
+| 23 | The portal accepts five uploads and a fixed format list | HSBC challenge panel, 2026-08-31 | **supported** | "0 uploaded, 5 slots left"; PDF, PNG, JPG, WEBP, GIF, PY, JSON, JS, XLS, XLSX, CSV, DOC, DOCX. The guidelines add a 20 MB per-file cap; the largest staged file is 11 MB |
+
 ## 2. Literature checked, post-2026-08
 
 Searched for work published since August 2026 that would change the positioning in §1.
