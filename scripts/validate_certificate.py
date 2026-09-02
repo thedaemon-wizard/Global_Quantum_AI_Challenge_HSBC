@@ -43,7 +43,7 @@ from scipy import stats
 from hsbcfraud.config import load_config
 from hsbcfraud.conformal.coverage import tail_probability
 from hsbcfraud.data.splits import TestFoldGuard
-from hsbcfraud.paths import display_path
+from hsbcfraud.paths import display_path, require_run_artefact
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -61,7 +61,11 @@ def main(argv: list[str] | None = None) -> int:
 
     cfg = load_config(args.config)
     seed = cfg.split.seeds[0]
-    scores = pd.read_parquet(args.runs / f"scores_{args.arm}_{seed}.parquet")
+    scores = pd.read_parquet(
+        require_run_artefact(
+            args.runs / f"scores_{args.arm}_{seed}.parquet", produced_by="baseline"
+        )
+    )
     certified = pd.read_csv(args.out / "riskcontrol.csv")
     certified = certified[certified["certified"].astype(bool)]
     if certified.empty:

@@ -424,3 +424,60 @@ def test_every_committed_table_has_a_producer() -> None:
         if not (REPO / "results" / "tables" / name).exists()
     )
     assert not stale, f"the exemption list names tables that no longer exist: {stale}"
+
+
+# Mermaid renders client-side on GitHub with a configuration this repository does not control.
+# `htmlLabels` may be disabled, in which case an HTML tag in a node label is shown literally
+# rather than applied, and a diagram that looked right locally reads as markup to a reviewer.
+# `<br/>` is exempt: Mermaid handles it natively as a line break in both configurations.
+MERMAID_SAFE_TAG = re.compile(r"<(?!br\s*/?>)[a-zA-Z]")
+MERMAID_ENTITY = re.compile(r"&#\d+;|&[a-zA-Z]+;")
+MERMAID_UNQUOTED_LABEL = re.compile(r'\[(?![\s]*")[^\]]*[<>][^\]]*\]')
+
+
+def _mermaid_blocks() -> list[tuple[str, str]]:
+    blocks = []
+    for path in sorted(REPO.glob("**/*.md")):
+        if ".venv" in path.parts or ".git" in path.parts:
+            continue
+        text = path.read_text(encoding="utf-8")
+        for match in re.finditer(r"```mermaid\n(.*?)\n```", text, re.S):
+            blocks.append((str(path.relative_to(REPO)), match.group(1)))
+    return blocks
+
+
+def test_mermaid_labels_survive_a_renderer_without_html_labels() -> None:
+    for name, block in _mermaid_blocks():
+        tag = MERMAID_SAFE_TAG.search(block)
+        assert tag is None, (
+            f"{name}: mermaid label carries the HTML tag at offset {tag.start()}; it renders "
+            f"literally when htmlLabels is off. Use plain text and <br/>."
+        )
+        entity = MERMAID_ENTITY.search(block)
+        assert entity is None, (
+            f"{name}: mermaid label carries the HTML entity {entity.group(0)!r}, which is not "
+            f"decoded when htmlLabels is off. Write the character or spell the symbol out."
+        )
+        unquoted = MERMAID_UNQUOTED_LABEL.search(block)
+        assert unquoted is None, (
+            f"{name}: mermaid label {unquoted.group(0)!r} contains an angle bracket outside "
+            f"quotes, which the parser reads as syntax."
+        )
+
+
+def test_mermaid_node_numbers_agree_with_the_split_table() -> None:
+    """The diagram prints block sizes.  They must come from the same table as everything else."""
+    blocks = [b for _, b in _mermaid_blocks() if "Temporal split" in b]
+    assert blocks, "the pipeline diagram is missing from the README"
+    splits = pd.read_csv(REPO / "results" / "tables" / "splits.csv")
+    temporal = splits[splits["arm"] == "temporal"]
+    for _, row in temporal.iterrows():
+        printed = f"{int(row['n_rows']):,} rows"
+        assert any(printed in b for b in blocks), (
+            f"the diagram does not print '{printed}' for the {row['block']} block; "
+            f"splits.csv is the source of truth"
+        )
+    total = f"{int(temporal['n_rows'].sum()):,} transactions"
+    assert any(total in b for b in blocks), (
+        f"the diagram's dataset total must be the sum of the four blocks, {total}"
+    )

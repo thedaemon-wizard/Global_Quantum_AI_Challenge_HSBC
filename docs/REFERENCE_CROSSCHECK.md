@@ -10,7 +10,7 @@ identifier, its first author's surname, and an alias the entry declares as
 surname is usually the handle that finds them; the alias covers the entries that have
 no author to cite -- an instrument named in prose, or a lower-case package name.
 
-**55 entries. 55 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
+**56 entries. 56 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
 
 ---
 
@@ -37,6 +37,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **CP-17** | Conformal Risk Control under Non-Monotone Losses: Theory and Finite-Sample Guarantees | `docs/FACTCHECK_LOG.md`, `docs/decisions.md` |
 | **CP-18** | Selective Conformal Risk Control | `docs/decisions.md`, `submission/content/01-problem.tex` |
 | **CP-19** | Conformal Selective Prediction with General Risk Control | `docs/decisions.md`, `submission/content/01-problem.tex` |
+| **CP-20** | A Joint Finite-Sample Certificate for Adaptive Selective Conformal Risk Control | `docs/decisions.md`, `submission/content/03-results.tex` |
 | **QM-1** | Power of data in quantum machine learning | `docs/FACTCHECK_LOG.md`, `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `README.md`, `docs/decisions.md`, `docs/protocol.md` and 3 more |
 | **QM-2** | Exponential concentration in quantum kernel methods | `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
 | **QM-4** | Numerical evidence against advantage with quantum fidelity kernels on classical data | `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
@@ -50,8 +51,8 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **QM-15** | Tensor Network Kernel Machines: A JAX Framework for Machine Learning and Nonlinear System Identification | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/mps.py` |
 | **QM-16** | Digital Payments Fraud Detection Using Quantum Machine Learning and Amazon Braket | `docs/decisions.md`, `submission/content/04-quantum.tex` |
 | **QM-17** | Comparative Performance Analysis of Quantum Machine Learning Architectures for Credit Card Fraud Detection | `docs/decisions.md`, `submission/content/04-quantum.tex` |
-| **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md`, `docs/SUBMISSION_CHECKLIST.md` and 19 more |
-| **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 19 more |
+| **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md`, `docs/SUBMISSION_CHECKLIST.md` and 20 more |
+| **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 20 more |
 | **DS-3** | Calibrating Probability with Undersampling for Unbalanced Classification | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/metrics.py` |
 | **DS-4** | Database: Open Database, Contents: Database Contents | `docs/decisions.md`, `NOTICE`, `docs/PROVENANCE.md`, `docs/protocol.md`, `submission/content/A1-protocol.tex` |
 | **DS-5** | Leveraging Machine Learning to Detect Fraud: Tips to Developing a Winning Kaggle Solution | `docs/decisions.md` |

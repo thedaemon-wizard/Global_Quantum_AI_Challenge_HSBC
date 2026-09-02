@@ -25,8 +25,11 @@ A row is ticked only when the check was actually run, not when it was planned.
 
 | | Surface | Checked | Result |
 |---|---|---|---|
-| `[x]` | Portal dashboard and challenges list | 2026-08-31, signed in | Five challenges, all "Not submitted" |
-| `[x]` | HSBC challenge submission panel | 2026-08-31 | "0 uploaded, 5 slots left"; formats PDF, PNG, JPG, WEBP, GIF, PY, JSON, JS, XLS, XLSX, CSV, DOC, DOCX -- unchanged from the previous check |
+| `[x]` | Portal dashboard and challenges list | re-read in a browser 2026-09-02, signed in | Five challenges, all still "Not submitted"; "My Files: No files uploaded yet" |
+| `[x]` | HSBC challenge submission panel | re-read in a browser 2026-09-02 | "0 uploaded, 5 slots left"; formats PDF, PNG, JPG, WEBP, GIF, PY, JSON, JS, XLS, XLSX, CSV, DOC, DOCX -- unchanged across three checks. All five staged files are within this list |
+| `[x]` | Which challenge-statement version is operative | 2026-09-02 | **Settled.** The portal links `vFinalRevised` from an **August** upload path; the other three documents sit under April. The 18-page `vF-1` is superseded. This had been carried as an open question |
+| `[x]` | IEEE-CIS Kaggle rules, sections 7.A and 7.B | read in full in a browser 2026-09-02 | 7.A permits use "for non-commercial purposes only ... and for academic research and education". 7.B forbids transmitting, duplicating, publishing or redistributing the Competition Data. Both are consistent with what `NOTICE` and `PROVENANCE.md` state, and with section 5 of the proposal saying a commercial PoC cannot reuse this file |
+| `[x]` | Whether the uploaded CSV is a redistribution of Competition Data | 2026-09-02, tested against the archive | **It is not, and this was checked rather than argued.** Not one IEEE-CIS column name appears in `predictions.csv`; its `transaction_row` is a positional index (475,006 upward) and **not** the dataset's `TransactionID` (2,987,000 upward). The file carries model output and thresholds only |
 | `[x]` | Programme roadmap | 2026-08-31 | Phase I closes 15 Sep 2026; review 16 Sep - 14 Nov; Phase II PoC 17 Nov 2026 - 28 Feb 2027; winners 30 Apr 2027 |
 | `[x]` | GitHub rendering of every markdown document | 2026-08-31 | All spans render; enforced by `scripts/check_markdown_math.py` against GitHub's own `POST /markdown` and MathJax |
 | `[ ]` | The repository URL printed in the proposal title block | **manual, before upload** | 404s until the repository is made public on 2026-09-15 |

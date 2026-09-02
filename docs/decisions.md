@@ -3288,3 +3288,78 @@ computational quantum speedup". It is not cited. It agrees with section 4's find
 challenging it, the challenge statement asks only that its own two cited results be engaged, and
 a 6-of-6 page is the wrong place to spend lines corroborating a negative result the document
 already reports. Recorded so the omission is visibly a decision.
+
+### D-109 A literature sweep that found the nearest published certificate, three weeks old
+
+[D-108](#d-108) added two selection-conditional references and stopped. A second sweep over
+work posted after 2026-08 found a closer one still, and it changes how section 3 reads.
+
+**CP-20**, Yu and Liu, *A Joint Finite-Sample Certificate for Adaptive Selective Conformal Risk
+Control*, arXiv:2606.08517, 7 June 2026. It certifies selected risk under *adaptive* threshold
+selection, treats that risk as a **ratio**, and couples an empirical-Bernstein bound on the
+ratio with a Clopper-Pearson bound on acceptance and a closeness bound on utility. It reports
+the empirical-Bernstein bound beating Hoeffding-based alternatives.
+
+That lands on this submission's sharpest self-criticism. Section 3 says only 5 of 48 grid points
+certify, that the survivors need $\alpha \ge 0.10$, and -- crucially -- that **the binding
+mechanism is sample size acting through the concentration bound**. If that diagnosis is right,
+a tighter concentration inequality on the same estimand is the route out, and here is a 2026
+paper reporting exactly that. Section 3 now says so.
+
+**This is a better sentence than the one it replaced**, and not because it softens the
+limitation. A limitation with a named, citable remedy is a feasibility argument; a limitation
+stated alone is a wall. The submission's own diagnosis is what makes the remedy legible, so
+citing it also demonstrates the diagnosis was worth making.
+
+What the paper does *not* do bounds it: ImageNet and COCO, no fraud, no payments, no temporal
+ordering, no distribution shift. So it constrains the novelty claim on the **estimand** and
+leaves the **setting** open, which is the same shape as CP-18 and CP-19.
+
+**A fourth paper was found and deliberately not relied upon.** Joshi, Wang, Hassani and
+Dobriban, *Risk-Controlled Post-Processing of Decision Policies*, arXiv:2605.06479, 7 May 2026,
+certifies a decision rather than a prediction set -- the property this submission claims for
+itself. It is in the not-relied-upon section rather than cited, because its structure is
+different (agreement with an incumbent policy under a chance constraint, i.i.d. throughout, no
+abstention band). Its fallback-on-failure design is the closest published analogue to section
+6's degradation path, which was arrived at independently; recording that is more honest than
+either claiming the idea or quietly citing it as though it were the source.
+
+All four were resolved against the arXiv record on 2026-09-02 before being written down.
+
+### D-110 A clean-room checkout found three scripts that crash instead of instructing
+
+`results/runs/` is gitignored on purpose: the per-seed score files are large intermediates and
+the repository commits the tables derived from them instead. A clean-room checkout therefore
+does not carry them, and three scripts read the same one --- `run_rolling_origin.py`,
+`export_predictions.py` and `validate_certificate.py` --- with the identical unguarded
+expression. All three died with a bare `FileNotFoundError` naming an absolute path to a file the
+reader has never heard of.
+
+`summarise_seed_sweep.py` had already established the right pattern in this repository
+(`raise SystemExit("...; run \`make seedsweep\` first")`). So this is a DRY defect as much as a
+usability one: the guard existed, written inline in one place and absent from three others.
+
+One helper now, `paths.require_run_artefact`, used at all three sites. There is no fallback to
+add --- a score cannot be invented --- so the only improvement available was to turn the crash
+into an instruction, and it now names the make target that produces the file.
+
+**What this says about the earlier clean-room passes.** [`CLEANROOM.md`](CLEANROOM.md) §2 and
+§2b both reported success, and both were run in a tree that already had `results/runs/`
+populated. They tested whether the tables *regenerate*, which is a different question from
+whether a reviewer can run the scripts at all. The third pass copied only tracked files and
+found in one command what two passes had missed.
+
+### D-111 Both competition placements are team results, and only one was attributed
+
+[D-102](#d-102) attributed the Yale placement to team MerQury and left the QPoland line bare,
+because no artefact on this machine recorded whether that entry was solo. It was not: the author
+confirmed on 2026-09-02 that it was team **The Cats Cradle**. Now attributed.
+
+The sentence that made this a defect was two paragraphs above: "Single-person team." Read next
+to two unattributed competition placements, it invites the reading that both were the author's
+alone. It now reads "Sole author of this submission", which is the true and narrower statement
+--- it is about this entry, not about a competition history in which both placements were
+teams'.
+
+Note that this was carried as an open 要確認 rather than guessed at, and the guess that would
+have been natural --- solo, since the CV does not say otherwise --- would have been wrong.

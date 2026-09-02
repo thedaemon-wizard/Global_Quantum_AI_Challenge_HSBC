@@ -169,6 +169,19 @@ strongest available alternative to the Hoeffding-Bentkus grid used here; it is n
 because the pre-registration was frozen on the grid before any model was fitted, and swapping
 the estimator afterwards would break exactly the property the certificate claims.
 
+**[CP-20]** Yu, X. and Liu, J. "A Joint Finite-Sample Certificate for Adaptive Selective
+Conformal Risk Control". arXiv:2606.08517, 7 June 2026. Verified against the arXiv record
+2026-09-02.
+The nearest published work to this submission's certificate and the reason section 3's
+reachability limit is stated as addressable rather than as a wall. It treats selected risk as a
+**ratio** and couples three bounds -- empirical-Bernstein on the ratio, Clopper-Pearson on the
+acceptance probability, and a two-sided closeness bound on utility -- under *adaptive* threshold
+selection, and reports the empirical-Bernstein bound beating Hoeffding-based alternatives.
+That is directly relevant here: only 5 of 48 grid points certify, and this study's own finding
+is that the binding mechanism is sample size acting through the concentration bound. Evaluated
+on ImageNet and COCO; it does not address fraud, payments, temporal ordering or distribution
+shift, so it bounds the novelty claim on the estimand while leaving the setting open.
+
 ## 3. Quantum machine learning -- the state of the evidence
 
 **[QM-1]** Huang, H.-Y., Broughton, M., Mohseni, M., Babbush, R., Boixo, S., Neven, H. and
@@ -424,6 +437,17 @@ call it today.
 ## 7. Sources consulted and deliberately not relied upon
 
 Recorded because excluding a source is a decision.
+
+**Joshi, S., Wang, T., Hassani, H. and Dobriban, E.** "Risk-Controlled Post-Processing of
+Decision Policies". arXiv:2605.06479, 7 May 2026. Verified against the arXiv record 2026-09-02.
+Certifies a *decision* rather than a prediction set, which is the property this submission
+claims for itself, so it is recorded rather than passed over. Not relied upon because the
+structure is different: it maximises agreement with an incumbent baseline policy subject to a
+chance constraint, choosing a threshold at which to defer to a fallback policy. There is no
+abstention band, the analysis is i.i.d. and exchangeable throughout, and the experiments are
+radiograph diagnosis, LLM routing and a synthetic task. Its fallback-on-failure structure is
+the closest published analogue to the degradation path in section 6 of the proposal, which was
+arrived at independently.
 
 **Peng, H., Lu, J. and Chen, Y.** "When Similarity Is Interaction-Driven: Quantum Kernels for
 Regime-Sensitive Learning". arXiv:2608.24631, 25 August 2026. Verified against the arXiv record

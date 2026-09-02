@@ -3,13 +3,22 @@
 Every requirement stated in the four official documents, with where it is satisfied and how it
 was checked. Verified 2026-08-30 against the PDFs downloaded from the portal that day.
 
-Sources, all obtained from `quantumaiportal.thequantuminsider.com`:
+Sources, with the locator each was retrieved from. The URLs were read off the live portal in a
+browser on 2026-09-02, not reconstructed:
 
-| Short name | Document |
-|---|---|
-| **GUIDE** | `2026-04-06-Phase-1-Submission-Guidelines-VF.pdf` |
-| **CRIT** | `2026-04-06-Assessment-Criteria-VF.pdf` |
-| **TERMS** | `2026-04-06-Terms-and-Conditions-VF.pdf` |
+| Short name | Document | Locator |
+|---|---|---|
+| **GUIDE** | `2026-04-06-Phase-1-Submission-Guidelines-VF.pdf` | `/wp-content/uploads/2026/04/` |
+| **CRIT** | `2026-04-06-Assessment-Criteria-VF.pdf` | `/wp-content/uploads/2026/04/` |
+| **TERMS** | `2026-04-06-Terms-and-Conditions-VF.pdf` | `/wp-content/uploads/2026/04/` |
+
+**The challenge statement's canonical version is settled.** Two files exist locally --- an
+18-page `HSBC-Challenge-Statement-vF-1.pdf` and the 16-page `vFinalRevised` --- and which one
+the organisers regard as operative could not be established from inside this repository. The
+portal answers it: the HSBC challenge card links
+`/wp-content/uploads/2026/08/HSBC-Challenge-Statement-vFinalRevised.pdf`, under an **August**
+upload path where the other three documents sit under April. **`vFinalRevised` is the operative
+document**, which is the one this checklist and the submission are written against.
 | **STMT** | `HSBC-Challenge-Statement-vFinalRevised.pdf` |
 
 Status values are **met**, **not met**, or **要確認** — the last meaning the requirement is

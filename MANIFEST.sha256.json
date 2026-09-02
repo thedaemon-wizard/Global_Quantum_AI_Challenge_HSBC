@@ -20,7 +20,7 @@
     "results/tables/coverage_by_arm_seeds.csv": "2c3b386b1af7309d68eccbc4aa54bbdeadfbc1d9e789a3956f33f5e3b8923065",
     "results/tables/coverage_seed_summary.csv": "856b9fc36895a5b53a0c2089381f72efc143afa0e8f6b3310dccabbb0c016b4f",
     "results/tables/data_integrity.csv": "79622ed7e5aecf1fad2256ec89b21f7498e5df4e27caa12d8471375a4ebc7e7c",
-    "results/tables/decision_log.csv": "596794c49bf244646aa05867b4f2aad8b985a31f9dd14a44d67be7f50d5ea5e7",
+    "results/tables/decision_log.csv": "e2ea3d6229999855cc03f4e28c0e9a6dd4679ec01d76ced492990e7f666e87bc",
     "results/tables/degeneracy.csv": "276f74f149e4e327dcecd1eed963c38a0355fddd719f63fe76e74861fff5f74c",
     "results/tables/envelope.csv": "f2ea606df51028d851162a79d8b7e7ef113e2713a8b9b0ed891b8957508e588d",
     "results/tables/h5_validation.csv": "26496256782729eec5cad65fd1a2a3dcaa2a38cae531e6f4863e8916a0c48a74",
@@ -45,14 +45,14 @@
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
     "results/tables/test_access.json": "e83c79936cc9c734e823cc30f9dc44462c089466c255a59dc4a109ed30a5a448",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "31d66157f851a045751a34b878fee5c1fc4ad68d97b6b69ba77d53aa0b03ee1e",
-    "submission/proposal.pdf": "03618f3ba06a9a14197f2a203c91d9fa0c4df5f5b04580a9d518482be9c206b0"
+    "submission/appendix.pdf": "f1b90eb9afc50a03e26c95bbb4fc91dc2ed5f81d71c113a8ca55fdb7855ad063",
+    "submission/proposal.pdf": "f7fc4b4667a0935f3d48a9ae7c170284f256b0b1e9e2d0724c058ab3177bcfd8"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
-    "docs/REFERENCES.md": "c49af796c2c6ecdd967e36deba83367fccc40fa45c1899042adc28273fe1e951",
-    "docs/claims.yaml": "65c7a7ba2f699420384ed8cb22f160ce33b12501bcd4849b9e8ec9a8204cf00a",
-    "docs/decisions.md": "f21244a4a46b79a8d671de7bce5be317d93d96af772e46e6bb28e6ad694979e9",
+    "docs/REFERENCES.md": "0d2442b8177991bf718d3030d77b07aa93aeea2d7e46aac23aa222aa7b0bb1bf",
+    "docs/claims.yaml": "c6c2f4e7cc8322c06606c02f9404a275dffd114b095d6943b76cbd91154556b1",
+    "docs/decisions.md": "e405b0dc18e75f97c8b964ac5dc8995d616eaf446db9f8393a9a708c5de1ff3b",
     "docs/protocol.lock.json": "c45826a1140aeb8089a0849ef5fea933fa974b29cbf75c40c080ad3618c1c212",
     "docs/protocol.md": "3929dfe66d251907ddce213f1c5ec758f5314c69a7ca4be3a268358d73485c06",
     "docs/tables.yaml": "e2fb8155cc8875ea7614685bbaf76b89ef63f762dd05bee40c1966ce6ab3f981"
