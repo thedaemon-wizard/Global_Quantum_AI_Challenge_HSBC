@@ -32,7 +32,8 @@ A row is ticked only when the check was actually run, not when it was planned.
 | `[x]` | Whether the uploaded CSV is a redistribution of Competition Data | 2026-09-02, tested against the archive | **It is not, and this was checked rather than argued.** Not one IEEE-CIS column name appears in `predictions.csv`; its `transaction_row` is a positional index (475,006 upward) and **not** the dataset's `TransactionID` (2,987,000 upward). The file carries model output and thresholds only |
 | `[x]` | Programme roadmap | 2026-08-31 | Phase I closes 15 Sep 2026; review 16 Sep - 14 Nov; Phase II PoC 17 Nov 2026 - 28 Feb 2027; winners 30 Apr 2027 |
 | `[x]` | GitHub rendering of every markdown document | 2026-08-31 | All spans render; enforced by `scripts/check_markdown_math.py` against GitHub's own `POST /markdown` and MathJax |
-| `[ ]` | The repository URL printed in the proposal title block | **manual, before upload** | 404s until the repository is made public on 2026-09-15 |
+| `[ ]` | The repository URL printed in the proposal title block | **manual, before upload** | Confirmed 404 to an unauthenticated request on 2026-09-02, which is correct while private. Must be public on 2026-09-15 or the title block points at nothing |
+| `[x]` | The portfolio, which is the proposal's only verification URL | fetched and read 2026-09-02 | HTTP 200. Five claims agree with §8 exactly: the sole proprietorship "filed 1 Aug 2026", Team MerQury, three merged pull requests with two bounty issues (#2242 and #749) for USD 200, Qiskit Advocate (Feb 2026), and QIntern 2026. **One disagrees, and the proposal is the correct one** -- see §5c |
 | `[ ]` | The upload itself, and the lead-contact field | **manual, before upload** | Cannot be automated |
 
 ## 3. Reproduction
@@ -86,6 +87,24 @@ row and a considered-and-null row are indistinguishable to the next reader.
 | `[x]` | Yale Peaked Hackathon placement and score | 13th of 549 at 450 of 550. Two separate corrections. **The placement is a team's** -- the leaderboard row and the CV both read *MerQury*, and section 8 of the proposal presented it without a qualifier two lines under the words "Single-person team". Now attributed. Separately, the section claimed the solved count follows from the score, which is arithmetically false -- ten subsets of the weights sum to the missing 100 -- and paired the 69-qubit figure with a method the repository's own verifier reports as failing on it ([D-102](decisions.md), [D-105](decisions.md)) |
 | `[x]` | unitaryHACK merges | **Three** pull requests, not the two the proposal implied: `cuda-quantum#4693`, `QuEST#783`, `cuda-quantum#4751`. Merge dates and branches read from the GitHub API on 2026-09-02. Two closed bounty issues, USD 200; the third is a follow-on and is not a bounty ([D-102](decisions.md)) |
 | `[x]` | CV sole-proprietorship date | **Settled 2026-09-02.** The filing records a business start date of **1 August 2026**, which is what the submission and the portfolio use. The CV's "Jul 2026 - Present" is the error, and it is outside this repository. ⚠ **The CV should be corrected before it is sent anywhere alongside this submission**, since §8 links the portfolio and a reviewer who opens both sees the discrepancy |
+
+## 5c. Where the portfolio and the proposal disagree
+
+§8 links the portfolio, so a reviewer can open both. Three differences are worth the author's
+attention, and **none of them is a defect in this submission**. All three live in files outside
+this repository and are recorded here because the submission points at them.
+
+| | Portfolio says | The submission says | Which is right |
+|---|---|---|---|
+| Yale field size | "#13 / **550 teams** (team score 450)" | "13th of **549** at 450 of 550" | **The submission.** [D-061](decisions.md) settled this from the organiser's own leaderboard: the pagination control reads `11-20 of 549`, so 549 is the field, and 550 is the maximum score. The portfolio uses 550 for both, which is the exact conflation D-061 was written to remove |
+| Yale method reach | "9/10 peaked-circuit challenges **up to 69 qubits**" | "matrix-product-state runs are exact to **60** qubits and degrade above it" | **Both, about different things.** Nine of ten were solved and the largest was 69 qubits; separately, the *saved tensor-network* runs are exact to 60. [D-059](decisions.md) established that no artefact attributes the 69-qubit answer to a tensor network, which is why §8 makes the narrower claim. Not a contradiction, but a reviewer reading them together may not see that |
+| QPoland title | "Quantum Graph Kernels for Molecular Classification" | "Quantum kernels" | **Neither is wrong; the submission is deliberately narrower.** [D-114](decisions.md) reverted a "graph kernels" label because [D-057](decisions.md) removed that attribution for want of any checkable implementation. The CV uses a third form, "Quantum-Inspired Graph Kernels" |
+
+**要確認, outside this repository.** The portfolio describes the graph-kernel work as
+"10-fold stratified cross-validation" and the CV as "nested 5-fold". One of the two is wrong, or
+both were run and neither says so. The submission cites neither figure, so nothing here depends
+on it.
+
 
 ## 5b. The seven open questions this study started with
 
