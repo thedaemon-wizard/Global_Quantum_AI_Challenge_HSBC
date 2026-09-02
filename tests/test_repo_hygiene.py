@@ -599,3 +599,24 @@ def test_baseline_defaults_reproduce_the_committed_table() -> None:
     assert sorted(committed["model"].unique()) == ["xgboost"], (
         "baselines.csv is single-model; if that changes, the --models default must change too"
     )
+
+
+def test_the_history_reads_as_one_author() -> None:
+    """A sole-author submission whose history shows three contributors invites the wrong question.
+
+    Three author strings accumulated over 58 commits -- two name variants on one address, one
+    of them a typo for the GitHub handle, plus a second address.  All are the same person, and
+    `.mailmap` is the supported way to say so without rewriting a single commit.
+
+    This asserts the canonical view rather than the raw one: `git log --format=%an` still
+    returns all three, which is correct, because the history is evidence and must not be
+    edited to look tidier than it was.
+    """
+    out = subprocess.run(
+        ["git", "shortlog", "-sne", "--all"], cwd=REPO, capture_output=True, text=True, check=True
+    )
+    authors = [line.split("\t", 1)[1].strip() for line in out.stdout.splitlines() if line.strip()]
+    assert len(authors) == 1, (
+        f"`git shortlog -sne` reports {len(authors)} authors: {authors}. Add the new commit "
+        f"identity to .mailmap; do not rewrite history to fix this."
+    )

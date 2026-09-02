@@ -3605,3 +3605,33 @@ reading the history of a sole-author submission sees three contributors.
 lines from their own "roughly 380 times slower". Recomputed from `latency.csv`: 236x and 261x
 for the two scorers, 379x for the micro-benchmark. None reaches three orders, and a reviewer
 dividing two columns of the project's own table catches it immediately.
+
+### D-120 Three author strings on a submission that claims a sole author
+
+`git log` carried three author strings over 58 commits: `thedamon-wizard
+<amon.koike@daemons.jp>` (27, a typo for the GitHub handle), `a-koike
+<amon06251994@gmail.com>` (22) and `Amon Koike <amon.koike@daemons.jp>` (10). The author
+confirmed on 2026-09-02 that all three are him.
+
+Section 8 says sole author. A reviewer running `git shortlog -sne` on the public repository
+would have seen three contributors and had to decide whether that contradicted the claim ---
+and the honest answer, that they are one person with an inconsistent git config, is not
+something the repository said anywhere.
+
+**Fixed with `.mailmap`, not with a rewrite.** Mapping is by commit email, which collapses both
+daemons.jp name variants and the gmail address in two lines. `git shortlog -sne` now reports one
+author; `git log --format=%an` still returns all three, which is correct. **The history is
+evidence and must not be edited to look tidier than it was** --- that principle is the whole
+basis of `docs/decisions.md` keeping its retractions, and it does not stop applying at the
+commit log.
+
+The repository identity is also set to the canonical name, so new commits do not reopen it, and
+a test asserts the single-author view rather than trusting it.
+
+**One thing turned out already correct, and checking it mattered.** GitHub's contributor view
+does *not* read `.mailmap` --- it matches by commit email --- so the fix could have been local
+only. It is not: both addresses are registered to the same account and the API reports
+`thedaemon-wizard` with all 59 commits, 37 under one address and 22 under the other. Had one
+address been unregistered, `.mailmap` would have satisfied the test here while the public page
+still showed two contributors, which is exactly the kind of gap this project keeps finding
+between a local check and what a reviewer actually sees.
