@@ -99,17 +99,18 @@ and the two environment traps that cost real time.
 
 Every number in this diagram is the committed value from
 [`splits.csv`](results/tables/splits.csv) and [`claims.yaml`](docs/claims.yaml), on the temporal
-arm. Solid arrows carry data; the dashed arrow is the only place a quantum model could enter.
+arm. Solid arrows carry data. The dashed arrows into the band are the only place a quantum model
+could enter, and neither arm got there; the dashed arrow into the output marks the held-out
+block, which the certified rule is applied to unchanged and never selected on.
 
 ```mermaid
-flowchart TB
+flowchart LR
   classDef data fill:#e8eef7,stroke:#33456b,stroke-width:2px,color:#11203a
   classDef step fill:#ffffff,stroke:#33456b,stroke-width:2px,color:#11203a
   classDef cert fill:#e7f2ea,stroke:#2b6141,stroke-width:3px,color:#10301f
   classDef dead fill:#f6ecec,stroke:#8d3b3b,stroke-width:2px,color:#3d1414
 
-  SRC["IEEE-CIS<br/>590,540 transactions<br/>not redistributed"]:::data
-  FE["Feature engineering<br/>431 features"]:::step
+  SRC["IEEE-CIS<br/>590,540 transactions<br/>431 features<br/>not redistributed"]:::data
   SPL["Temporal split by day<br/>never shuffled"]:::step
 
   TRN["train<br/>356,216 rows<br/>days 0 to 100"]:::data
@@ -117,16 +118,16 @@ flowchart TB
   CAL["cal<br/>60,464 rows<br/>days 120 to 140"]:::data
   TST["test, held out<br/>115,534 rows<br/>days 141 to 181"]:::data
 
-  GBDT["Gradient-boosted scorer<br/>runs on all traffic"]:::step
-  BAND["Abstention band<br/>edges set on the band block only"]:::step
+  GBDT["Gradient-boosted scorer<br/>all traffic"]:::step
+  BAND["Abstention band<br/>edges from the band block"]:::step
   LTT["Learn-then-Test<br/>Hoeffding-Bentkus, Holm<br/>48 grid points"]:::step
   CERT["Certificate<br/>band risk at most alpha<br/>with probability 1 minus delta<br/>5 of 48 certify"]:::cert
   OUT["predictions.csv<br/>approve / step-up / decline"]:::data
 
-  KER["Quantum kernel<br/>120 configurations screened<br/>0 passed, never ran"]:::dead
+  KER["Quantum kernel<br/>120 screened, 0 passed<br/>never ran"]:::dead
   MPS["Tensor network<br/>16 full-scale fits<br/>no improvement"]:::dead
 
-  SRC --> FE --> SPL
+  SRC --> SPL
   SPL --> TRN
   SPL --> BND
   SPL --> CAL
@@ -137,8 +138,8 @@ flowchart TB
   BAND --> LTT
   CAL --> LTT
   LTT --> CERT
-  CERT --> TST
-  TST --> OUT
+  CERT --> OUT
+  TST -. applied unchanged .-> OUT
   KER -.-> BAND
   MPS -.-> BAND
 ```
