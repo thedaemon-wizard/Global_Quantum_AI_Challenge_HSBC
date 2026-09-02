@@ -30,7 +30,9 @@ kernel evaluation --- would cost \ClaimLatencyKernelMedian{}\,ms, \ClaimLatencyK
 times as much, its tail taking \ClaimLatencyKernelBudgetShare\,\% of that budget. Cost is linear
 in the support set, so the classical core is not the latency risk and the kernel is; the band
 bounds aggregate kernel compute, not the per-request tail, which a transaction landing in the
-band pays in full. Both figures bound model cost on this workstation, single-threaded.
+band pays in full. Both bound model cost on this workstation at the profile
+\texttt{latency.csv} records for each --- the scorer pinned to one thread, the kernel on
+unconstrained BLAS --- so the ratio is not like for like.
 
 \textbf{Data, and why the PoC cannot reuse this file.} The method needs settled labels and an
 entity key to cluster on; both are ordinary in an issuer's data and only approximated here, and

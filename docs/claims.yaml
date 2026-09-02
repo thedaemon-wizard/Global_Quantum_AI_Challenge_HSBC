@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 124
+    value: 125
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -683,7 +683,7 @@ claims:
     tolerance: 0.05
     note: >
       Tensor-network average precision as a percentage of the gradient-boosted baseline on the
-      in-band problem: 8 features, identical rows.  ⚠ Not comparable with MpsShareFull as it
+      in-band problem: 8 features, identical rows.  Note: Not comparable with MpsShareFull as it
       stands: average precision floors at the base rate and the two evaluation sets do not
       share one.  MpsLiftShareBand is the comparable figure.
   - key: MpsShareFull
@@ -697,7 +697,7 @@ claims:
     tolerance: 0.05
     note: >
       The same share at full scale: 431 features, the best of sixteen fits against the strongest
-      baseline seed.  ⚠ Comparing this with MpsShareBand directly is what produced the
+      baseline seed.  Note: Comparing this with MpsShareBand directly is what produced the
       withdrawn "the gap widens with dimension" (D-124); the base rates differ by a factor of
       three.  The answer to the statement's secondary objective 4.2 is the pair
       MpsLiftShareBand and MpsLiftShareFull, which agree.
@@ -933,10 +933,16 @@ claims:
   # authorisation flow at 100-300 ms with about 130 ms of network.  The proposal's answer had
   # been volume arithmetic ("a few percent of traffic") with no timing behind it.  These bind it.
   #
-  # Every figure is from the 1-thread CPU profile, which is the per-request serving shape.  The
-  # all-core rows in the table are ~250x slower at batch 1 and are kept there as the documented
-  # trap: XGBoost defaults its thread count to the core count, and synchronising 20 threads over
-  # one row costs far more than the prediction.  See D-063.
+  # The two classical figures are from the 1-thread CPU profile, which is the per-request
+  # serving shape.  The all-core rows in the table are ~250x slower at batch 1 and are kept
+  # there as the documented trap: XGBoost defaults its thread count to the core count, and
+  # synchronising 20 threads over one row costs far more than the prediction.  See D-063.
+  #
+  # The two kernel claims are NOT from that profile and must not be described as if they were.
+  # latency.csv has exactly one quantum-kernel row and its profile is "CPU (unconstrained)",
+  # which is why LatencyKernelMedian and LatencyKernelTail carry no profile filter while the
+  # scorer claims do.  The ratio between them is therefore not like for like, and section 5
+  # says so.  See D-125.
   - key: LatencyScorerMedian
     value: 0.0841
     source: results/tables/latency.csv

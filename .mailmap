@@ -1,8 +1,11 @@
-# One person, three author strings, 58 commits.
+# One person, three author strings.
 #
-# The history carries `thedamon-wizard <amon.koike@daemons.jp>` (27 commits, a typo for the
-# GitHub handle), `a-koike <amon06251994@gmail.com>` (22) and `Amon Koike
-# <amon.koike@daemons.jp>` (10).  This submission states a sole author, so a reviewer running
+# The history carries `thedamon-wizard <amon.koike@daemons.jp>` (a typo for the GitHub
+# handle), `a-koike <amon06251994@gmail.com>` and `Amon Koike <amon.koike@daemons.jp>`.  Exact
+# counts are deliberately not written here: they move with every commit, and a comment that
+# goes stale on the next push is worse than one that states only the shape.  Run
+# `git log --format='%an <%ae>' --no-use-mailmap | sort | uniq -c` for the current split.
+# This submission states a sole author, so a reviewer running
 # `git shortlog -sne` on the public repository would otherwise see three contributors and have
 # to guess whether that contradicts the claim.
 #

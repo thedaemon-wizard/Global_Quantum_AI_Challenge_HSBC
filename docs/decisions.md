@@ -3371,7 +3371,7 @@ scale, computed over all sixteen fits. It separately reported that two of those 
 left chance. Both statements were true and the second undercut the first, because a run that
 ends at the entropy of the prior is not a draw from the seed distribution.
 
-⚠ **The justification given here was wrong, and [D-121](#d-121) corrects it.** This entry said
+**The justification given here was wrong, and [D-121](#d-121) corrects it.** This entry said
 "a run whose cross-entropy never fell below the entropy of the prior". It did fall: a controlled
 re-run shows both runs reaching a loss of 0.482 and 0.478, well under $\ln 2 = 0.693$, within
 two epochs. They learned and then collapsed. The exclusion itself stands -- it keys on the final
@@ -3565,7 +3565,7 @@ protects.
 hidden inputs, a file picker and three buttons. The organisation name is an *account-level*
 field set at registration -- `reg_company_type` and `reg_company_name`, placeholder "Company
 Ltd" -- which is what §4.2's "organizational affiliations ... company, or institution" reaches.
-So the document was the only surface under our control, and it now states the name. ⚠ Whether
+So the document was the only surface under our control, and it now states the name. Note: Whether
 the registration field already holds it is **要確認** and can only be read while signed in.
 
 ### D-119 The remaining audit findings, and the three that only closed across group boundaries
@@ -3602,7 +3602,7 @@ see it.
 two in `.gitignore`, where the ignore rule moved to `.git/info/exclude` so the path stays
 ignored without being published, and two of prose here. P8 claimed "two human authors ... 32
 commits"; the real figures are 58 commits and **three author strings, all the same person**,
-one carrying a typo. No `Co-authored-by` trailer anywhere. ⚠ Left as 要確認 because a reviewer
+one carrying a typo. No `Co-authored-by` trailer anywhere. Note: Left as 要確認 because a reviewer
 reading the history of a sole-author submission sees three contributors.
 
 **And a measurement was off by an order of magnitude.** `measure_latency.py` and
@@ -3683,7 +3683,7 @@ AUC, and the gap is 0.488 and 0.533 against 0.798 and 0.801. Nothing about the c
 mechanism moves it, which is the point of having chosen a threshold in a gap rather than at a
 tuned value.
 
-⚠ **The timings from this run are not quotable.** All four rows carry `gpu_contended=True`
+**The timings from this run are not quotable.** All four rows carry `gpu_contended=True`
 because a browser held a compositing context throughout, and `fit_seconds` came in at 3,060 to
 3,369 seconds against 2,747 to 3,145 for the uncontended committed run. That is the stamp doing
 its job: the numbers are visibly marked rather than silently wrong.
@@ -3792,3 +3792,48 @@ where an arithmetic claim of independence was false while every figure in it was
 The corrected finding is not weaker as an answer to 4.2. "The deficit is invariant to dimension
 and to capacity" is a sharper statement about the ansatz than "it degrades with dimension", and
 it is the one the evidence supports.
+
+<a id="d-125"></a>
+### D-125 Four findings from the final audit, and what each turned on
+
+**A configuration the measurement never applied.** Section 5 read "Both figures bound model
+cost on this workstation, single-threaded". `latency.csv` has exactly one quantum-kernel row
+and its profile is **`CPU (unconstrained)`**; only the two classical components were pinned to
+one thread. The claim ledger already knew: `LatencyScorerMedian` and `LatencyScorerTail` filter
+`profile: 1-thread CPU`, while the two kernel claims deliberately carry no profile filter, and
+`measure_latency.py` documents why. So a comment in `claims.yaml` asserting "every figure is
+from the 1-thread CPU profile" was false for two of the four.
+
+The paragraph's own finding is that **the serving profile dominates the model** by more than
+two orders of magnitude. Getting the profile wrong there, in the sentence that closes it, is
+the worst available place for this error. Section 5 now names the profile for each and says the
+ratio is not like for like.
+
+**A qualifier that dropped out of the PDF while three documents certified it.** Section 3 quotes
+the 1st-place IEEE-CIS solution at "about 0.9363 in time-based cross-validation". `REFERENCES.md`
+(DS-5) records that figure as measured **without their UID feature**, which they report as worth
+about **+0.011 AUC** -- and the compliance row C7 described a sentence containing that
+qualifier. The shipped PDF did not contain it. Quoting the ablated figure as the headline
+understates the published result by roughly the margin the comparison turns on. Restored, and
+C7 now describes what ships.
+
+**An understatement that a merged pull request refutes.** Section 8 said "the author's
+matrix-product-state runs are exact to 60 qubits". The *method* is his own contribution and is
+checkable: PR #1 into the public repository `roman-bagdasarian/Peaked-Circuits`, merged
+2026-04-10 from branch `marginal_attack_by_amon`, +150 lines. **Verified against the GitHub API
+before citing** -- the repository is public and the pull request is visible, which the audit
+had marked 要確認 because it could not open it. The attribution had been removed alongside the
+69-qubit overreach in [D-105](#d-105); only the overreach needed to go. In a submission whose
+section 4 is a matrix-product-state study, presenting the MPS credential as a team rank plus a
+limitation sells it short.
+
+**Two counts that go stale on every push.** `.mailmap` opened "three author strings, 58
+commits" and attributed 10 to one identity; the actual figures were 65 and 16 by the time it
+was read, and 27 + 22 + 10 did not even sum to 58. The counts are gone. What replaces them is
+the command that produces the current split, because **a comment that is wrong after the next
+commit is worse than one that states only the shape**.
+
+**And the warning glyph is gone.** U+26A0 appeared ten times across five tracked files, all of
+them mine from today. It sits in Unicode's emoji data with `Emoji=Yes`, and the project forbids
+emoji in tracked files. `Emoji_Presentation=No` makes it arguable, and an arguable case in a
+repository that goes public against an explicit instruction is not worth keeping.

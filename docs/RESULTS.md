@@ -297,7 +297,7 @@ turn at epoch 1 and 2 and climb back to $\ln 2$. The per-epoch AUC shows the sam
 shown a flat curve and left open whether it was slow learning or none
 ([D-039](decisions.md), [D-040](decisions.md)).
 
-⚠ The re-run's `fit_seconds` are stamped `gpu_contended` and must not be quoted as timings.
+Note: The re-run's `fit_seconds` are stamped `gpu_contended` and must not be quoted as timings.
 
 **And the fit time is flat across $\chi$**: the sixteen jobs took 2747 to 3145 seconds,
 against the sixty-four-fold spread a $\chi^2$ cost model predicts. A 431-site chain is bound

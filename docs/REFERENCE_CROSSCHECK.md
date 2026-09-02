@@ -55,7 +55,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 22 more |
 | **DS-3** | Calibrating Probability with Undersampling for Unbalanced Classification | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/metrics.py` |
 | **DS-4** | Database: Open Database, Contents: Database Contents | `docs/decisions.md`, `NOTICE`, `docs/PROVENANCE.md`, `docs/protocol.md`, `submission/content/A1-protocol.tex` |
-| **DS-5** | Leveraging Machine Learning to Detect Fraud: Tips to Developing a Winning Kaggle Solution | `docs/decisions.md` |
+| **DS-5** | Leveraging Machine Learning to Detect Fraud: Tips to Developing a Winning Kaggle Solution | `docs/COMPLIANCE_CHECKLIST.md`, `docs/decisions.md` |
 | **DS-6** | The E-Commerce Conundrum: Balancing False Declines and Fraud Prevention | `docs/decisions.md`, `submission/content/01-problem.tex` |
 | **DS-7** | False Declines: Driving Customers Away | `docs/decisions.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/mps.py`, `src/hsbcfraud/quantum/screens.py`, `submission/content/01-problem.tex` |
 | **RG-1** | Commission Delegated Regulation (EU) 2018/389 supplementing Directive (EU) 2015/2366 as regards regulatory tec | `docs/FACTCHECK_LOG.md`, `docs/REGULATORY_SOURCES.md`, `docs/decisions.md` |
