@@ -22,7 +22,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **CP-2** | Conditional Validity of Inductive Conformal Predictors | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `tests/test_conformal.py`, `NOTICE`, `src/hsbcfraud/conformal/coverage.py`, `src/hsbcfraud/conformal/split.py` |
 | **CP-3** | Mondrian Confidence Machine | `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `tests/test_conformal.py`, `NOTICE`, `src/hsbcfraud/conformal/coverage.py` and 1 more |
 | **CP-4** | Class-Conditional Conformal Prediction with Many Classes | `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `tests/test_conformal.py`, `NOTICE`, `src/hsbcfraud/conformal/split.py` and 2 more |
-| **CP-5** | Conformal prediction beyond exchangeability | `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `tests/test_conformal.py`, `src/hsbcfraud/conformal/weighted.py`, `NOTICE` and 2 more |
+| **CP-5** | Conformal prediction beyond exchangeability | `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/conformal/weighted.py`, `tests/test_conformal.py`, `NOTICE` and 2 more |
 | **CP-6** | Split Conformal Prediction and Non-Exchangeable Data | `docs/decisions.md`, `docs/protocol.md` |
 | **CP-7** | Learn then Test: Calibrating Predictive Algorithms to Achieve Risk Control | `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `tests/test_riskcontrol.py`, `src/hsbcfraud/conformal/riskcontrol.py`, `NOTICE` and 3 more |
 | **CP-8** | Distribution-Free, Risk-Controlling Prediction Sets | `docs/PROVENANCE.md`, `docs/decisions.md`, `tests/test_riskcontrol.py`, `NOTICE`, `README.md`, `docs/REFERENCE_IMPLEMENTATION.md` and 3 more |
@@ -51,8 +51,8 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **QM-15** | Tensor Network Kernel Machines: A JAX Framework for Machine Learning and Nonlinear System Identification | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/mps.py` |
 | **QM-16** | Digital Payments Fraud Detection Using Quantum Machine Learning and Amazon Braket | `docs/decisions.md`, `submission/content/04-quantum.tex` |
 | **QM-17** | Comparative Performance Analysis of Quantum Machine Learning Architectures for Credit Card Fraud Detection | `docs/decisions.md`, `submission/content/04-quantum.tex` |
-| **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md`, `docs/SUBMISSION_CHECKLIST.md` and 20 more |
-| **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 20 more |
+| **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md`, `docs/SUBMISSION_CHECKLIST.md` and 22 more |
+| **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 22 more |
 | **DS-3** | Calibrating Probability with Undersampling for Unbalanced Classification | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/metrics.py` |
 | **DS-4** | Database: Open Database, Contents: Database Contents | `docs/decisions.md`, `NOTICE`, `docs/PROVENANCE.md`, `docs/protocol.md`, `submission/content/A1-protocol.tex` |
 | **DS-5** | Leveraging Machine Learning to Detect Fraud: Tips to Developing a Winning Kaggle Solution | `docs/decisions.md` |

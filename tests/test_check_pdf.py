@@ -2,11 +2,15 @@
 """The source scans in ``scripts/check_pdf.py``, pinned in both directions.
 
 A gate is only useful if it fails on the defect and passes on the compliant document, and this
-one has now been wrong in both directions.  It read the horizontal entry of the text matrix and
-declared 37 % of a compliant body undersized; it matched the version in ``Apache-2.0`` as a
-measurement; and it matched the ``06`` in ``\\input{content/06-hybrid}``, which failed the whole
-build on the proposal's own filenames.  Every test here fixes one of those, and each asserts
-the negative case as well, because a check that cannot pass gets disabled rather than satisfied.
+one has been wrong in both directions four times.  What is pinned here is the source scanning:
+``check_literals``, ``check_number_words`` and ``check_overfull``, each with its negative case,
+because a check that cannot pass gets disabled rather than satisfied.
+
+Three of the checks are not pinned here, and the gap is recorded rather than implied by the
+sentence above.  ``check_fonts`` read the horizontal entry of the text matrix and declared
+37 % of a compliant body undersized; ``check_margins`` was written for the 46.9 pt overhang
+that reached the margin and shipped; ``check_paper`` has no test either.  All three open a
+built PDF rather than a source string, so none has a fixture in this file.
 """
 
 from __future__ import annotations

@@ -6,9 +6,12 @@ stop being comparable and an explanation stops describing the model it claims to
 This module is the single definition: the band edges, the rows that fall inside them, the
 feature subset, and the scaling.
 
-It was extracted from ``scripts/run_mps.py`` unchanged.  The tensor-network arm and the
-attribution arm now call the same functions rather than each carrying a copy, which is what
-makes "the same rows and the same features" a fact about the code instead of a claim in prose.
+It was extracted from ``scripts/run_mps.py`` unchanged.  Five scripts now call it -- ``run_mps``,
+``run_explain``, ``run_power``, ``measure_latency`` and ``run_seed_sweep`` -- rather than each
+carrying a copy, which is what makes "the same rows and the same features" a fact about the code
+instead of a claim in prose.  ``run_power`` was the last holdout: it carried a line-for-line
+reimplementation of all four functions, so the power gate was measured on a band that only
+happened to agree with the one the arms use.
 """
 
 from __future__ import annotations
@@ -86,6 +89,17 @@ def prepare(
 
     The scaler is fitted once, on the block passed with ``scaler=None``, and reused everywhere
     else.  Fitting it per block would leak the deployment distribution into the encoding.
+
+    **The imputation median is not threaded the same way, and that is a known defect.**  It is
+    recomputed from ``rows`` on every call, so the second call in a train-then-evaluate pair
+    fills the evaluation block's missing values with the evaluation block's own medians.  The
+    scaler has an object to carry it across calls and the median does not, which is why only
+    one of the two got threaded.  The exposure is bounded but real: an imputed value derived
+    from the evaluation block can fall outside the training range and is then silently clipped
+    by ``MinMaxScaler(clip=True)``.  Fixing it means giving the median the same treatment as
+    the scaler -- an in/out parameter -- and every committed number that descends from this
+    function moves when it lands, so it needs a decision entry and a re-run rather than a
+    quiet edit.
     """
     numeric = frame.iloc[rows][columns]
     filled = (

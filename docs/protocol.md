@@ -373,8 +373,12 @@ to that question, not a failure to answer it.
 Recorded here so that no later result can be presented as though it had been sought.
 
 * No claim of quantum accuracy advantage on AUC-ROC or AUPRC.
-* No claim of computational speed-up. A fidelity kernel needs O(n²) circuit evaluations;
-  the measured cost on this machine is 19.5 µs per pair at 8 qubits.
+* No claim of computational speed-up. A fidelity Gram matrix needs O(n²) inner products; the
+  statevector route used here needs only O(n) circuit evaluations, and it is the naive
+  compute-uncompute route that needs O(n²). Measured on this machine at 8 qubits: 3.8-8.4 µs
+  per pair for `fidelity_gram` (`screens.csv`, n = 300), against 19.5 µs per pair for the
+  pairwise `FidelityStatevectorKernel` ([D-006](decisions.md)), which this project measured and
+  did not adopt.
 * No unqualified use of the phrase "distribution-free finite-sample guarantee" without the
   exchangeability condition and the measured gap attached.
 * No claim that class-conditional conformal prediction with abstention is novel in fraud
@@ -691,7 +695,7 @@ through `TestFoldGuard`:
 | `run_conformal.py` | the certified configuration | `authorise()` |
 | `validate_certificate.py` | H5, the held-out validation | `authorise()` |
 | `run_baselines.py` | descriptive metrics, 3 arms x 5 seeds | none |
-| `run_ablations.py` | 4 leakage-ablation variants x 5 seeds | none |
+| `run_ablations.py` | 4 leakage-ablation variants x 3 seeds | none |
 | `run_seed_sweep.py` | the 16-job full-scale arm | none |
 | `run_mps.py` | the in-band comparison | none |
 
@@ -705,9 +709,10 @@ that was authorised.
 
 What is genuinely wrong is the sentence. "Every sweep, ladder and ablation runs on held-out
 slices" is stronger than the code, and the ablation ladder is exactly the case it excludes. A
-reviewer comparing section 2.2 with `run_ablations.py:82` finds the divergence in two minutes,
-and a pre-registration that overstates its own enforcement is worse than one that states a
-weaker rule accurately.
+reviewer comparing section 2.2 with `run_ablations.py:84` — the `predict_proba` on
+`blocks["test"]`, not the `model.fit` on `blocks["train"]` one line above it, which is what this
+citation used to point at — finds the divergence in two minutes, and a pre-registration that
+overstates its own enforcement is worse than one that states a weaker rule accurately.
 
 **What was not done.** The scripts were not changed to route through the guard, and the ledger
 was not back-filled. Both would alter committed tables to make a text problem disappear, which
@@ -721,17 +726,20 @@ the table above. The change is to the description of the rule, not to the rule.
 
 ## Amendment A9 — 2026-08-30, ULB was pre-registered as a secondary dataset and never used
 
-**What changed:** section 5 listed ULB European Cardholder as **Secondary**, with row and fraud
-counts, and section 6.1 asserted a degeneracy result on it. Neither was ever executed. The
-dataset is not on this machine, no script fetches it, `ulb.csv` does not exist, and smoke check
-S7 has skipped for that reason throughout.
+**What changed:** section 2 listed ULB European Cardholder as **Secondary**, with row and fraud
+counts, and section 6.1 asserted a degeneracy result on it. Neither was ever executed. No script
+fetches or loads the dataset, `ulb.csv` does not exist, it is not extracted where smoke check S7
+looks (`_find_ulb` in `scripts/smoke.py` probes only for an already-extracted `creditcard.csv`),
+and S7 has skipped for that reason throughout. The archive
+was obtained by hand on 2026-09-02, after this analysis was frozen, which does not change any of
+the above.
 
 **Three separate things were wrong, and they are worth separating.**
 
 1. **Not run.** E15, the ULB stress case, never executed. This is the same class of omission as
    the three drift measurements in A7, and it gets the same treatment: recorded, not quietly
    dropped.
-2. **Not measured.** The counts in section 5 — 284,807 rows, 492 frauds, 1,081 exact duplicates
+2. **Not measured.** The counts in section 2 — 284,807 rows, 492 frauds, 1,081 exact duplicates
    — are transcribed from the dataset's published description. They may well be right; nothing
    here checked them, and the protocol presented them as though they had been.
 3. **Arithmetically inconsistent with this protocol.** Section 6.1 said "roughly 98 calibration

@@ -21,7 +21,7 @@ help:
 	@echo "lint       ruff"
 	@echo "seedsweep  E10 at full scale: 16 fits over 4 bond dimensions x 4 seeds (13 GPU-hours)"
 	@echo "baseline   E1 splits and integrity, E2 label-censoring audit, E3 classical baselines"
-	@echo "conformal  E4 PSD2 envelope, E5 two-sided risk control, E6 coverage, E7 exchangeability"
+	@echo "conformal  E4 PSD2 envelope, E5 two-sided risk control, E6 coverage"
 	@echo "quantum    E8 a-priori screens, E11 simulator parity, circuit structure"
 	@echo "mps        E10 tensor-network arm"
 	@echo "explain    E12 feature attribution over the calibration band"
@@ -82,7 +82,7 @@ lint:
 #   E7  drift and exchangeability tests    pre-registered, never run   protocol amendment A7
 #   E9  quantum kernel re-ranking          stopped by its own screens  protocol section 9
 #   E14 issuer economics                   not started                 docs/protocol.md A2
-#   E15 ULB stress case                    blocked, dataset not local  docs/PROVENANCE.md 1.2
+#   E15 ULB stress case                    obtained after freeze, not run  docs/PROVENANCE.md 1.2
 #
 # E9 is the only one that is a result rather than a gap: the a-priori screens rejected every
 # configuration, so the arm was stopped by the stopping rule it was pre-registered under.
@@ -161,16 +161,20 @@ claims: derived
 	$(PY) scripts/check_claims.py --citations
 	$(PY) scripts/check_claims.py --unused
 	$(PY) scripts/check_protocol.py
-	$(PY) scripts/check_markdown_math.py $(KATEX)
+	$(PY) scripts/check_markdown_math.py $(MATHJAX)
 
 # `check` depends on `pdf` because it gates *against* the built PDFs: claims.yaml lists them
 # as documents and freeze.py hashes them in the scientific class.  Without the dependency,
 # `make reproduce && make check` validates documents built before the tables moved.
-# Set KATEX to a directory from which `import katex` resolves to turn on the parse half of
-# check_markdown_math: KATEX=/path/to/dir make check. Without it the escape half still runs,
-# which is what catches the defect class that broke README section 4.2.
-KATEX_DIR ?=
-KATEX = $(if $(KATEX_DIR),--render $(KATEX_DIR),)
+# Set MATHJAX_DIR to a directory from which node resolves `mathjax-full` to turn on the parse
+# half of check_markdown_math: MATHJAX_DIR=/path/to/dir make check. KaTeX is the wrong renderer
+# here and is only what the module docstring uses to identify MathJax by its error message.
+# The variable is named for what it holds because the earlier pair documented `KATEX` while
+# reading `KATEX_DIR`: setting the documented name overrode the computed flag with a bare path
+# and `make check` died at its last gate. Without it the escape half still runs, which is what
+# catches the defect class that broke README section 4.2.
+MATHJAX_DIR ?=
+MATHJAX = $(if $(MATHJAX_DIR),--render $(MATHJAX_DIR),)
 
 check: pdf claims
 	$(PY) scripts/freeze.py --check

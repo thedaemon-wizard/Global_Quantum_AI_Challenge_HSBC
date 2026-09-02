@@ -97,7 +97,6 @@ Each module's docstring names the paper whose formula it implements:
                                      Statistics 51(2):816-845, 2023, eq. (11)
   Learn-then-Test risk control       Angelopoulos, Bates, Candes, Jordan & Lei, Annals of
                                      Applied Statistics 19(2):1641-1662, 2025
-                                     (used via the MAPIE implementation)
 
 
 ------------------------------------------------------------------------------------------
@@ -117,7 +116,7 @@ work under Apache-2.0. Versions were checked against the PyPI JSON API on 2026-0
   lightgbm                      4.7.0     MIT
   scikit-learn                  1.9.0     BSD-3-Clause
   shap                          0.52.0    MIT
-  numpy                         2.5.2     BSD-3-Clause
+  numpy                         2.5.2     BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0
   scipy                         1.18.1    BSD-3-Clause
   pandas                        3.0.5     BSD-3-Clause
   pyarrow                       21.0.0    Apache-2.0
@@ -125,7 +124,8 @@ work under Apache-2.0. Versions were checked against the PyPI JSON API on 2026-0
   pydantic                      2.13.4    MIT
   pyyaml                        6.0.3     MIT
   kagglehub                     1.0.2     Apache-2.0
-  torch                         2.13.0    BSD-3-Clause
+  torch                         2.13.0    Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND
+                                          BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT
   pytest / pytest-timeout / ruff / pypdf  MIT / MIT / MIT / BSD-3-Clause
 
 
@@ -167,8 +167,9 @@ it requires. A default install reproduces a smaller parity table, not a wrong on
 5. Data
 ------------------------------------------------------------------------------------------
 
-No dataset is redistributed in this repository. scripts/fetch_data.py obtains each from its
-original source under the terms below; docs/PROVENANCE.md records the licence check date.
+No dataset is redistributed in this repository. There is no fetch script: each file is
+downloaded by hand from the source below and staged in datasets/. docs/PROVENANCE.md records
+the licence check date and the staged filename.
 
   IEEE-CIS Fraud Detection      Kaggle competition rules (not an open licence). Rules must
                                 be accepted through the Kaggle web interface before the

@@ -51,6 +51,7 @@ import numpy as np
 from scipy import stats
 
 __all__ = [
+    "SELECT_RULES",
     "RiskControlResult",
     "RiskDefinition",
     "abstention_rate",
@@ -60,6 +61,11 @@ __all__ = [
     "learn_then_test",
     "missed_fraud_rate",
 ]
+
+# The reporting rules `learn_then_test` accepts.  Named once so the entry validation and the
+# dispatch below cannot drift apart; a rule accepted by one and unknown to the other would
+# raise from the middle of a certification run rather than at the call.
+SELECT_RULES = frozenset({"max_recall", "min_abstention"})
 
 
 def _h1(a: float, b: float) -> float:
@@ -268,6 +274,12 @@ def learn_then_test(
         raise ValueError(f"delta must lie in (0, 1), got {delta!r}")
     if not risks:
         raise ValueError("at least one risk must be supplied")
+    # Validated here, beside delta and risks, rather than only on the branch that consumes
+    # it.  That branch is reached only when something is admissible, so on the 43 of the 48
+    # committed configurations that certify nothing a misspelled rule came back as
+    # "not certifiable" instead of raising -- a typo wearing the costume of a result.
+    if select not in SELECT_RULES:
+        raise ValueError(f"unknown select rule {select!r}; expected one of {sorted(SELECT_RULES)}")
 
     lambdas = np.asarray(grid, dtype=float).ravel()
     m = lambdas.size
@@ -321,7 +333,7 @@ def learn_then_test(
         selected = float(admissible.min())
     elif select == "min_abstention":
         selected = float(admissible.max())
-    else:
+    else:  # pragma: no cover - unreachable; `select` is validated on entry
         raise ValueError(f"unknown select rule {select!r}")
 
     return RiskControlResult(

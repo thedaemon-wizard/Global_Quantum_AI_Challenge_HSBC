@@ -84,7 +84,7 @@ assert margin > 0, "a threshold at the band edge certifies an empty flagged set"
 # %% [markdown]
 # **What limits the reach.** Nothing certifies at the tightest band budget. The mechanism is
 # sample size acting through the concentration bound, not the class-conditional degeneracy
-# floor -- the floor is `(1/alpha) - 1`, which is two orders of magnitude below the rows
+# floor -- the floor is `(1/alpha) - 1`, which is more than forty times below the rows
 # available and cannot bind anywhere on this grid.
 
 # %%
@@ -122,8 +122,10 @@ assert (recomputed - h5["realised_risk"]).abs().max() < 1e-9, (
 )
 
 worst = (h5["realised_risk"] / h5["alpha"]).max()
-print(f"\nall {len(h5)} hold; the tightest uses {worst:.3f} of its budget")
+# Assert before announcing. Printed first, a failing table produced the line "all 5 hold" and
+# only then died, so the transcript of a failed run stated the opposite of its own verdict.
 assert bool(h5["holds_at_alpha"].all()), "a certified configuration failed on held-out data"
+print(f"\nall {len(h5)} hold; the tightest uses {worst:.3f} of its budget")
 
 # %% [markdown]
 # **Read it for what it is.** Holding a ceiling of 0.10 to 0.25 is a real check that the
@@ -209,7 +211,13 @@ print(f"\nevery interval contains zero; upper bound on any gain: +{mps['ci_high'
 
 # %%
 def main() -> int:
-    """Entry point so the walkthrough can be run as a script and wired into `make`."""
+    """Closing report, not the body of the walkthrough.
+
+    Every cell above runs at import, which the ``# %%`` paired-cell format requires, so the
+    assertions have already fired by the time this is called and it cannot report a failure
+    itself.  It exists so ``make walkthrough`` has a named exit path rather than depending on
+    module import for its status.
+    """
     print("\nWalkthrough complete: every assertion above holds against the committed tables.")
     return 0
 

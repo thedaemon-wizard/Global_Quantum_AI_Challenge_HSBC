@@ -12,13 +12,19 @@ component runs on the abstention band, which is a few percent of traffic, so its
 a few percent of authorisations. That argument was made from volume arithmetic and never timed.
 This times it.
 
-**The serving profile dominates the model, by three orders of magnitude.**
+**The serving profile dominates the model, by more than two orders of magnitude.**
 
 That is this script's main finding, and it was nearly reported the other way round. XGBoost
 defaults its thread count to the core count. On a one-row payload the OpenMP barrier costs about
 19 ms on this 20-thread machine while the prediction it synchronises costs about 0.05 ms -- so the
 default configuration is roughly 380 times slower than a single thread, and the penalty is
-independent of device, feature count and batch size. Measured on a fitted booster, one row:
+independent of device, feature count and batch size. Two orders and not three: the heading
+above said "three orders of magnitude", which asserts a factor of 1000, while the largest
+ratio anywhere in this file is the 380 below, and dividing the all-core rows of the table
+this script writes by the 1-thread rows gives 236x for the classical scorer and 261x for the
+in-band re-scorer. The finding is unchanged by the correction, but the wording would not have
+survived a reviewer dividing two columns of the artefact it cites. Measured on a fitted
+booster, one row:
 
     nthread=1   0.051 ms      nthread=4   0.051 ms      nthread=20   19.33 ms
 
@@ -67,7 +73,7 @@ from xgboost import Booster, XGBClassifier
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.features.band import band_edges, prepare, rows_in_band, select_band_features
-from hsbcfraud.paths import display_path
+from hsbcfraud.paths import display_path, require_run_artefact
 from hsbcfraud.progress import ProgressReporter
 from hsbcfraud.quantum.featuremaps import build_feature_map
 from hsbcfraud.quantum.kernel import fidelity_gram
@@ -88,11 +94,13 @@ BATCH_SIZES = (1, 32, 1024)
 # the *serving* path, and the profile turns out to matter far more than the model.
 #
 # The all-core profile is here to be measured, not to be recommended.  XGBoost defaults its
-# thread count to the core count, and on a one-row payload that barrier costs three orders of
-# magnitude more than the prediction it synchronises -- so an unconfigured scorer reports tens
-# of milliseconds per authorisation and invites the reader to blame the model.  A per-request
-# scorer wants one thread, because concurrency comes from serving many authorisations at once
-# rather than from splitting one across cores.
+# thread count to the core count, and on a one-row payload that barrier costs more than two
+# orders of magnitude more than the prediction it synchronises -- so an unconfigured scorer
+# reports tens of milliseconds per authorisation and invites the reader to blame the model.
+# "Two orders" and not "three" for the reason given in the module docstring: the rows this
+# tuple produces divide to 236x and 261x, so the stronger word was never supported by the
+# table it describes.  A per-request scorer wants one thread, because concurrency comes from
+# serving many authorisations at once rather than from splitting one across cores.
 #
 # ``None`` means "leave the library default", which is what an unconfigured deployment gets.
 PROFILES = (
@@ -204,7 +212,11 @@ def main(argv: list[str] | None = None) -> int:
     cfg = load_config(args.config)
     seed = args.seed or cfg.split.seeds[0]
 
-    scores = pd.read_parquet(args.runs / f"scores_{args.arm}_{seed}.parquet")
+    scores = pd.read_parquet(
+        require_run_artefact(
+            args.runs / f"scores_{args.arm}_{seed}.parquet", produced_by="baseline"
+        )
+    )
     frame = load_ieee_cis(args.zip, None, with_identity=True).frame
     for column in frame.columns:
         if frame[column].dtype == "object" or str(frame[column].dtype) == "str":
@@ -258,8 +270,13 @@ def main(argv: list[str] | None = None) -> int:
                 )
     # The simulator is a CPU statevector contraction with no GPU variant to compare against, and
     # it is priced one authorisation at a time because that is how the band would call it.
+    # "CPU (unconstrained)", not "1-thread CPU".  The only thread control in this file is the
+    # ``nthread`` parameter set in serve_as, and that reaches XGBoost alone -- nothing here
+    # constrains the BLAS that fidelity_gram's statevector product and final overlap run on.
+    # Labelling this row 1-thread stated a serving configuration the code never applied, in
+    # the one table whose headline finding is that the serving profile dominates the model.
     work.append(
-        ("quantum kernel (screened out)", "abstention band", "1-thread CPU", 1,
+        ("quantum kernel (screened out)", "abstention band", "CPU (unconstrained)", 1,
          lambda p: fidelity_gram(circuit, p, y=support), x_band)
     )
 

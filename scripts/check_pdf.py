@@ -13,7 +13,7 @@ numeric literals, because every figure in this submission is supposed to arrive 
 was typed rather than measured, which is the defect class that produced four prose-versus-table
 disagreements in this project.
 
-    .venv/bin/python scripts/check_pdf.py submission/proposal.pdf --max-pages 5 \\
+    .venv/bin/python scripts/check_pdf.py submission/proposal.pdf --max-pages 6 \\
         --paper a4 --min-font 10 --source submission/content/03-results.tex
 
 Exit 0 if every assertion holds, 1 otherwise.  ``--report-only`` prints the same findings and
@@ -45,10 +45,11 @@ REPO = Path(__file__).resolve().parents[1]
 # comment above says "a few points", so the number now says a few points.
 OVERFULL_TOLERANCE_PT = 12.0
 
-# The text block of the built documents, in points: A4 at an 18 mm margin, matching
-# submission/preamble.tex.  Used by check_margins, which measures the artefact rather than
-# LaTeX's complaint about it.
-A4_WIDTH_PT = 595.276
+# The margin of the built documents, in points: 18 mm, matching submission/preamble.tex.
+# check_margins takes the page width from the artefact itself rather than assuming A4, so it
+# measures what a reader gets rather than what the build intended.  An A4_WIDTH_PT constant
+# sat here claiming to be used by check_margins; nothing read it, so a paper-size change would
+# have left it stating a width the checker never applied.
 MARGIN_PT = 18.0 / 25.4 * 72.0
 
 # Slack allowed when comparing measured glyph positions to that block.  Extracted x positions
@@ -64,8 +65,12 @@ OVERFULL = re.compile(
 PAPER_SIZES = {"a4": (595.276, 841.890), "letter": (612.0, 792.0)}
 PAPER_TOLERANCE = 2.0
 
-# Share of characters allowed below the font floor.  Mathematical sub- and superscripts are
-# legitimately smaller; a body or table that is genuinely undersized is not this rare.
+# Share of characters allowed below the font floor.  Two kinds of text sit below it
+# legitimately: mathematical sub- and superscripts, and the annotation inside the figures,
+# which make_figures.py draws at 9 to 9.78 pt.  The figures supply most of it -- measured on
+# the built proposal, 626 sub-floor characters against 119 of script -- so describing the
+# allowance as a script allowance named the smaller half of what it actually covers.  A body
+# or table that is genuinely undersized is not this rare.
 SMALL_TEXT_SHARE = 0.08
 
 # Numbers that are structural rather than measured, and so may appear literally.
@@ -237,13 +242,13 @@ def check_fonts(reader: PdfReader, floor: float) -> list[str]:
     if share > SMALL_TEXT_SHARE:
         problems.append(
             f"{share:.0%} of characters render below {floor} pt, above the "
-            f"{SMALL_TEXT_SHARE:.0%} allowance for mathematical scripts; check for an "
-            "undersized table or a \\footnotesize block"
+            f"{SMALL_TEXT_SHARE:.0%} allowance for mathematical scripts and figure "
+            "annotation; check for an undersized table or a \\footnotesize block"
         )
     if not problems:
         print(
             f"  font        body {body:.2f} pt, floor {floor}; "
-            f"{share:.1%} of characters below it (scripts), smallest "
+            f"{share:.1%} of characters below it (scripts and figure annotation), smallest "
             f"{min(s for s, _ in smallest):.2f} pt"
         )
     return problems

@@ -15,7 +15,7 @@ it was used. Nothing here is taken on trust from a filename.
 | Obtained | Downloaded by the project owner from the competition data page; staged locally as `datasets/ieee-fraud-detection.zip` |
 | Licence | **Kaggle competition rules**, not an open licence. Section 7.A restricts use to **non-commercial purposes only**; section 7.B forbids redistribution. See the note below. |
 | In this repository | **Never committed.** `.gitignore` carries an anchored `/datasets/` pattern. |
-| Verified | 590,540 rows, 20,663 frauds (3.4990 %), 394 columns, `TransactionDT` strictly increasing, spanning exactly 182.00 days. Asserted at load time by `src/hsbcfraud/data/ieee_cis.py`, so a substituted or truncated file fails immediately rather than producing plausible numbers. |
+| Verified | 590,540 rows, 20,663 frauds (3.4990 %), 394 columns, `TransactionDT` monotonically non-decreasing (17,191 ties, so it is ordered but not strictly increasing — the loader asserts non-decreasing, which is what the temporal split needs), spanning exactly 182.00 days. Asserted at load time by `src/hsbcfraud/data/ieee_cis.py`, so a substituted or truncated file fails immediately rather than producing plausible numbers. |
 
 **The licence bounds what this dataset can ever be used for, and that shapes Phase II.**
 Competition rules section 7.A, read at
@@ -63,8 +63,13 @@ No result here extrapolates to the declined population.
 |---|---|
 | Source | Machine Learning Group, Université Libre de Bruxelles |
 | Licence | Two-layer: the **database** under ODbL, its **contents** under DbCL v1.0. Share-alike applies to a derived database; not redistributed here. |
-| In this repository | **Not present, and not reconstructible from this repository.** There is no fetch script; the file was never downloaded to this machine, which is why E15 was not run. Obtain it from the source above if you want to reproduce the stress case. |
+| In this repository | **Not committed, and not reconstructible from this repository.** There is no fetch script and nothing here loads it. The archive was downloaded by hand on 2026-09-02 and staged as `datasets/creditcardfraud_ulb.zip`, which is **after** the analysis was frozen, so E15 still did not run and the arm stays withdrawn under amendment A9. Obtain it from the source above if you want to reproduce the stress case. |
 | Role | Stress case only, and **withdrawn** by amendment A9. The figure previously quoted here -- roughly 98 calibration frauds against the 99 the floor `(1/alpha) - 1` requires -- did not follow from this protocol's own split fractions, and was withdrawn rather than recomputed because replacing it would assert a measurement never made. The degeneracy argument it was to support is made directly on IEEE-CIS instead. |
+
+### 1.3 Sparkov
+
+Not used in Phase I. Listed here so its absence is a decision on the record rather than an
+oversight.
 
 ### 1.4 One measurement whose producer is not in the tree
 
@@ -78,12 +83,15 @@ cannot regenerate it. It is retained rather than deleted because the results sec
 reason for that design choice and this file is what supports it, and it is named here rather
 than left silent because a committed table nothing rewrites passes `freeze.py --check`
 trivially. Reproducing it costs eight GPU fits. `tests/test_repo_hygiene.py` carries it as the
-single exemption to the rule that every committed table has a producer.
+single *exemption* to the rule that every committed table has a producer.
 
-### 1.3 Sparkov
-
-Not used in Phase I. Listed here so its absence is a decision on the record rather than an
-oversight.
+Exemption is not the same as absence, and this file used to read as though it were. Two further
+tables have no producer either -- `coverage_by_arm.csv` and `coverage_by_arm_seeds.csv` -- but
+they are recorded in the same test as defects rather than exemptions, under
+`TABLES_WHOSE_PRODUCER_IS_MISSING`, because unlike this one they should have had a producer all
+along. They were invisible for the whole study because the guard searched the corpus for the
+file name and three scripts *read* `coverage_by_arm.csv`, which a substring match cannot tell
+from a write.
 
 ---
 
@@ -137,8 +145,11 @@ reading `nvidia-smi` rather than by asking the library.
 ## 3. Results
 
 Every table in `results/tables/` is produced by a script in `scripts/`, committed, and hashed
-in `MANIFEST.sha256.json`. Every number quoted in prose is bound to a table row in
-[claims.yaml](claims.yaml) and recomputed by `scripts/check_claims.py`.
+in `MANIFEST.sha256.json`. Every number quoted in the two PDFs is bound to a table row in
+[claims.yaml](claims.yaml) and recomputed by `scripts/check_claims.py`; figures quoted only in
+the markdown record -- protocol amendments, decision entries -- carry their measurement inline
+instead, because `claims.yaml` gates what the submission asserts rather than everything the
+repository has ever written down.
 
 Intermediate artefacts under `results/runs/` are **not** committed and **not** hashed: they are
 large, derived, and reconstructible. The manifest covers what a reviewer reads, not what the
@@ -162,6 +173,8 @@ launch.
 
 `make smoke` asserts the interpreter version, the torch build, the reachable architectures,
 the Aer device, the pandas copy-on-write behaviour and the dataset identity before any
-experiment runs. Two of its nine checks may skip, and only for a reason the run proves on the
-host: the Aer GPU cross-check when cuQuantum is absent, and the ULB split feasibility when that
-file is not present. On this machine eight pass and S7 skips. Any other skip is a failure.
+experiment runs. Three of its nine checks may skip, and only for a reason the run proves on the
+host: the two Aer checks (S1, S5) when `qiskit-aer` is absent, since it lives in the
+`gpu-crosscheck` extra that `make venv` does not install, and the ULB split feasibility (S7)
+when that file is not extracted where the check looks. On this machine eight pass and S7 skips.
+Any other skip is a failure.

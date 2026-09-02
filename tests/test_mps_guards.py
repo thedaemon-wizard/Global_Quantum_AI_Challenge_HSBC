@@ -14,8 +14,12 @@ import torch
 
 import hsbcfraud.quantum.mps as mps
 
-pytestmark = pytest.mark.skipif(
-    not torch.cuda.is_available(), reason="the fit refuses to run on the CPU by design"
+# Only the two fits below need a GPU.  A module-level skip put the CPU-refusal test behind the
+# same condition it exists to exercise, and its own inner guard skipped on the complement, so
+# `pytest.raises` in that test was unreachable on every machine: with CUDA the module mark
+# fired, without CUDA the inner guard did.
+needs_cuda = pytest.mark.skipif(
+    not torch.cuda.is_available(), reason="this fit runs on the GPU by design"
 )
 
 
@@ -27,6 +31,7 @@ def data() -> tuple[np.ndarray, np.ndarray]:
     return x, y
 
 
+@needs_cuda
 def test_non_finite_gradient_stops_before_the_optimiser_writes(data, monkeypatch) -> None:
     """The loss check alone fires one step too late, with the parameters already corrupted.
 
@@ -70,6 +75,7 @@ def test_non_finite_gradient_stops_before_the_optimiser_writes(data, monkeypatch
     assert bool(torch.isfinite(probe).all())
 
 
+@needs_cuda
 def test_the_failure_names_the_step_and_the_loss_at_that_step(data, monkeypatch) -> None:
     """A post-mortem needs the step, not just the fact.
 
@@ -94,14 +100,18 @@ def test_the_failure_names_the_step_and_the_loss_at_that_step(data, monkeypatch)
         mps.fit_mps(x, y, mps.MPSConfig(bond_dimension=8, epochs=20, seed=0, device="cuda"))
 
 
-def test_fit_refuses_the_cpu_rather_than_falling_back() -> None:
+def test_fit_refuses_the_cpu_rather_than_falling_back(monkeypatch) -> None:
     """A run silently demoted to CPU reports a timing wrong by an order of magnitude, and
-    the bond-dimension sweep is partly a compute-cost measurement."""
+    the bond-dimension sweep is partly a compute-cost measurement.
+
+    The absence of CUDA is simulated rather than waited for.  Gating this on a CPU-only host
+    made the assertion unreachable, because that condition was the exact complement of the
+    module-level skip: the guard shipped with nothing exercising it on either kind of machine.
+    """
     rng = np.random.default_rng(0)
     x = rng.uniform(size=(64, 8)).astype(np.float32)
     y = (rng.uniform(size=64) < 0.2).astype(int)
     config = mps.MPSConfig(bond_dimension=4, epochs=1, seed=0, device="cuda")
-    if torch.cuda.is_available():
-        pytest.skip("the refusal path needs CUDA to be absent")
+    monkeypatch.setattr(mps.torch.cuda, "is_available", lambda: False)
     with pytest.raises(RuntimeError, match="refusing to silently use the CPU"):
         mps.fit_mps(x, y, config)

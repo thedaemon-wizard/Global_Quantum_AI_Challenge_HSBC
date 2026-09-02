@@ -16,7 +16,10 @@ tables the proposal quotes.
 
     .venv/bin/python scripts/export_predictions.py
 
-Writes ``results/tables/predictions.csv``.
+Writes ``results/tables/predictions.csv`` (one row per held-out transaction) and
+``results/tables/operating_point.csv`` (what the rule does to a day of traffic, as shares).
+Both are committed and both are in the manifest, so naming only the first here was the kind
+of omission that lets a table lose its producer without anyone noticing.
 """
 
 from __future__ import annotations
@@ -169,6 +172,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  {name:<18s} {counts.get(name, 0):>8,}  {share:6.2%}")
     print(f"  declined overall   {frame['predicted_fraud'].sum():>8,}")
     print(f"\nWrote {display_path(target)}")
+    # Both writes are announced. An unannounced write is how operating_point.csv came to back
+    # three claims while the closing message named only predictions.csv.
+    print(f"Wrote {display_path(args.out / 'operating_point.csv')}")
     return 0
 
 

@@ -28,6 +28,7 @@ from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.data.splits import Blocks, card_disjoint_blocks, stratified_blocks, temporal_blocks
 from hsbcfraud.features.engineering import add_entity_aggregates, select_model_columns
+from hsbcfraud.paths import display_path
 from hsbcfraud.progress import SweepTimer, run_log
 
 REPO = Path(__file__).resolve().parents[1]
@@ -130,10 +131,7 @@ def evaluate(frame: pd.DataFrame, blocks: Blocks, features: list[str], model_nam
     train_idx = blocks["train"]
     other_idx = np.concatenate([blocks["band"], blocks["cal"], blocks["test"]])
     start = time.perf_counter()
-    if model_name == "xgboost":
-        _, scores_other = fitter(x.iloc[train_idx], y[train_idx], x.iloc[other_idx], seed)
-    else:
-        _, scores_other = fitter(x.iloc[train_idx], y[train_idx], x.iloc[other_idx], seed)
+    _, scores_other = fitter(x.iloc[train_idx], y[train_idx], x.iloc[other_idx], seed)
     fit_seconds = time.perf_counter() - start
 
     scores = np.full(len(frame), np.nan)
@@ -178,7 +176,7 @@ def main(argv: list[str] | None = None) -> int:
 
     cfg = load_config(args.config)
     seeds = args.seeds or cfg.split.seeds
-    arms = arms or [REPORTED_ARM, *cfg.split.control_arms]
+    arms = args.arms or [REPORTED_ARM, *cfg.split.control_arms]
 
     loaded = load_ieee_cis(args.zip, BASE_COLUMNS, with_identity=True)
     frame = encode_strings(loaded.frame)
@@ -193,6 +191,11 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     rows: list[dict] = []
+    # Counted rather than computed as len(seeds) * len(arms): the score interface is written
+    # only on the xgboost pass below, so `--models lightgbm` wrote no parquet at all while the
+    # closing message still promised one per arm and seed -- pointing a reader at a stage that
+    # had not run when the next one failed to find its input.
+    written = 0
     args.runs.mkdir(parents=True, exist_ok=True)
     fits = [(arm, seed, model) for arm in arms for seed in seeds for model in args.models]
     # Three model families over the requested arms and seeds is about thirteen minutes of
@@ -236,10 +239,11 @@ def main(argv: list[str] | None = None) -> int:
                         "day": causal["day"].to_numpy(),
                     }
                 ).to_parquet(args.runs / f"scores_{arm}_{seed}.parquet", index=False)
+                written += 1
 
     args.out.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(args.out / "baselines.csv", index=False)
-    print(f"\nWrote {args.out / 'baselines.csv'} and {len(seeds) * len(arms)} score files")
+    print(f"\nWrote {display_path(args.out / 'baselines.csv')} and {written} score file(s)")
     return 0
 
 

@@ -2269,7 +2269,7 @@ The live form was read on 2026-08-30 and confirms five empty slots and the accep
 Section 2.2 of the protocol stated: "`D_test` is evaluated **once** … **Every sweep, ladder and
 ablation runs on held-out slices of `D_band` or `D_cal`.**" Three scripts read the test block
 without going through `TestFoldGuard` — `run_baselines.py` (3 arms x 5 seeds of descriptive
-metrics), `run_ablations.py` (4 leakage-ablation variants x 5 seeds) and `run_seed_sweep.py`
+metrics), `run_ablations.py` (4 leakage-ablation variants x 3 seeds) and `run_seed_sweep.py`
 (the 16-job full-scale arm) — while `test_access.json` records one authorised configuration.
 
 **The guarantee is intact, and that is a separate question from whether the sentence was true.**
@@ -2997,7 +2997,7 @@ grounds, before it ever reached the task. That is work that cannot change a conc
 **One version check, because a recommendation not to work rests on the text.** The revised and
 the original challenge statements were compared word by word. They differ only in that the
 revision adds URLs -- dataset links, AWS documentation, reference locators -- and three words.
-No requirement changed. An audit agent reported the two as textually identical, which is close
+No requirement changed. An earlier automated diff reported the two as identical, which is close
 but not what the diff shows; the substantive conclusion survives and the claim of identity does
 not.
 
@@ -3029,7 +3029,7 @@ post has not been read. The duplicate section 7 record is gone, because one pape
 sections under two attributions is how the miscitation propagated.
 
 **The lesson, and it is about me rather than the repository.** Adding a reference is exactly the
-moment to search for it first. The check that caught this was an agent instructed to refute
+moment to search for it first. The check that caught this was an independent pass instructed to refute
 rather than confirm, reading the same file I had edited; it is the second time in this project
 that adversarial verification caught a defect introduced by the fix for another defect.
 
@@ -3529,3 +3529,79 @@ rather than fitted", a guarantee **the body never claims**: nothing in sections 
 non-exchangeable statement, and `weighted.py` reaches no committed table. The warning now
 covers the guarantee the body does make, which is that $\alpha$ must be fixed before the
 calibration scores are seen.
+
+### D-118 Three open questions closed by the only party who could close them
+
+All three had been carried as 要確認 rather than guessed at, and one of the guesses that would
+have been natural was wrong.
+
+**The sponsor-contractor bar (Terms §2).** Confirmed by the author on 2026-09-02: no current
+contractual relationship with Resonance Alliance Inc. / The Quantum Insider or with HSBC. This
+is a *disqualification* criterion, not a scoring one, so it was worth asking rather than
+assuming -- a sole proprietor who takes inbound work is exactly the person for whom "Contractor
+of a Challenge enterprise sponsor" is a live category.
+
+**The sole-proprietorship date.** The filing records **1 August 2026**, which is what this
+submission and the portfolio already use. So the CV's "Jul 2026 -- Present" is the error, not
+the submission. It is outside this repository and should be corrected before the CV travels
+with this submission, because §8 links the portfolio and a reviewer who opens both sees the
+discrepancy.
+
+**A trading name.** The entry now carries **Quantum Daemons** in both title blocks and in §8,
+as the trading name of the registered sole proprietorship rather than as a company.
+
+The reason this matters is narrower than it looks. Terms §4.2 lets Resonance publicise an entry
+by "team name, submission title, and a summary description", and withholds personal names
+without prior written consent. A single-person entry with no team name therefore gives them
+nothing they are permitted to publish: the only identifier that exists is the one the clause
+protects.
+
+**And the portal has no team-name field.** The submission form, read live on 2026-09-02, is four
+hidden inputs, a file picker and three buttons. The organisation name is an *account-level*
+field set at registration -- `reg_company_type` and `reg_company_name`, placeholder "Company
+Ltd" -- which is what §4.2's "organizational affiliations ... company, or institution" reaches.
+So the document was the only surface under our control, and it now states the name. ⚠ Whether
+the registration field already holds it is **要確認** and can only be read while signed in.
+
+### D-119 The remaining audit findings, and the three that only closed across group boundaries
+
+A second workflow re-verified every confirmed finding from the full-hierarchy audit against the
+current tree and applied what was still open, in five disjoint file groups. Most were already
+closed by [D-110](#d-110) and [D-113](#d-113) through [D-118](#d-118). The rest are applied.
+
+Three could not be closed inside any one group, and they are the interesting ones.
+
+**Three long scripts reported nothing, and a strict xfail held them there.**
+`audit_labels.py`, `run_explain.py` and `run_power.py` each load all 590,540 rows with identity
+columns behind no durable destination, and `run_power` then bootstraps the evaluation block two
+thousand times. `tests/test_progress.py` recorded all three as `xfail(strict=True)`, which is
+the right way to hold a known gap -- but it also means **instrumenting a script turns its XFAIL
+into an XPASS and the suite goes red**. So the fix had to land in `scripts/` and `tests/` in the
+same change, and neither group owned both. All three are now wrapped in `run_log`, and
+`SILENT_WITHOUT_A_DESTINATION` is empty rather than deleted, because the mechanism that forced
+this to be atomic is worth keeping.
+
+**A flaky test with a provable cause, not a shrug.** `test_mps_contraction.py` drew its inputs
+before `build()` called `torch.manual_seed(0)`, so they came from whatever CUDA RNG state the
+preceding tests had left. Three fresh processes drew three different tensors -- input sums
+56172.289, 56114.883 and 56326.0 -- against assertions tight enough to fail on the input alone.
+A failure that cannot be reproduced from the file that contains it. Seeded before the draw.
+
+**"Tuned" had a fifth instance, inside a committed artefact.** [D-115](#d-115) removed four from
+the prose. `results/tables/power.csv` carried `tensor network vs tuned GBDT` in its
+`comparison` column, written there by `run_power.py`. Both are corrected. **A string in a CSV
+is as much a claim as a sentence in a PDF**, and a text audit over `.tex` and `.md` will never
+see it.
+
+**P7 is now met and P8 is corrected.** The scan for an assistant reference returned four lines:
+two in `.gitignore`, where the ignore rule moved to `.git/info/exclude` so the path stays
+ignored without being published, and two of prose here. P8 claimed "two human authors ... 32
+commits"; the real figures are 58 commits and **three author strings, all the same person**,
+one carrying a typo. No `Co-authored-by` trailer anywhere. ⚠ Left as 要確認 because a reviewer
+reading the history of a sole-author submission sees three contributors.
+
+**And a measurement was off by an order of magnitude.** `measure_latency.py` and
+`ENVIRONMENT.md` both said the serving profile matters "by three orders of magnitude", five
+lines from their own "roughly 380 times slower". Recomputed from `latency.csv`: 236x and 261x
+for the two scorers, 379x for the micro-benchmark. None reaches three orders, and a reviewer
+dividing two columns of the project's own table catches it immediately.

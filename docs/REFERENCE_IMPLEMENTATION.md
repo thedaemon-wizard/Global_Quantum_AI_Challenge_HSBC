@@ -16,10 +16,17 @@ describing a two-model decision rule against a one-model implementation
 ([D-086](decisions.md)). All four are corrected; this file exists so the check is repeatable
 rather than remembered.
 
-**Coverage.** 20 of the 49 entries reach an implementation file. The other 29 are cited for
-context, for prior art, for regulation or for a software version, and are not implemented by
+**Coverage.** 18 of the 56 numbered entries reach an implementation file. The other 38 are cited
+for context, for prior art, for regulation or for a software version, and are not implemented by
 anything here — that is not a defect, and `REFERENCE_CROSSCHECK.md` already reports where each
 is reached from.
+
+**Two rows were deleted rather than corrected**, because `make_crosscheck.py` reaches an entry by
+first-author surname and a surname is not unique. CP-10 was reached from `conformal/split.py`
+only because Tibshirani appears in CP-4's author list, and FR-6 from `quantum/featuremaps.py`
+only because Wang appears in QM-2's. Neither is implemented anywhere in this repository. A
+crosscheck reporting an entry as reached is evidence of a string match, not of an
+implementation, and this table is where that distinction has to be drawn by hand.
 
 ---
 
@@ -43,18 +50,16 @@ Reached from an implementation file, checked for attribution rather than line by
 | Reference | Implements | Reported in |
 |---|---|---|
 | **CP-2** Vovk, 2012 — conditional validity | [`conformal/coverage.py`](../src/hsbcfraud/conformal/coverage.py) | `coverage_by_arm.csv` |
-| **CP-3** Vovk et al. — Mondrian confidence machine | [`conformal/coverage.py`](../src/hsbcfraud/conformal/coverage.py) | `degeneracy.csv` |
+| **CP-3** Vovk et al. — Mondrian confidence machine | [`conformal/split.py`](../src/hsbcfraud/conformal/split.py) `mondrian_thresholds` | `degeneracy.csv` |
 | **CP-5** Barber, Candès, Ramdas & Tibshirani — beyond exchangeability | [`conformal/weighted.py`](../src/hsbcfraud/conformal/weighted.py) `geometric_weights` | not certified; the weighted arm is reported as not carrying a numeric penalty |
 | **CP-9** Angelopoulos et al. — conformal risk control | [`conformal/riskcontrol.py`](../src/hsbcfraud/conformal/riskcontrol.py) | `riskcontrol.csv` |
-| **CP-10** Tibshirani et al. — covariate shift | [`conformal/split.py`](../src/hsbcfraud/conformal/split.py) | `coverage_by_arm.csv` |
 | **QM-2** Thanasilp et al. — exponential concentration | [`quantum/featuremaps.py`](../src/hsbcfraud/quantum/featuremaps.py) | `screens.csv` |
 | **QM-4**, **QM-5**, **QM-7** — kernel benchmarking and bandwidth | [`quantum/featuremaps.py`](../src/hsbcfraud/quantum/featuremaps.py) | `screens.csv` |
 | **QM-6** Kakavand et al. — quantum kernels on fraud | [`quantum/screens.py`](../src/hsbcfraud/quantum/screens.py) | `screens.csv` |
 | **QM-8** — hybrid mixture of experts | [`stats.py`](../src/hsbcfraud/stats.py) | `mps_h4.csv` |
 | **QM-15** — tensor-network kernel machines | [`quantum/mps.py`](../src/hsbcfraud/quantum/mps.py) | `mps_full.csv` |
-| **FR-6** Wang et al. — non-exchangeable conformal on temporal graphs | [`quantum/featuremaps.py`](../src/hsbcfraud/quantum/featuremaps.py) | positioning only |
 | **DS-3** Dal Pozzolo et al. — calibration under undersampling | [`metrics.py`](../src/hsbcfraud/metrics.py) | `baselines.csv` |
-| **SW-7** SHAP 0.52.0 | [`features/engineering.py`](../src/hsbcfraud/features/engineering.py) | `attribution.csv`, `attribution_examples.csv` |
+| **SW-7** SHAP 0.52.0 | [`scripts/run_explain.py`](../scripts/run_explain.py) | `attribution.csv`, `attribution_examples.csv` |
 
 ## 3. How to repeat this check
 

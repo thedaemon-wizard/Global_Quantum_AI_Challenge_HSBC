@@ -46,6 +46,7 @@ from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.data.splits import temporal_blocks
 from hsbcfraud.features.engineering import add_entity_aggregates, add_uid, select_model_columns
+from hsbcfraud.paths import display_path
 from hsbcfraud.progress import SweepTimer, run_log
 
 REPO = Path(__file__).resolve().parents[1]
@@ -97,11 +98,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--zip", type=Path, default=REPO / "datasets" / IEEE_CIS_ZIP)
     parser.add_argument("--out", type=Path, default=REPO / "results" / "tables")
     parser.add_argument("--runs", type=Path, default=REPO / "results" / "runs")
-    parser.add_argument("--seeds", type=int, nargs="*", default=None)
+    # The first three of cfg.split.seeds, which is what produced the committed 12-row table.
+    # Not cfg.split.seeds itself: that list is five, `make ablations` passes no flags, and the
+    # fallback therefore rebuilt this arm at 20 rows -- a different experiment under the same
+    # filename, disagreeing with the three seeds docs/decisions.md records for it.
+    parser.add_argument("--seeds", type=int, nargs="*", default=[20260828, 20260829, 20260830])
     args = parser.parse_args(argv)
 
     cfg = load_config(args.config)
-    seeds = args.seeds or cfg.split.seeds
+    seeds = args.seeds
+    if not seeds:
+        # `--seeds` with no values used to fall through to the config.  Silently substituting a
+        # different seed set is how this table drifted in the first place, so it is an error.
+        raise SystemExit("--seeds needs at least one value; omit the flag for the reported three")
 
     loaded = load_ieee_cis(args.zip, None, with_identity=True)
     base = encode_strings(loaded.frame)
@@ -151,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
             f"AP {row[('average_precision', 'mean')]:.4f} "
             f"(sd {row[('average_precision', 'std')]:.4f}, delta {d_ap:+.4f}){marker}"
         )
-    print(f"\nWrote {args.out / 'ablations.csv'}")
+    print(f"\nWrote {display_path(args.out / 'ablations.csv')}")
     return 0
 
 

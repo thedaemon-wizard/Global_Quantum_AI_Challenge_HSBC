@@ -150,12 +150,33 @@ def test_it_matches_scipy_betabinom() -> None:
     assert np.abs(ours - theirs).max() < 1e-12
 
 
-def test_the_band_contains_at_least_the_requested_mass() -> None:
+def test_the_band_is_the_equal_tailed_one_and_not_merely_wide_enough() -> None:
+    """Mass alone does not pin a band, and the shape is what the verdicts are defined against.
+
+    The two assertions this test used to make -- at least ``level`` of the mass, and bounds
+    inside ``[0, m]`` -- are both satisfied by returning ``(0, m)``, whose mass is 1.0. Four
+    further mutants also passed them: ignoring the ``level`` argument for 0.999 or 0.9999, and
+    putting all the excluded mass in one tail. The one-sided mutant survived every test in this
+    file, and it is the damaging one, because ``band_low = 0`` makes ``observed < band_low``
+    unreachable and so deletes the ``conservative`` verdict -- the over-covering case this
+    module's docstring keeps separate precisely so that it cannot be read as a pass.
+
+    So both tails are bounded above by ``(1 - level) / 2``, which is what "equal-tailed" means,
+    and both are bounded below by moving each endpoint one step inward, which is what makes the
+    interval the smallest such one. Together they admit exactly one band: the real
+    implementation passes, and full-support, both one-sided variants, both wrong levels and an
+    off-by-one at either endpoint are all rejected.
+    """
     m, n, k = 500, 847, 806
     low, high = coverage_band(n, k, m, level=0.99)
     pmf = beta_binomial_pmf(m, a=n + 1 - k, b=k)
+    tail = (1.0 - 0.99) / 2.0
     assert pmf[low : high + 1].sum() >= 0.99
     assert 0 <= low <= high <= m
+    assert pmf[:low].sum() <= tail, "more than half the excluded mass is below the band"
+    assert pmf[high + 1 :].sum() <= tail, "more than half the excluded mass is above the band"
+    assert pmf[: low + 1].sum() >= tail, "the band starts later than the equal-tailed one"
+    assert pmf[high:].sum() >= tail, "the band ends earlier than the equal-tailed one"
 
 
 def test_the_tail_probability_is_one_sided_and_upper() -> None:

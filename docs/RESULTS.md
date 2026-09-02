@@ -4,9 +4,9 @@ Every result table behind the submission, with the caveat attached to each one. 
 carries the three figures and the conclusion each supports; this file carries the numbers,
 the ranges across seeds, and the retractions.
 
-Each table is generated from `results/tables/*.csv`. Nothing here is typed: `make claims`
-recomputes every quoted figure from its source table, and `make figures` redraws every plot
-from the same CSVs.
+Each table is drawn from `results/tables/*.csv`. Every figure `claims.yaml` binds is recomputed
+by `make claims`, and `make figures` redraws every plot from the same CSVs; the remaining
+per-seed and per-chi cells are transcribed from the CSV named beside each and are not gated.
 
 ---
 
@@ -44,7 +44,8 @@ section measures it.
 ## Coverage by split arm
 
 Nominal versus empirical false-decline rate on $D_{\mathrm{test}}$, calibrated on
-$D_{\mathrm{cal}}$. `finite_sample_ok` is the Beta-Binomial verdict.
+$D_{\mathrm{cal}}$. `inside` in `coverage_by_arm_seeds.csv` is the per-seed Beta-Binomial verdict;
+`finite_sample_ok` is its single-seed equivalent in `coverage_by_arm.csv`.
 
 ![Empirical over nominal coverage by split arm, against the exact Beta-Binomial interval](../results/figures/coverage_by_arm.png)
 
@@ -77,8 +78,7 @@ the three-arm design was built to produce.
 The card-disjoint arm is not clean, and the earlier version of this section was wrong to say
 it was: it is outside on two of five seeds at $\alpha = 0.01$ and one of five at
 $\alpha = 0.001$, where its spread (sd 0.362) is an order of magnitude wider than the
-temporal arm's. Its 0.001 row is a single seed at ratio 1.525 against four between 0.65 and
-0.76 — noise, not a systematic breach, but not a pass either.
+temporal arm's. The per-level breakdown is below, stated once rather than twice.
 
 Two further cautions. The temporal arm does **not** breach at the tightest level: at
 $\alpha = 0.001$ its mean ratio is 0.943 with every seed inside, and the Beta-Binomial band
@@ -191,7 +191,7 @@ distinct from the RBF family than a correlated one.
 
 A kernel is usable only if it is **not** exponentially concentrated — effective rank
 $r_{\mathrm{eff}}$ inside a usable band — **and not** reproducible by a tuned RBF
-($\rho_{\mathrm{RBF}} \lt 0.60$). Result: **28 of 120 pass conditioning, 0 pass distinctness, 0 pass both.** The
+($\rho_{\mathrm{RBF}} \le 0.60$). Result: **28 of 120 pass conditioning, 0 pass distinctness, 0 pass both.** The
 closest any configuration came was $\rho_{\mathrm{RBF}} = 0.6291$ against a 0.60 threshold.
 
 The kernel arm was therefore not run on the decision task. Reporting a screen that rejects
@@ -276,7 +276,8 @@ tree destabilised training -- measured in
 [`mps_seed_spread.csv`](../results/tables/mps_seed_spread.csv), where two of four fits at
 contraction width 128 never left chance against none of four at width 1. A one-in-eight failure rate is a property of the ansatz on this
 data, not of the optimisation. The per-epoch AUC shows the shape: 0.6521 at epoch 1, falling
-to 0.4761 by epoch 30 — below chance. A loss-only log would have shown a flat curve and left
+to 0.4761 by epoch 30 — below chance (read from
+`results/runs/mps_seed_sweep_temporal-chi32_seed20260831.jsonl`, which is not committed). A loss-only log would have shown a flat curve and left
 open whether it was slow learning or none ([D-039](decisions.md), [D-040](decisions.md)).
 
 **And the fit time is flat across $\chi$**: the sixteen jobs took 2747 to 3145 seconds,

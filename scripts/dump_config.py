@@ -11,7 +11,10 @@ always computed from the live defaults, so the enforcement was real and only the
 was wrong -- but a documented path that does not exist is the kind of gap this project's
 discipline is supposed to close, not create.
 
-The dataclass stays the single source of truth.  This file is generated from it, and
+The pydantic models in ``src/hsbcfraud/config.py`` stay the single source of truth.  This
+paragraph said "the dataclass", which sends a reader looking for a type that file has never
+held -- ``grep -n dataclass src/hsbcfraud/config.py`` returns nothing and every config type
+subclasses ``BaseModel``.  ``configs/default.yaml`` is generated from those models, and
 ``scripts/check_protocol.py --verify-dump`` fails if the two drift apart, so the record
 cannot quietly go stale.
 
@@ -40,8 +43,15 @@ HEADER = """# SPDX-License-Identifier: Apache-2.0
 """
 
 
-def render(config_path: Path | None) -> str:
-    dumped = load_config(config_path).model_dump()
+def render() -> str:
+    """Serialise the committed defaults, which is the only thing either caller wants.
+
+    This took a ``config_path`` that both call sites passed as ``None``.  The generality was
+    not merely unexercised but wrong to offer: this script writes the record *of* the defaults,
+    and ``check_protocol.py --verify-dump`` compares that record *against* the defaults, so
+    rendering some other YAML file would make the drift check compare a file to itself.
+    """
+    dumped = load_config(None).model_dump()
     return HEADER + yaml.safe_dump(
         dumped, sort_keys=True, default_flow_style=False, width=96
     )
@@ -53,7 +63,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(render(None), encoding="utf-8")
+    args.out.write_text(render(), encoding="utf-8")
     print(f"Wrote {display_path(args.out)} from the committed defaults")
     return 0
 

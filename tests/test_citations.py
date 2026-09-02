@@ -88,11 +88,22 @@ def test_ordinary_prose_is_not_a_citation() -> None:
 # -------------------------------------------------------------------------- the real corpus
 
 def test_every_citation_in_the_repository_resolves() -> None:
+    """Every Markdown document under ``docs/``, not a list of four.
+
+    A test named after the whole repository covered four documents of sixteen, and was a
+    strict subset of the production gate it shadows -- ``CITED_DOCUMENTS`` in
+    ``scripts/check_claims.py`` already reaches three more. ``docs/FACTCHECK_LOG.md`` carries
+    ten citation-shaped tokens and was under neither. Globbing makes a new document checked by
+    existing rather than by being remembered.
+
+    ``REFERENCES.md`` is the one exclusion: it is the declaration, and an entry may
+    legitimately name a neighbouring one in its annotation.
+    """
     documents = {
         str(path.relative_to(REPO)): path.read_text(encoding="utf-8")
-        for pattern in ("README.md", "docs/protocol.md", "docs/decisions.md",
-                        "docs/PROVENANCE.md", "submission/content/*.tex")
+        for pattern in ("README.md", "docs/*.md", "submission/content/*.tex")
         for path in sorted(REPO.glob(pattern))
+        if path.name != "REFERENCES.md"
     }
     assert documents, "no documents found to check"
     references = (REPO / "docs" / "REFERENCES.md").read_text(encoding="utf-8")

@@ -131,7 +131,10 @@ def test_estimate_excludes_the_warmup_tick() -> None:
 
 
 def test_watch_does_not_warn_on_healthy_synthetic_runs_with_gradient_spikes() -> None:
-    """Measured on SYNTHETIC traces: 0 of 40 healthy seeds warn.
+    """Measured on SYNTHETIC traces: 0 of the 12 healthy seeds run here warn, and 0 of 40 when
+    the loop is widened.  ``DivergenceWatch``'s docstring records the 40-seed figure; the loop
+    stays at 12 because widening it costs 32 s against 10 s on this host, and the diverging
+    loop below would pay the same again, on a suite that runs in 41 s.
 
     The qualifier is load-bearing and was added after this test certified the wrong thing.
     On sixteen real full-scale fits the same detector fired on nine of fourteen healthy runs.
@@ -151,10 +154,12 @@ def test_watch_does_not_warn_on_healthy_synthetic_runs_with_gradient_spikes() ->
 
 
 def test_watch_warns_before_the_loss_has_visibly_degraded() -> None:
-    """Measured: median warning 117 steps before the loss doubles.
+    """Measured: median warning 116 steps before the loss doubles over the 12 seeds run here,
+    117 over 40, which is the figure ``DivergenceWatch``'s docstring carries.
 
     Clipping masks the effect of a bad region on the loss for a while, which is exactly why
-    the pre-clip gradient norm is the earlier signal.
+    the pre-clip gradient norm is the earlier signal.  The assertion is loose at 50 because a
+    median of a stochastic trace is not a constant to pin.
     """
     leads = []
     for seed in range(12):
@@ -349,19 +354,71 @@ def test_every_long_fit_script_supplies_an_evaluation_probe() -> None:
 
 REPO = Path(__file__).resolve().parents[1]
 
+
+def _called_names(path: Path) -> set[str]:
+    """The bare function names a script calls, by AST rather than by substring.
+
+    A substring search counts an import line and a docstring as a call, and the subject of
+    this section is a check that stayed green while the thing it described was not happening.
+    """
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    return {
+        node.func.id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+
+
 # A script that reads IEEE-CIS fits models on 590,540 rows; there is no such script that
-# finishes fast enough to watch.  Named explicitly rather than discovered, so that adding one
-# is a decision someone makes rather than a default someone inherits.
-LONG_RUNNING_SCRIPTS = (
-    "run_baselines.py",
-    "run_ablations.py",
-    "run_seed_sweep.py",
-    "run_mps.py",
-    "measure_latency.py",
+# finishes fast enough to watch.  Discovered rather than typed: the hand-written tuple that
+# stood here named five, and `audit_labels.py`, `run_explain.py`, `run_power.py` and
+# `screen_kernels.py` read the whole file outside it, so this test passed while its own stated
+# rule was violated -- and `docs/COMPLIANCE_CHECKLIST.md` P9 cites this file as the evidence
+# for all of them.  Membership now follows from the code, so adding a script cannot skip it.
+LONG_RUNNING_SCRIPTS = tuple(
+    sorted(
+        path.name
+        for path in (REPO / "scripts").glob("*.py")
+        if "load_ieee_cis" in _called_names(path)
+    )
 )
 
+# The three that still break the rule as of 2026-09-02.  Recorded as expected failures rather
+# than left out of the list, because an allowlist is exactly how they hid the first time: a
+# strict xfail reports the gap in the run summary, and fails the suite the moment one of these
+# is instrumented, so an entry cannot outlive the defect it describes.  It has already done
+# that once: `screen_kernels.py` was the worst of the four, its log sitting at 64 lines for
+# minutes under redirection and jumping to 133 only on exit, and its entry came back out as
+# soon as it opened a reporter.  Clearing the rest is a change to `scripts/`, not to this file.
+# Empty, and kept rather than deleted.  It held three scripts that loaded the full file behind
+# no durable destination; all three are now wrapped in `run_log`, so the strict xfails they
+# carried would have become XPASS and turned the suite red -- which is the mechanism that made
+# this registry worth having.  An entry here is a debt with a name, and the test above refuses
+# to let one outlive the script it describes.
+SILENT_WITHOUT_A_DESTINATION: dict[str, str] = {}
 
-@pytest.mark.parametrize("name", LONG_RUNNING_SCRIPTS)
+
+def test_the_recorded_gaps_still_name_scripts_that_load_the_full_file() -> None:
+    """An entry for a script that no longer reads the file is an excuse nothing revokes."""
+    dangling = sorted(set(SILENT_WITHOUT_A_DESTINATION) - set(LONG_RUNNING_SCRIPTS))
+    assert not dangling, (
+        f"SILENT_WITHOUT_A_DESTINATION names scripts that no longer load IEEE-CIS: {dangling}. "
+        f"Delete the entries; they now suppress nothing."
+    )
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        pytest.param(
+            name,
+            marks=pytest.mark.xfail(strict=True, reason=SILENT_WITHOUT_A_DESTINATION[name]),
+        )
+        if name in SILENT_WITHOUT_A_DESTINATION
+        else name
+        for name in LONG_RUNNING_SCRIPTS
+    ],
+)
 def test_a_long_script_opens_a_progress_destination(name: str) -> None:
     """Every script that loads the full file must report progress somewhere durable.
 
@@ -371,13 +428,7 @@ def test_a_long_script_opens_a_progress_destination(name: str) -> None:
     `run_ablations.py` had -- 13 minutes and 4 minutes of fitting behind a `print` that fires
     only once a model is already finished.
     """
-    source = (REPO / "scripts" / name).read_text(encoding="utf-8")
-    tree = ast.parse(source)
-    called = {
-        node.func.id
-        for node in ast.walk(tree)
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
-    }
+    called = _called_names(REPO / "scripts" / name)
     assert called & {"run_log", "ProgressReporter"}, (
         f"scripts/{name} loads IEEE-CIS and opens no progress destination. Wrap its main loop "
         f"in hsbcfraud.progress.run_log, which writes to results/runs/ and to stdout."

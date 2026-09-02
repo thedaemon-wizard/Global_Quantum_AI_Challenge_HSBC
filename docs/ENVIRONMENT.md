@@ -97,11 +97,11 @@ complexity* as a bottleneck. Per single authorisation, batch size 1:
 |---|---|---|---|
 | Classical scorer, 431 features | 1-thread CPU | **0.084 ms** | 0.320 ms |
 | In-band re-scorer, 8 features | 1-thread CPU | 0.074 ms | 0.286 ms |
-| Quantum kernel (screened out) | 1-thread CPU | **96.577 ms** | 129.080 ms |
+| Quantum kernel (screened out) | CPU (unconstrained) | **96.577 ms** | 129.080 ms |
 | Classical scorer, 431 features | all-core CPU | 19.854 ms | 28.763 ms |
 | Classical scorer, 431 features | GPU | 19.456 ms | 37.233 ms |
 
-**The serving profile matters more than the model, by three orders of magnitude.** XGBoost
+**The serving profile matters more than the model, by more than two orders of magnitude.** XGBoost
 defaults its thread count to the core count. On a one-row payload the OpenMP barrier costs about
 19 ms across these 20 threads while the prediction it synchronises costs about 0.05 ms:
 

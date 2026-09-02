@@ -40,7 +40,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.features.band import band_edges, prepare, rows_in_band, select_band_features
-from hsbcfraud.paths import display_path
+from hsbcfraud.paths import display_path, require_run_artefact
 from hsbcfraud.progress import ProgressReporter, SweepTimer
 from hsbcfraud.quantum.mps import MPSConfig, fit_mps
 from hsbcfraud.stats import (
@@ -67,6 +67,36 @@ def require_power_gate(tables: Path) -> pd.DataFrame:
             "comparison it governs.\n  Run: .venv/bin/python scripts/run_power.py"
         )
     return pd.read_csv(path)
+
+
+def baseline_reference(tables: Path, arm: str) -> str:
+    """The classical arm's held-out AUC and AP range on ``arm``, read from the committed table.
+
+    Reported rather than raised when it cannot be read.  This is the closing courtesy line of
+    a run that has already spent hours on the GPU and has already written its tables; turning
+    a missing comparator into a non-zero exit would discard finished work over a print.  What
+    it must not do is print ``nan``, which is what an empty selection silently produces and
+    which reads as a measurement rather than as an absence.
+    """
+    path = tables / "baselines.csv"
+    if not path.exists():
+        return f"No classical comparator: {display_path(path)} is missing (run `make baseline`)."
+    table = pd.read_csv(path)
+    held_out = table[
+        (table["arm"] == arm) & (table["model"] == "xgboost") & (table["block"] == "test")
+    ]
+    if held_out.empty:
+        return (
+            f"No classical comparator: {display_path(path)} has no xgboost/test rows for the "
+            f"{arm} arm (run `make baseline`)."
+        )
+    return (
+        f"The gradient-boosted baseline on the same split reaches AUC "
+        f"{held_out['roc_auc'].min():.4f}-{held_out['roc_auc'].max():.4f} and AP "
+        f"{held_out['average_precision'].min():.4f}-"
+        f"{held_out['average_precision'].max():.4f} ({display_path(path)}, "
+        f"{len(held_out)} seeds)."
+    )
 
 
 def progress_probe(x_eval: np.ndarray, y_eval: np.ndarray, n_rows: int, seed: int):
@@ -149,18 +179,32 @@ def main(argv: list[str] | None = None) -> int:
     # result with something that merely looks like it.  That happened once: a six-epoch
     # single-bond smoke test overwrote a thirty-epoch four-bond table, and only the git
     # history distinguished them.  Non-default runs are diverted to results/runs/.
+    #
+    # Compared over every flag rather than a hand-picked three.  The list used to be
+    # (bonds, epochs, band_features), which left --seed, --arm, --resamples and --eval-rows
+    # outside it: `--resamples 50` kept `exploratory` False and quietly replaced ci_low,
+    # ci_high, standard_error, p_value and minimum_detectable_effect_realised in the committed
+    # mps_h4.csv with fifty-resample estimates, and --seed or --arm move every number in both
+    # tables.  Deriving the comparison from the parser means a flag added later is in scope by
+    # default instead of being remembered.
     defaults = parser.parse_args([])
-    exploratory = (args.bonds, args.epochs, args.band_features) != (
-        defaults.bonds,
-        defaults.epochs,
-        defaults.band_features,
-    )
-    if exploratory and args.out == defaults.out:
+    # The destinations themselves are excluded: they say where to write, not what was run, and
+    # --out is what the diversion below sets, so including it would make the test circular.
+    DESTINATIONS = {"config", "out", "runs", "zip"}
+    # Reported rather than restated: the old message named the same three flags every time,
+    # so a run diverted by --seed was told its bonds and epochs were wrong.  Naming what
+    # actually differs is what lets a reader tell a deliberate sweep from a typo.
+    changed = {
+        name: value
+        for name, value in vars(args).items()
+        if name not in DESTINATIONS and value != getattr(defaults, name)
+    }
+    if changed and args.out == defaults.out:
         args.out = args.runs / "exploratory"
         args.out.mkdir(parents=True, exist_ok=True)
+        differing = ", ".join(f"{name}={value}" for name, value in sorted(changed.items()))
         print(
-            f"Not the pre-registered configuration (bonds={args.bonds}, "
-            f"epochs={args.epochs}, band_features={args.band_features}); writing tables to "
+            f"Not the pre-registered configuration ({differing}); writing tables to "
             f"{display_path(args.out)} instead of results/tables/."
         )
 
@@ -174,7 +218,11 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     seed = args.seed or cfg.split.seeds[0]
-    scores = pd.read_parquet(args.runs / f"scores_{args.arm}_{seed}.parquet")
+    scores = pd.read_parquet(
+        require_run_artefact(
+            args.runs / f"scores_{args.arm}_{seed}.parquet", produced_by="baseline"
+        )
+    )
     loaded = load_ieee_cis(args.zip, None, with_identity=True)
     frame = loaded.frame
     for column in frame.columns:
@@ -238,6 +286,10 @@ def main(argv: list[str] | None = None) -> int:
             )
         elapsed = time.perf_counter() - start
         band_sweep.record(elapsed)
+        # The band arm runs first, so this is the arm a user waits on with nothing to go on.
+        # The timer was constructed and fed here but only ever printed in the full arm below,
+        # which meant the remaining-time estimate appeared after the wait it was for.
+        print(f"  sweep: {band_sweep.summary()}")
         band_predictions[chi] = model.predict_proba(x_be)
         metrics = evaluate(y_be, band_predictions[chi])
         rows.append(
@@ -409,13 +461,15 @@ def main(argv: list[str] | None = None) -> int:
                 f"AUC {metrics['roc_auc']:.4f}  AP {metrics['average_precision']:.4f}"
             )
         pd.DataFrame(full_rows).to_csv(args.out / "mps_full.csv", index=False)
-        print(
-            "\n  The tuned gradient-boosted baseline on the same split reaches AUC 0.8837-0.8884 "
-            "and AP 0.5055-0.5114 (results/tables/baselines.csv)."
-        )
+        # Read rather than typed.  These four numbers were literals here, sourced from a file
+        # that run_baselines.py rewrites on every `make baseline` -- so the comparison a
+        # reader is handed at the end of a thirteen-hour run could drift away from the table
+        # it cites without anything failing.  check_pdf.py bans exactly this in the .tex
+        # sources; nothing scans scripts/, so the guard has to be the read itself.
+        print(f"\n  {baseline_reference(defaults.out, args.arm)}")
 
     written = ["mps_band.csv", "mps_h4.csv"] + ([] if args.skip_full else ["mps_full.csv"])
-    print("\nWrote " + ", ".join(str(args.out / name) for name in written))
+    print("\nWrote " + ", ".join(display_path(args.out / name) for name in written))
     return 0
 
 

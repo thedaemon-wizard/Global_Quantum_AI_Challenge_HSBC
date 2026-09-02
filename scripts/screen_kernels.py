@@ -7,7 +7,7 @@ axes, Huang's geometric difference, and the pass/reject decision.
 
 The search is deliberately wide.  A narrow search that rejects everything invites the reply
 that a better encoding was not tried, so the grid spans three encodings, four qubit counts,
-two entanglement settings and five bandwidths, and every combination is reported whether it
+two entanglement settings and six bandwidths, and every combination is reported whether it
 passes or not.  The pre-registration commits to running the kernel arm only on maps that
 pass, and to reporting a rejection as the result if none does.
 
@@ -31,6 +31,8 @@ import pandas as pd
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.data.splits import temporal_blocks
+from hsbcfraud.paths import display_path, require_run_artefact
+from hsbcfraud.progress import ProgressReporter
 from hsbcfraud.quantum.featuremaps import build_feature_map, scale_features
 from hsbcfraud.quantum.kernel import fidelity_gram
 from hsbcfraud.quantum.screens import screen_kernel
@@ -39,7 +41,7 @@ REPO = Path(__file__).resolve().parents[1]
 
 
 def band_features(
-    frame: pd.DataFrame, scores: pd.DataFrame, cfg, n_features: int, n_samples: int, seed: int
+    frame: pd.DataFrame, scores: pd.DataFrame, n_features: int, n_samples: int, seed: int
 ):
     """Stratified sample of band transactions, reduced to ``n_features`` and scaled.
 
@@ -105,10 +107,23 @@ def main(argv: list[str] | None = None) -> int:
 
     cfg = load_config(args.config)
     seed = args.seed or cfg.split.seeds[0]
-    scores = pd.read_parquet(args.runs / f"scores_{args.arm}_{seed}.parquet")
+    scores = pd.read_parquet(
+        require_run_artefact(
+            args.runs / f"scores_{args.arm}_{seed}.parquet", produced_by="baseline"
+        )
+    )
     loaded = load_ieee_cis(args.zip, None, with_identity=True)
     frame = loaded.frame
     temporal_blocks(frame["day"], cfg.split)  # asserts the split still forms
+
+    # Enumerated ahead of the loop so the run knows its own size.  The Z map has no entangling
+    # layer to vary, so its non-"none" settings are not candidates; the order is unchanged from
+    # the nested product this replaces, which is the order of the committed screens.csv.
+    candidates = [
+        (name, ent)
+        for name, ent in itertools.product(cfg.quantum.feature_maps, cfg.quantum.entanglement)
+        if not (name == "z" and ent != "none")
+    ]
 
     rows: list[dict] = []
     print(
@@ -121,53 +136,81 @@ def main(argv: list[str] | None = None) -> int:
         f"{'offdiag':>8s} {'RBF corr':>9s} {'geom diff':>10s}  verdict"
     )
 
+    # This loop ran for minutes with nothing on stdout under redirection -- the log sat at 64
+    # lines across repeated polls and jumped to 133 only when the process exited.  That is the
+    # "Silence" failure progress.py exists to prevent, and this was one of four full-file
+    # readers that had no durable record at all.  No ``stream``: the per-candidate line below
+    # is an aligned table and a progress line between its rows would destroy the alignment,
+    # so the durable jsonl carries the timing and ``flush`` carries the liveness.
+    reporter = ProgressReporter(
+        "screens",
+        total=len(cfg.quantum.qubits) * len(candidates) * len(cfg.quantum.bandwidths),
+        log_path=args.runs / "screens.jsonl",
+        context={
+            "n_screen": args.n_screen,
+            "arm": args.arm,
+            "seed": seed,
+            "qubits": list(cfg.quantum.qubits),
+        },
+    )
+
     from sklearn.metrics.pairwise import rbf_kernel
 
-    for n_qubits in cfg.quantum.qubits:
-        n_feat = n_qubits
-        # Labels are deliberately discarded.  Both screens -- effective rank and the
-        # correlation against a tuned RBF -- are functions of the Gram matrix alone, and the
-        # geometric difference of Huang et al. is likewise label-free.  A screen that saw the
-        # labels would not be a-priori, and its verdict could not be quoted as a decision made
-        # before the arm ran.
-        x, _labels, chosen = band_features(frame, scores, cfg, n_feat, args.n_screen, seed)
-        classical = rbf_kernel(x, gamma=1.0 / n_feat)
-        for name, ent, bw in itertools.product(
-            cfg.quantum.feature_maps, cfg.quantum.entanglement, cfg.quantum.bandwidths
-        ):
-            if name == "z" and ent != "none":
-                continue  # the Z map has no entangling layer to vary
-            circuit = build_feature_map(name, n_feat, reps=cfg.quantum.reps, entanglement=ent)
-            angles = scale_features(x, bw)
-            start = time.perf_counter()
-            gram = fidelity_gram(circuit, angles, backend="statevector")
-            elapsed = time.perf_counter() - start
-            result = screen_kernel(
-                gram,
-                angles,
-                name=name,
-                n_qubits=circuit.num_qubits,
-                bandwidth=bw,
-                entanglement=ent,
-                classical_gram=classical,
-                effective_rank_min=cfg.quantum.screen_effective_rank_min,
-                effective_rank_max=cfg.quantum.screen_effective_rank_max,
-                rbf_correlation_max=cfg.quantum.screen_rbf_correlation_max,
-            )
-            rows.append(
-                {
-                    **asdict(result),
-                    "n_features": n_feat,
-                    "gram_seconds": elapsed,
-                    "selected_features": ";".join(chosen),
-                }
-            )
-            print(
-                f"{name:12s} {circuit.num_qubits:2d} {ent:>6s} {bw:7.4f} "
-                f"{result.effective_rank:9.4f} {result.top_eigenvalue:8.4f} "
-                f"{result.off_diagonal_mean:8.5f} {result.rbf_correlation:9.4f} "
-                f"{result.geometric_difference:10.3f}  {result.summary()}"
-            )
+    with reporter:
+        for n_qubits in cfg.quantum.qubits:
+            n_feat = n_qubits
+            # Labels are deliberately discarded.  Both screens -- effective rank and the
+            # correlation against a tuned RBF -- are functions of the Gram matrix alone, and
+            # the geometric difference of Huang et al. is likewise label-free.  A screen that
+            # saw the labels would not be a-priori, and its verdict could not be quoted as a
+            # decision made before the arm ran.
+            x, _labels, chosen = band_features(frame, scores, n_feat, args.n_screen, seed)
+            classical = rbf_kernel(x, gamma=1.0 / n_feat)
+            for (name, ent), bw in itertools.product(candidates, cfg.quantum.bandwidths):
+                circuit = build_feature_map(
+                    name, n_feat, reps=cfg.quantum.reps, entanglement=ent
+                )
+                angles = scale_features(x, bw)
+                start = time.perf_counter()
+                gram = fidelity_gram(circuit, angles, backend="statevector")
+                elapsed = time.perf_counter() - start
+                result = screen_kernel(
+                    gram,
+                    angles,
+                    name=name,
+                    n_qubits=circuit.num_qubits,
+                    bandwidth=bw,
+                    entanglement=ent,
+                    classical_gram=classical,
+                    effective_rank_min=cfg.quantum.screen_effective_rank_min,
+                    effective_rank_max=cfg.quantum.screen_effective_rank_max,
+                    rbf_correlation_max=cfg.quantum.screen_rbf_correlation_max,
+                )
+                rows.append(
+                    {
+                        **asdict(result),
+                        "n_features": n_feat,
+                        "gram_seconds": elapsed,
+                        "selected_features": ";".join(chosen),
+                    }
+                )
+                # flush, because stdout is block-buffered the moment this is redirected to a
+                # file, which is how a live run came to look like a hung one.
+                print(
+                    f"{name:12s} {circuit.num_qubits:2d} {ent:>6s} {bw:7.4f} "
+                    f"{result.effective_rank:9.4f} {result.top_eigenvalue:8.4f} "
+                    f"{result.off_diagonal_mean:8.5f} {result.rbf_correlation:9.4f} "
+                    f"{result.geometric_difference:10.3f}  {result.summary()}",
+                    flush=True,
+                )
+                reporter.tick(
+                    map=name,
+                    n_qubits=circuit.num_qubits,
+                    entanglement=ent,
+                    bandwidth=bw,
+                    gram_seconds=elapsed,
+                    passes=result.passes_conditioning and result.passes_distinctness,
+                )
 
     table = pd.DataFrame(rows)
     args.out.mkdir(parents=True, exist_ok=True)
@@ -190,7 +233,7 @@ def main(argv: list[str] | None = None) -> int:
                 f"  {row['name']} {row['n_qubits']}q ent={row['entanglement']} "
                 f"bw={row['bandwidth']:.4f}"
             )
-    print(f"\nWrote {args.out / 'screens.csv'}")
+    print(f"\nWrote {display_path(args.out / 'screens.csv')}")
     return 0
 
 

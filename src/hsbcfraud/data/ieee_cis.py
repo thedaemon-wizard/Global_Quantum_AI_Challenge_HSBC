@@ -118,7 +118,13 @@ def load_ieee_cis(
     quarter of transactions carry identity rows, so the join introduces missingness that is
     itself informative; the join is not performed unless asked for.
     """
-    needed = None if columns is None else sorted({"TransactionDT", "isFraud", *columns})
+    # TransactionID joins the requested columns only when the identity merge needs it as a
+    # key.  Adding it unconditionally would change what an explicit column list means, and
+    # leaving it out made `load_ieee_cis(zip, ["card1"], with_identity=True)` die on a bare
+    # pandas KeyError raised from inside the merge -- the one failure in this module that did
+    # not arrive as a DatasetError naming what was wrong.
+    required = {"TransactionDT", "isFraud"} | ({"TransactionID"} if with_identity else set())
+    needed = None if columns is None else sorted(required | set(columns))
     frame = read_ieee_cis_columns(zip_path, needed)
 
     n_rows = len(frame)

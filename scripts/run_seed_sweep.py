@@ -36,11 +36,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score, roc_auc_score
-from sklearn.preprocessing import MinMaxScaler
 
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
-from hsbcfraud.paths import display_path
+
+# The sweep re-fits the same model as run_mps.py at other seeds, so it has to build its
+# inputs the same way.  It carried a private copy of `prepare` that happened to agree; a copy
+# that agrees is the one that hides the day it stops agreeing, and these rows are reported as
+# the seed-stability evidence for the tensor-network arm.
+from hsbcfraud.features.band import prepare
+from hsbcfraud.paths import display_path, require_run_artefact
 from hsbcfraud.progress import SweepTimer, run_log
 from hsbcfraud.quantum.mps import MPSConfig, fit_mps
 
@@ -136,17 +141,6 @@ def progress_probe(x_eval: np.ndarray, y_eval: np.ndarray, n_rows: int, seed: in
     return probe
 
 
-def prepare(frame: pd.DataFrame, rows: np.ndarray, columns: list[str], scaler):
-    numeric = frame.iloc[rows][columns]
-    filled = (
-        numeric.fillna(numeric.median(numeric_only=True))
-        .fillna(0.0)
-        .to_numpy(dtype=np.float32)
-    )
-    if scaler is None:
-        scaler = MinMaxScaler(clip=True).fit(filled)
-    return scaler.transform(filled).astype(np.float32), scaler
-
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -178,7 +172,12 @@ def main(argv: list[str] | None = None) -> int:
 
     contended = require_idle_gpu(allow_shared=args.allow_shared_gpu)
     cfg = load_config(args.config)
-    scores = pd.read_parquet(args.runs / f"scores_{args.arm}_{cfg.split.seeds[0]}.parquet")
+    scores = pd.read_parquet(
+        require_run_artefact(
+            args.runs / f"scores_{args.arm}_{cfg.split.seeds[0]}.parquet",
+            produced_by="baseline",
+        )
+    )
     loaded = load_ieee_cis(args.zip, None, with_identity=True)
     frame = loaded.frame
     for column in frame.columns:

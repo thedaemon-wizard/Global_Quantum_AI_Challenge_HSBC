@@ -33,7 +33,7 @@ noise, instead of attributing all of it to time.
 
 ``card_disjoint`` partitions by entity.  It exists because the IEEE-CIS label rule
 propagates a chargeback across linked accounts, so a temporal cut does not separate
-entities -- measured on this file, 84.8 % of the ``card1`` values in the test block also
+entities -- measured on this file, 85.0 % of the ``card1`` values in the test block also
 appear in the training block.  The card-disjoint arm is the only one of the three in which
 an entity cannot appear on both sides.
 """
@@ -79,10 +79,12 @@ class Blocks:
     test: np.ndarray
 
     def __getitem__(self, name: str) -> np.ndarray:
-        try:
-            return getattr(self, name)
-        except AttributeError as exc:
-            raise KeyError(f"unknown block {name!r}; expected one of {BLOCK_NAMES}") from exc
+        # Checked against BLOCK_NAMES rather than by getattr: `arm` is a field too, so
+        # blocks["arm"] used to return the arm string where the annotation promises an array,
+        # and the mistake surfaced deep inside numpy rather than at the lookup.
+        if name not in BLOCK_NAMES:
+            raise KeyError(f"unknown block {name!r}; expected one of {BLOCK_NAMES}")
+        return getattr(self, name)
 
     def sizes(self) -> dict[str, int]:
         return {name: int(self[name].size) for name in BLOCK_NAMES}
@@ -225,6 +227,12 @@ class TestFoldGuard:
     had been touched.  A repeat request for the same configuration is legitimate and is
     counted rather than suppressed: it is the number a reader wants when asking whether a
     held-out fold stayed held out.
+
+    An entry carried over from the hash-only form keeps ``evaluations: null`` for good, and
+    counts forward under ``evaluations_since_migration`` instead.  The two cannot be merged:
+    the authorisations that happened before the counter existed were not recorded anywhere,
+    so any total would be a guess, and this is the one artefact whose whole purpose is to
+    answer "how often was the held-out fold touched" without guessing.
     """
 
     def __init__(self, ledger: Path) -> None:
@@ -244,7 +252,14 @@ class TestFoldGuard:
             }
 
     def evaluations(self, dataset: str) -> int | None:
-        """How many times this fold has been authorised, or None if written before counting."""
+        """How many times this fold has been authorised, or None when that is not knowable.
+
+        None is never zero.  It covers no entry at all, and an entry migrated from the
+        hash-only form, which keeps ``evaluations: null`` for good and counts forward under
+        ``evaluations_since_migration``.  A caller that wants the migrated fold's live count
+        has to read that field by name; this accessor declines to return a total it would have
+        to guess at, which is the whole point of keeping the two counters apart.
+        """
         entry = self._seen.get(dataset)
         return None if entry is None else entry.get("evaluations")
 
@@ -260,9 +275,20 @@ class TestFoldGuard:
                 f"campaign, delete {self.ledger} and record why in docs/decisions.md."
             )
         count = None if entry is None else entry.get("evaluations")
-        self._seen[dataset] = {
-            "configuration": configuration_hash,
-            "evaluations": 1 if count is None else int(count) + 1,
-        }
+        record: dict[str, object] = {"configuration": configuration_hash}
+        if entry is not None and count is None:
+            # The entry exists but carries no count, which means it came through the
+            # hash-only migration above.  Writing 1 here would silently convert "authorised
+            # an unrecorded number of times before the counter existed" into "authorised
+            # once" -- the invention the migration refuses to make, in the one file a
+            # reviewer reads to find out whether the held-out fold stayed held out.  What is
+            # known is how many authorisations have happened since, so that is what is
+            # counted, under its own name.
+            since = entry.get("evaluations_since_migration")
+            record["evaluations"] = None
+            record["evaluations_since_migration"] = 1 if since is None else int(since) + 1
+        else:
+            record["evaluations"] = 1 if count is None else int(count) + 1
+        self._seen[dataset] = record
         self.ledger.parent.mkdir(parents=True, exist_ok=True)
         self.ledger.write_text(json.dumps(self._seen, indent=2, sort_keys=True) + "\n", "utf-8")

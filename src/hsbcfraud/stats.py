@@ -263,7 +263,19 @@ def tost_equivalence(
     mean = float(d.mean())
     se = float(d.std(ddof=1) / math.sqrt(d.size))
     if se == 0.0:
-        return TostResult(mean, margin, 0.0, abs(mean) < margin, margin <= reference_effect)
+        # A zero paired standard deviation means the two arms produced identical numbers on
+        # every fold and TOST has no sampling model left to appeal to.  The p-value must
+        # still agree with the verdict: a hardcoded 0.0 reported "reject the null of
+        # inequivalence" at the same time as `equivalent=False`, so a caller reading the
+        # p-value and a caller reading the flag drew opposite conclusions.
+        equivalent = abs(mean) < margin
+        return TostResult(
+            difference=mean,
+            margin=margin,
+            p_value=0.0 if equivalent else 1.0,
+            equivalent=bool(equivalent),
+            informative=bool(margin <= reference_effect),
+        )
 
     df = d.size - 1
     p_lower = stats.t.sf((mean + margin) / se, df)
@@ -293,6 +305,15 @@ def minimum_detectable_effect_from_standard_error(
     meaningful.  Passing a bootstrap standard error to ``minimum_detectable_effect`` instead
     understates the MDE by a factor of the square root of the sample size, which on the band
     evaluation block is about fifty and turns a gate into a formality.
+
+    Computed and reported **before** the comparison runs, as a gate.  ``scripts/run_power.py``
+    calls this form on the binding bootstrap spread and writes
+    ``minimum_detectable_effect = 0.046068`` to ``results/tables/power.csv``.  The
+    pre-registration commits to declaring the quantum comparison underpowered in advance if
+    it exceeds 0.023 average precision; it does, and H4 is reported as underpowered rather
+    than as a null.  The paragraph is here, on the form the gate actually calls, because it
+    sat for a while on the ``sd, n`` form below, which has no caller -- and passing a
+    bootstrap standard error to that form was the original defect (D-030, D-043).
     """
     z_alpha = stats.norm.ppf(1.0 - alpha / 2.0)
     z_power = stats.norm.ppf(power)
@@ -310,10 +331,8 @@ def minimum_detectable_effect(
     :func:`minimum_detectable_effect_from_standard_error` instead, or the sample size is
     counted twice.
 
-    Computed and reported **before** the comparison runs, as a gate.  The pre-registration
-    commits to declaring the quantum comparison underpowered in advance if this exceeds
-    0.023 average precision, rather than running it and discovering afterwards that a null
-    result was uninformative.
+    Nothing in this study calls this form: the pre-registered power gate is computed from a
+    clustered bootstrap spread, which is already a standard error.
     """
     if n < 2:
         raise ValueError(f"need at least two observations, got {n}")

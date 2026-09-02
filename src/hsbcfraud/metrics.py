@@ -35,6 +35,7 @@ __all__ = [
     "ClassificationReport",
     "false_decline_rate",
     "recall_at_threshold",
+    "report",
     "threshold_for_value_fraud_rate",
     "value_weighted_fraud_rate",
 ]
@@ -151,9 +152,13 @@ def threshold_for_value_fraud_rate(
     of exactly 0.0000 % and recall 1.000 for all three PSD2 tiers, which is what "decline
     everything" looks like when it is mistaken for an operating point.
 
-    ``max_decline_rate`` additionally caps how much of the population may be declined, so a
-    solution that meets the ceiling only by refusing most traffic is rejected rather than
-    reported.
+    ``max_decline_rate`` can cap how much of the population may be declined, so a solution
+    that meets the ceiling only by refusing most traffic is rejected rather than reported.
+    It defaults to ``1.0``, which is a no-op -- a decline share cannot exceed 1, so the guard
+    never fires unless a caller sets it.  The envelope call in ``scripts/run_conformal.py``
+    leaves it at the default deliberately: amendment A2 reports the required decline rate
+    (94.74 %, ``results/tables/envelope.csv``) as a distance measurement rather than as an
+    operating point.
 
     Returns ``(threshold, achieved_value_rate, recall)``, or ``(nan, nan, nan)`` when no
     threshold satisfies both constraints.

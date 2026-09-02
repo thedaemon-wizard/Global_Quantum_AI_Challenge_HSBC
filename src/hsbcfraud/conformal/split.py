@@ -83,7 +83,11 @@ def conformal_threshold(scores: np.ndarray, alpha: float) -> tuple[float, int, i
         raise ValueError(f"alpha must lie in (0, 1), got {alpha!r}")
     values = np.asarray(scores, dtype=float).ravel()
     if values.size == 0:
-        return math.inf, 0, 0
+        # k = 1 is what the general formula below gives at n = 0: ceil((1 - alpha) * 1) == 1
+        # for every alpha in (0, 1).  Returning k = 0 broke the invariant documented above --
+        # qhat is +inf exactly when k > n -- and let `coverage_band(0, 0, m)` walk past its
+        # own k > n guard and die inside beta_binomial_pmf on b = 0 instead.
+        return math.inf, 1, 0
     if not np.isfinite(values).all():
         raise ValueError("calibration scores contain NaN or infinity")
 

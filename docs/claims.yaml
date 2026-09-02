@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 117
+    value: 119
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -302,9 +302,9 @@ claims:
     reduce: {op: min, column: n_legit_band_cal}
     tolerance: 0
     note: >
-      Legitimate in-band rows in D_cal at the tightest band budget.  This is the sample
-      size the band-conditional certificate has to work with, and why nothing certifies
-      below alpha = 0.10.
+      Legitimate in-band rows in D_cal at the tightest band budget -- which is the budget
+      that certifies nothing at any level.  The smallest block behind an issued certificate
+      is BandLegitCalCertifiedMin.
 
   - key: BandLegitCalCertifiedMin
     value: 1572

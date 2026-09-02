@@ -38,11 +38,13 @@ Everything after it is fast except `make reproduce`.
 | `python3.12 -m venv` from the system interpreter | Python 3.12.11 |
 | `pip install torch==2.13.0` from the cu130 index | installed; `torch.cuda.is_available()` **True** |
 | `pip install -e ".[dev]"` | clean, no resolution conflicts |
-| `make smoke` | **9 of 9 accounted for**, 7 pass and 2 skip in the fresh environment, where the Aer GPU cross-check skips as well as the ULB check; the committed environment reports 8 and 1 |
+| `make smoke` | **9 of 9 accounted for**, 6 pass and 3 skip in the fresh environment: S1 and S5 both need `qiskit-aer`, which lives in the `gpu-crosscheck` extra, and S7 needs ULB; the committed environment reports 8 and 1 |
 | `make walkthrough` | every assertion holds against the committed tables |
 
-The two skips are declared, not silent:
+The three skips are declared, not silent:
 
+* **S1, Aer GPU on sm_120** — the same missing `qiskit-aer`. It additionally needs a GPU device
+  and `nvidia-smi`, so it is the one of the three that passes on the committed environment.
 * **S5, Aer against Qiskit 2.5** — `qiskit-aer` is in the optional `gpu-crosscheck` extra, which
   `make venv` deliberately does not install because it pulls NVIDIA's proprietary cuStateVec
   binary (see [NOTICE](../NOTICE)). Only the E11 parity cross-check needs it, and no scientific
@@ -68,9 +70,9 @@ disproved.
 
 What survives is narrower and still worth having: the script printed nothing between the dataset
 line and its results, so on a busy machine it was indistinguishable from a wedged process. It
-now reports twelve units with elapsed and remaining time. Twenty-three of the twenty-six scripts
-in `scripts/` still have no progress reporting; this one is instrumented because it is the first
-thing a reviewer runs.
+now reports twelve units with elapsed and remaining time. Only the scripts that import
+`hsbcfraud.progress` report anything; the rest of `scripts/` is still silent. This one is
+instrumented because it is the first thing a reviewer runs.
 
 ## 2b. Second run, 2026-08-31: the four producers written after the first run
 
@@ -100,7 +102,15 @@ verdicts are now named constants read in both places.
 | `test_every_source_file_is_tracked` | calls `git ls-files`; an extracted archive is not a repository | same |
 | `test_results_tables_are_tracked` | same | same |
 
-172 of 175 pass. Run `make pdf` first, or clone rather than extract, and all three run.
+Every other collected test either passes or is a recorded expected failure. At the last
+measurement, 2026-09-02, the tree collected 187: these three, five strict `xfail`s that record
+defects elsewhere in the repository — two producerless tables and three scripts that read the
+full dataset behind no progress destination — and 179 that pass. The composition is stated with
+its date rather than as a bare "N of M", because the suite grows and both halves of such a
+figure go stale silently: this sentence read "172 of 175" against a tree that collected 179,
+and then "184 of 187" against a tree in which five of those 187 had since become expected
+failures, so the pass count was five too high. Run `make pdf` first, or clone rather than
+extract, and all three run.
 
 ## 3. Two levels of verification, and what each answers
 

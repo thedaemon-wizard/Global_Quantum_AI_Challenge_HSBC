@@ -45,6 +45,10 @@ REPO = Path(__file__).resolve().parents[1]
 
 # Documents whose citations must resolve.  The reference list itself is excluded: an entry may
 # legitimately mention a neighbouring one in its annotation.
+#
+# docs/REFERENCE_IMPLEMENTATION.md is here because it is nothing but citations -- twenty
+# identifiers mapped to the files that implement them -- and it was ungated, so renumbering an
+# entry in REFERENCES.md would have broken all twenty at once without failing anything.
 CITED_DOCUMENTS = (
     "README.md",
     "docs/RESULTS.md",
@@ -53,6 +57,7 @@ CITED_DOCUMENTS = (
     "docs/PROVENANCE.md",
     "docs/COMPLIANCE_CHECKLIST.md",
     "docs/SUBMISSION_CHECKLIST.md",
+    "docs/REFERENCE_IMPLEMENTATION.md",
 )
 # LaTeX sources, where a claim is consumed as a \Claim macro.
 CLAIM_MACRO_CONSUMERS = ("submission/content/*.tex",)
@@ -354,7 +359,7 @@ def main(argv: list[str] | None = None) -> int:
         return check_unused(claims)
 
     failures: list[str] = []
-    pending: list[tuple[str, object, float]] = []
+    pending: list[tuple[str, object, str]] = []
     updated = 0
     print(f"{len(claims)} claims in {display_path(args.claims)}\n")
 
@@ -409,6 +414,15 @@ def main(argv: list[str] | None = None) -> int:
             args.claims.write_text(apply_updates(args.claims, pending), encoding="utf-8")
         print(f"\nRewrote {updated} value(s) in {display_path(args.claims)}.")
         print("Review the diff: an updated claim means the prose around it may also be stale.")
+        # An UNRESOLVED or MALFORMED claim is not rewritten and is not fixed by rewriting the
+        # ones that did resolve, so it must still fail.  Returning 0 here let --update turn a
+        # vanished source table into a clean exit.
+        if failures:
+            print(f"\n{len(failures)} claim(s) could not be resolved and were not rewritten:",
+                  file=sys.stderr)
+            for failure in failures:
+                print(f"  {failure}", file=sys.stderr)
+            return 1
         return 0
 
     if failures:

@@ -27,7 +27,9 @@ refuses to stage anything outside that list.
 | 4 | `HSBC-riskcontrol.py` | PY | The Learn-then-Test implementation the certificate rests on — [`riskcontrol.py`](src/hsbcfraud/conformal/riskcontrol.py) |
 | 5 | `HSBC-certified-region.png` | PNG | Which (band budget, $\alpha$, $\alpha_{\mathrm{FN}}$) cells certify and which do not — [`certified_region.png`](results/figures/certified_region.png) |
 
-The challenge statement's four Expected Outcomes are each answered by a named artefact:
+The four Expected Outcomes listed on the portal's challenge panel — the statement's §5.2
+Expected Outputs together with its Reporting Considerations — are each answered by a named
+artefact:
 per-transaction probabilities and binary predictions by upload 3; feature attribution by §5 of
 the proposal and [`attribution_examples.csv`](results/tables/attribution_examples.csv), which
 carries the Shapley contributions behind ten individual predictions; the classical-baseline
@@ -35,9 +37,9 @@ comparison by §3 against a gradient-boosted baseline at fixed hyperparameters, 
 one classical baseline the statement requires; and the quantum encoding and circuit-design
 documentation by §4 and §7.
 
-Upload 3 replaced the certificate table, which every certified row of the appendix already
-prints and which upload 5 plots in full. It was the only staged file a reviewer could read
-somewhere else.
+Upload 3 replaced the certificate table, whose full 48-cell grid is exactly what upload 5
+plots and which is public as [`riskcontrol.csv`](results/tables/riskcontrol.csv). It was the
+only staged file a reviewer could read somewhere else.
 
 The proposal maps to the six assessment criteria as: problem framing and expected impact (§1),
 technical approach (§2, §4), feasibility and resources (§5), validation plan (§6), hybrid
@@ -80,7 +82,7 @@ not penalise.
 
 | Stage | Work | Measured cost | Device |
 |---|---|---|---|
-| Classical baseline | 590,540 rows, 431 features, one fit | ~16 s | GPU |
+| Classical baseline | 356,216 train rows, 431 features, one fit per seed | 15.9 – 18.8 s | GPU |
 | Quantum kernel screens | 120 configurations, 300 rows each | 17.5 s total | CPU |
 | Tensor network, in-band | 8 sites, four bond dimensions | 0.69 – 1.91 s per fit | GPU |
 | Tensor network, full scale | 431 sites, 356,216 rows, 30 epochs | 2,747 – 3,145 s per fit | GPU |
@@ -97,9 +99,11 @@ and the two environment traps that cost real time.
 
 ### 2.1 The pipeline, end to end
 
-Every number in this diagram is the committed value from
-[`splits.csv`](results/tables/splits.csv) and [`claims.yaml`](docs/claims.yaml), on the temporal
-arm. Solid arrows carry data. The dashed arrows into the band are the only place a quantum model
+Row counts and the dataset total are asserted against
+[`splits.csv`](results/tables/splits.csv) by `tests/test_repo_hygiene.py`; the configuration
+counts come from [`claims.yaml`](docs/claims.yaml). The day ranges and the feature count are
+transcribed from `splits.csv` and `latency.csv`. All are on the temporal arm. Solid arrows
+carry data. The dashed arrows into the band are the only place a quantum model
 could enter, and neither arm got there; the dashed arrow into the output marks the held-out
 block, which the certified rule is applied to unchanged and never selected on.
 
@@ -120,12 +124,12 @@ flowchart LR
 
   GBDT["Gradient-boosted scorer<br/>all traffic"]:::step
   BAND["Abstention band<br/>edges from the band block"]:::step
-  LTT["Learn-then-Test<br/>Hoeffding-Bentkus, Holm<br/>48 grid points"]:::step
+  LTT["Learn-then-Test<br/>Hoeffding-Bentkus, Holm<br/>11-point decision grid, 2 risks"]:::step
   CERT["Certificate<br/>band risk at most alpha<br/>with probability 1 minus delta<br/>5 of 48 certify"]:::cert
   OUT["predictions.csv<br/>approve / step-up / decline"]:::data
 
   KER["Quantum kernel<br/>120 screened, 0 passed<br/>never ran"]:::dead
-  MPS["Tensor network<br/>16 full-scale fits<br/>no improvement"]:::dead
+  MPS["Tensor network<br/>4 in-band fits, 16 full-scale<br/>no improvement"]:::dead
 
   SRC --> SPL
   SPL --> TRN
@@ -146,10 +150,11 @@ flowchart LR
 
 **Read the diagram this way.** The classical scorer runs on every transaction; the band is the
 only region a quantum model is ever asked to touch, because it holds thousands of rows rather
-than hundreds of thousands. Both quantum arms are drawn as dashed because neither reached the
-band: the kernel was rejected by its own screens before it ran, and the tensor network ran and
-did not improve on gradient boosting. **The certificate does not depend on either** --- it wraps
-whatever scores the band, which is why the deliverable survived two negative quantum results.
+than hundreds of thousands. Both quantum arms are drawn as dashed because neither was adopted:
+the kernel was rejected by its own screens before it ran, and the tensor network ran in the
+band and did not improve on gradient boosting. **The certificate does not depend on either**
+--- it wraps whatever scores the band, which is why the deliverable survived two negative
+quantum results.
 
 Each block is used exactly once and for one purpose. `train` fits the scorer, `band` sets the
 edges, `cal` certifies, and `test` is touched once at the end. That separation is what the
@@ -241,7 +246,9 @@ E \;\sim\; \mathrm{BetaBinomial}\bigl(m,\; n + 1 - k,\; k\bigr), \qquad k = \lce
 ```
 
 Checking $\hat{r} \le \alpha$ instead is a **one-sided test against the wrong null**: on a
-correctly calibrated system it passes only 51.15 % of the time. Every coverage row in
+correctly calibrated system with $n = 5{,}000$, $\alpha = 0.01$ and $m = 20{,}000$ it passes
+51.15 % of the time ([D-012](docs/decisions.md)); the exact figure moves with $n$, $m$ and
+$\alpha$. Every coverage row in
 [`coverage_by_arm.csv`](results/tables/coverage_by_arm.csv) is judged against the
 Beta-Binomial interval, not against $\alpha$.
 
@@ -307,7 +314,7 @@ no fixed inflation factor is claimed.
 
 Two a-priori gates over 120 configurations of encoding × qubits × bandwidth × entanglement:
 a kernel is usable only if it is not exponentially concentrated **and** not reproducible by a
-tuned RBF ($\rho_{\mathrm{RBF}} \lt 0.60$). **28 of 120 pass conditioning; none passes both.**
+tuned RBF ($\rho_{\mathrm{RBF}} \le 0.60$). **28 of 120 pass conditioning; none passes both.**
 The closest any configuration came was $\rho_{\mathrm{RBF}} = 0.6291$. The arm was therefore
 never run on the decision task — which is what pre-registering a screen is for.
 [Screen definitions and the full 120](docs/RESULTS.md#quantum-kernel-rejected-by-the-screens-before-it-ran)
@@ -346,7 +353,7 @@ contradicts a claim an earlier draft had already written down:
 * The **first latency measurement measured the library's threading default**, not the model —
   an OpenMP barrier over one row cost 19 ms against 0.05 ms of prediction, which flattened
   device, feature count and batch size alike. Reported as-is it would have put a tree ensemble
-  at a tenth of the issuer's latency budget ([D-063](docs/decisions.md)).
+  at 11–31 % of the issuer's latency budget ([D-063](docs/decisions.md)).
 
 [`docs/decisions.md`](docs/decisions.md) carries every entry including the retractions —
 a memory-bandwidth witness retracted twice, a clustered-bootstrap width claim asserted from
@@ -403,7 +410,7 @@ power gate that can be computed afterwards is not a gate.
 | [`docs/protocol.md`](docs/protocol.md) | Pre-registration, frozen before any model was fitted. Estimand, split, decision rule, band freezing, null hypotheses H1–H5, screens, out-of-scope claims, and its dated amendments |
 | [`docs/decisions.md`](docs/decisions.md) | Every entry, including the retractions and the reason for each |
 | [`docs/RESULTS.md`](docs/RESULTS.md) | Every result table in full, with the caveat attached to each and the retractions that produced them |
-| [`docs/REFERENCES.md`](docs/REFERENCES.md) | 53 entries, every one of them reached from somewhere in this repository: conformal theory, fraud prior art, quantum ML evidence, datasets, regulation, software, and sources deliberately **not** relied upon. Ten entries cited by nothing were removed rather than left for a reader to chase. [`REFERENCE_CROSSCHECK.md`](docs/REFERENCE_CROSSCHECK.md) reports which are reached from the repository and which are not |
+| [`docs/REFERENCES.md`](docs/REFERENCES.md) | 56 numbered entries, every one of them reached from somewhere in this repository: conformal theory, fraud prior art, quantum ML evidence, datasets, regulation and software, plus an unnumbered section recording sources deliberately **not** relied upon. Ten entries cited by nothing were removed rather than left for a reader to chase. [`REFERENCE_CROSSCHECK.md`](docs/REFERENCE_CROSSCHECK.md) reports which are reached from the repository and which are not |
 | [`NOTICE`](NOTICE) | Third-party licences, including why `cuquantum-cu11` is not installed by default |
 
 ### 8.2 Implementation

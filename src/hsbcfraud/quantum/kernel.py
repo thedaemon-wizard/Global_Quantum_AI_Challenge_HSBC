@@ -29,13 +29,18 @@ penalise omitting.
 
 Cost
 ----
-A fidelity Gram matrix needs ``n(n-1)/2`` circuit pairs and is quadratic in the band size.
-Measured on this machine at 8 qubits: about 19.5 microseconds per pair on the statevector
-path, so a 2,400-point band costs roughly a minute and 8,000 points roughly ten.  The
-statevector route computes each state **once** and then takes inner products, which is what
-makes that cost linear in circuit evaluations rather than quadratic; the naive route of
-building a compute-uncompute circuit per pair is quadratic in circuit executions and is what
-makes hardware implementations of this so expensive.
+A fidelity Gram matrix has ``n(n-1)/2`` distinct off-diagonal entries, but this
+implementation does not run a circuit per pair.  The statevector route computes each state
+**once** and then forms a single ``(n, 2**q) x (2**q, n)`` product, so the number of circuit
+evaluations is linear in ``n`` and the per-pair cost falls as the band grows.  Measured at
+8 qubits on the 300-point screening block, ``results/tables/screens.csv`` records a mean
+``gram_seconds`` of 0.186 s -- about 0.62 ms per state, or 4.2 microseconds per pair at that
+size -- so a 2,400-point band is a few seconds, not minutes.  The 19.5 microseconds per pair
+recorded in ``docs/decisions.md`` D-006 is a measurement of the pairwise
+``FidelityStatevectorKernel``, which is no longer in this tree; quoting it against the route
+below would attribute a quadratic loop's cost to the linear one.  The naive route of building
+a compute-uncompute circuit per pair is quadratic in circuit executions and is what makes
+hardware implementations of this so expensive.
 """
 
 from __future__ import annotations

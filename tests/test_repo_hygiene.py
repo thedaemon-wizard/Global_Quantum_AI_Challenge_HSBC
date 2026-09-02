@@ -325,6 +325,14 @@ def test_exported_predictions_agree_with_the_held_out_validation() -> None:
     assert in_band.sum() >= int(row["n_legit_band_test"].iloc[0]), (
         "fewer in-band rows than the validation counts as legitimate alone"
     )
+    # And an upper bound, because the line above admits everything above 10,021: a mask that
+    # flagged all 115,534 rows satisfies it. The band budget comes from run_conformal.py and
+    # the share from the exporter, so this is not a file compared against itself, which is why
+    # operating_point.csv is not the reference -- export_predictions.py writes both.
+    assert in_band.mean() <= float(chosen["budget"]), (
+        f"{in_band.mean():.4f} of held-out traffic is in the band, above the certified "
+        f"abstention budget of {float(chosen['budget']):.4f}"
+    )
     assert (predictions["fraud_probability"].between(0.0, 1.0)).all(), (
         "the statement asks for a float in [0, 1]"
     )
@@ -396,6 +404,68 @@ TABLES_WITHOUT_A_PRODUCER = {
 }
 
 
+# Committed tables that no script writes although one should. Kept apart from the exemption
+# above because these are a defect rather than a decision, and recorded as expected failures
+# rather than exempted so that the run summary carries them: `xfail(strict=True)` fails the
+# suite the moment a producer appears, which is what forces the entry back out again.
+TABLES_WHOSE_PRODUCER_IS_MISSING = {
+    "coverage_by_arm.csv": (
+        "three scripts name it and none writes it -- make_figures.py reads it, and "
+        "summarise_coverage.py and validate_certificate.py name it in a module docstring"
+    ),
+    "coverage_by_arm_seeds.csv": (
+        "read by summarise_coverage.py and by the walkthrough notebook, written by nothing"
+    ),
+}
+
+
+def _tables_written_by_a_script() -> set[str]:
+    """Basenames of the CSV files something in ``scripts/`` or ``src/`` actually writes.
+
+    A *mention* is not a producer. The first version of this check searched the concatenated
+    source for the file name, and a module docstring naming a table satisfied it: two tables
+    sat in that blind spot for the whole study, one of them printed in the proposal. Reading
+    the syntax tree instead means only a string that reaches a ``to_csv`` call counts, either
+    directly or through the variable the path was assigned to.
+    """
+
+    def csv_names(node: ast.AST) -> set[str]:
+        return {
+            child.value.rsplit("/", 1)[-1]
+            for child in ast.walk(node)
+            if isinstance(child, ast.Constant)
+            and isinstance(child.value, str)
+            and child.value.endswith(".csv")
+        }
+
+    written: set[str] = set()
+    for directory in ("scripts", "src"):
+        for path in sorted((REPO / directory).rglob("*.py")):
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            # Two passes, because the destination is often bound above the write and `ast.walk`
+            # does not promise to reach the assignment first.
+            bound = {
+                node.targets[0].id: csv_names(node.value)
+                for node in ast.walk(tree)
+                if isinstance(node, ast.Assign)
+                and len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and csv_names(node.value)
+            }
+            for node in ast.walk(tree):
+                if not (
+                    isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "to_csv"
+                ):
+                    continue
+                for arg in node.args:
+                    written |= csv_names(arg)
+                    if isinstance(arg, ast.Name):
+                        written |= bound.get(arg.id, set())
+    return written
+
+
 def test_every_committed_table_has_a_producer() -> None:
     """Some script must write each results table, or it is not reproducible.
 
@@ -403,15 +473,12 @@ def test_every_committed_table_has_a_producer() -> None:
     rewrites always passes. Reproducibility is the property that a target regenerates it, and
     that is what this asserts.
     """
-    writers = "\n".join(
-        path.read_text(encoding="utf-8")
-        for directory in ("scripts", "src")
-        for path in sorted((REPO / directory).rglob("*.py"))
-    )
+    written = _tables_written_by_a_script()
+    recorded = set(TABLES_WITHOUT_A_PRODUCER) | set(TABLES_WHOSE_PRODUCER_IS_MISSING)
     orphaned = sorted(
         path.name
         for path in sorted((REPO / "results" / "tables").glob("*.csv"))
-        if path.name not in writers and path.name not in TABLES_WITHOUT_A_PRODUCER
+        if path.name not in written and path.name not in recorded
     )
     assert not orphaned, (
         f"these committed tables are written by no script, so `make reproduce` carries them "
@@ -420,10 +487,28 @@ def test_every_committed_table_has_a_producer() -> None:
     )
 
     stale = sorted(
-        name for name in TABLES_WITHOUT_A_PRODUCER
-        if not (REPO / "results" / "tables" / name).exists()
+        name for name in recorded if not (REPO / "results" / "tables" / name).exists()
     )
     assert not stale, f"the exemption list names tables that no longer exist: {stale}"
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        pytest.param(name, marks=pytest.mark.xfail(strict=True, reason=reason))
+        for name, reason in sorted(TABLES_WHOSE_PRODUCER_IS_MISSING.items())
+    ],
+)
+def test_a_table_recorded_as_producerless_has_gained_a_producer(name: str) -> None:
+    """The recorded defects, asserted so they clear themselves.
+
+    This fails while the gap is open, which is the honest state, and fails the other way once
+    the producer exists -- at which point the entry above is what has to go.
+    """
+    assert name in _tables_written_by_a_script(), (
+        f"results/tables/{name} is still written by no script. Write the producer and delete "
+        f"its entry from TABLES_WHOSE_PRODUCER_IS_MISSING."
+    )
 
 
 # Mermaid renders client-side on GitHub with a configuration this repository does not control.

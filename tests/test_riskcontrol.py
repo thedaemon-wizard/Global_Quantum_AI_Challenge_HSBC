@@ -7,7 +7,9 @@ violations in 3,000 replications at delta = 0.05)" and that ``hoeffding_bentkus_
 validations, written so that the sentences describe something a reader can run.
 
 The Monte-Carlo test is the load-bearing one. It is the only check here that would catch a
-procedure that produces admissible sets it has no right to.
+procedure using an invalid p-value; the multiplicity correction is conservative enough to pass
+it while missing entirely, so that is pinned separately by
+``test_correction_is_over_every_grid_point_and_risk_pair``.
 """
 
 from __future__ import annotations
@@ -108,8 +110,14 @@ def test_the_family_wise_guarantee_holds_at_the_null_boundary() -> None:
         risk = RiskDefinition("r", alpha, _bernoulli_risk(rng, alpha, n))
         if learn_then_test(grid, [risk], delta=DELTA).any_admissible:
             violations += 1
-    # Binomial upper bound at the 1e-6 level, so a correct procedure effectively never fails
-    # this and a broken one effectively always does.
+    # Binomial upper bound at the 1e-6 level: a correct procedure effectively never fails it.
+    # It is not a test of the multiplicity correction, which is pinned separately below.  The
+    # ceiling of 210 is a violation rate of 7 %, and Hoeffding-Bentkus is conservative enough
+    # that an entirely uncorrected procedure violates only 32 times here and would pass; a
+    # plain binomial tail with neither the Bentkus factor nor the correction violates 113 times
+    # and would also pass.  What this catches is a procedure that has stopped using a valid
+    # p-value at all: `empirical < alpha` violates 1,371 times of 3,000.  All four counts were
+    # measured against this fixture.
     ceiling = stats.binom.ppf(1 - 1e-6, REPLICATIONS, DELTA)
     assert violations <= ceiling, f"{violations} violations in {REPLICATIONS} at delta={DELTA}"
 
@@ -134,13 +142,22 @@ def test_two_risks_must_both_be_rejected() -> None:
 
 
 def test_correction_is_over_every_grid_point_and_risk_pair() -> None:
-    """Correcting only across grid points would ignore that each is tested more than once."""
+    """Correcting only across grid points would ignore that each is tested more than once.
+
+    The fixture is chosen so the correction bites.  The shared p-value is 0.0033, which clears
+    ``delta / 11 = 0.00455`` but not ``delta / 22 = 0.00227``, so the second risk is what
+    empties the admissible set.  Because the synthetic risk is independent of lambda every grid
+    point carries the same p-value and the outcome is all-or-nothing, so a fixture outside that
+    window cannot separate the two families: the earlier one certified nothing in either call,
+    and the comparison it made was ``0 <= 0``, which the uncorrected procedure also satisfies.
+    """
     rng = np.random.default_rng(SEED)
     grid = np.linspace(0.0, 1.0, 11)
-    risk = RiskDefinition("r", 0.25, _bernoulli_risk(rng, 0.20, 300))
+    risk = RiskDefinition("r", 0.25, _bernoulli_risk(rng, 0.18, 250))
     one = learn_then_test(grid, [risk], delta=DELTA)
     two = learn_then_test(grid, [risk, RiskDefinition("s", 0.25, risk.evaluate)], delta=DELTA)
-    assert two.admissible.size <= one.admissible.size
+    assert one.any_admissible, "the fixture is vacuous; the comparison below proves nothing"
+    assert two.admissible.size < one.admissible.size
 
 
 @pytest.mark.parametrize("delta", [0.0, 1.0, -0.5])
@@ -191,6 +208,12 @@ def test_the_effective_sample_size_is_the_conditioned_subset() -> None:
 
 
 def test_the_missed_fraud_rate_is_also_a_zero_one_mean() -> None:
+    """The same property as the test above, for the other certified risk.
+
+    Range and sample size alone do not pin a rate: the caught fraction is also in [0, 1] and
+    leaves ``n_eff`` untouched, so an inverted sign here passed every assertion this test used
+    to make while certifying the complement of the quantity ``run_conformal.py`` names.
+    """
     rng = np.random.default_rng(SEED)
     n = 600
     y = (rng.random(n) < 0.3).astype(int)
@@ -198,8 +221,10 @@ def test_the_missed_fraud_rate_is_also_a_zero_one_mean() -> None:
     in_band = (score > 0.2) & (score < 0.8)
     evaluate = missed_fraud_rate(y, score, in_band, outer_threshold=0.8)
     risk, n_eff = evaluate(0.5)
-    assert 0.0 <= risk <= 1.0
-    assert n_eff == int((y == 1).sum())
+    fraud = y == 1
+    caught = (score[fraud] >= 0.8) | (in_band[fraud] & (score[fraud] >= 0.5))
+    assert risk == pytest.approx(float((~caught).mean()))
+    assert n_eff == int(fraud.sum())
 
 
 def test_the_grid_is_half_open_on_the_band() -> None:
@@ -213,11 +238,24 @@ def test_the_grid_is_half_open_on_the_band() -> None:
     grid = in_band_grid(score, in_band, n_points=11)
     assert grid.size == 11
     assert grid.min() >= score[in_band].min()
-    assert grid.max() < score[in_band].max() or grid.max() <= 0.8
+    # The second disjunct this line used to carry, `or grid.max() <= 0.8`, was a tautology:
+    # band membership is `score < 0.8`, so every quantile of the in-band scores is below 0.8
+    # whether or not the top point was dropped, and the test passed with the vacuous grid
+    # restored.
+    assert grid.max() < score[in_band].max(), (
+        "the top quantile flags an empty set and scores zero risk regardless of the data"
+    )
 
 
-def test_the_abstention_rate_falls_as_the_threshold_rises() -> None:
+def test_the_abstention_rate_is_independent_of_the_threshold() -> None:
+    """The band edges are frozen before the in-band threshold is chosen, so the rate is a
+    constant -- which is the opposite of what this test was named after.
+
+    The value is pinned as well as the invariance, because a stub returning a constant zero
+    satisfies the invariance on its own.
+    """
     rng = np.random.default_rng(SEED)
     in_band = rng.random(500) < 0.4
     evaluate = abstention_rate(in_band)
+    assert evaluate(0.1)[0] == pytest.approx(float(in_band.mean()))
     assert evaluate(0.1)[0] == pytest.approx(evaluate(0.9)[0])

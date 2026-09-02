@@ -4,8 +4,10 @@
 it once, in full, so that the other documents can point here instead of restating it and
 drifting from each other.
 
-Every number below is reproduced from `results/tables/` and is checked by
-`scripts/check_claims.py`. If a figure here disagrees with a table, the table is right.
+Every number below is transcribed from `results/tables/` or from the decision entry cited
+beside it. `scripts/check_claims.py` does **not** scan this file -- it is absent from that
+script's `CLAIM_TEXT_CONSUMERS` -- so nothing here is gated and a figure can drift without
+failing a build. If a figure here disagrees with a table, the table is right.
 
 ---
 
@@ -78,7 +80,9 @@ the fraud process. It requires exchangeability between $D_{\mathrm{cal}}$ and th
 population, and nothing else.
 
 **It is finite-sample.** Not asymptotic. The bound holds at the calibration sizes actually
-available, which for the tightest band budget is 847 legitimate in-band rows.
+available, which for the tightest band budget that certifies anything (0.035) is 1,572
+legitimate in-band rows. The 0.02 budget leaves 847 and certifies nothing at any level, so 847
+is the sample size that *failed*, not the one any issued certificate rests on.
 
 **It is conditional on $\hat\lambda$ being selected the way the procedure says.** Selecting
 $\lambda$ by looking at $D_{\mathrm{test}}$, or re-choosing the band edges after seeing

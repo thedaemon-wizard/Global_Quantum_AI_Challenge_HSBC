@@ -32,6 +32,7 @@ from hsbcfraud.data.splits import (
     stratified_blocks,
     temporal_blocks,
 )
+from hsbcfraud.paths import display_path
 from hsbcfraud.progress import ProgressReporter
 
 REPO = Path(__file__).resolve().parents[1]
@@ -130,6 +131,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--zip", type=Path, default=REPO / "datasets" / IEEE_CIS_ZIP)
     parser.add_argument("--out", type=Path, default=REPO / "results" / "tables")
+    # Separate from --out because the progress log is telemetry, not a result.  It used to be
+    # written beside the tables, where .gitignore does not reach and freeze.py's `*.json` glob
+    # does not match `.jsonl` -- so every run dropped an untracked, unfrozen file into the
+    # directory whose contract is that it holds committed artefacts and nothing else.
+    parser.add_argument("--runs", type=Path, default=REPO / "results" / "runs")
     args = parser.parse_args(argv)
 
     cfg = load_config(args.config)
@@ -166,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
         "splits",
         total=steps,
         stream=sys.stdout,
-        log_path=args.out / "make_splits.jsonl",
+        log_path=args.runs / "make_splits.jsonl",
         context={"rows": loaded.n_rows, "arms": list(builders)},
         every=1,
         label_width=34,
@@ -225,7 +231,10 @@ def main(argv: list[str] | None = None) -> int:
 
     pd.DataFrame(summary_rows).to_csv(args.out / "splits.csv", index=False)
     pd.DataFrame(integrity_rows).to_csv(args.out / "data_integrity.csv", index=False)
-    print(f"\nWrote {args.out / 'splits.csv'} and {args.out / 'data_integrity.csv'}")
+    print(
+        f"\nWrote {display_path(args.out / 'splits.csv')} and "
+        f"{display_path(args.out / 'data_integrity.csv')}"
+    )
     return 0
 
 

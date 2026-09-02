@@ -51,8 +51,6 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-
 from hsbcfraud.analysis.records import AMENDMENT, numbered_ids
 from hsbcfraud.config import load_config
 from hsbcfraud.paths import display_path
@@ -132,11 +130,11 @@ def main(argv: list[str] | None = None) -> int:
                 file=sys.stderr,
             )
             return 1
-        if dump.read_text(encoding="utf-8") != render(None):
+        if dump.read_text(encoding="utf-8") != render():
             print(
                 f"{display_path(dump)} has drifted from the defaults in "
-                "src/hsbcfraud/config.py. The dataclass is the source of truth; regenerate "
-                "with scripts/dump_config.py.",
+                "src/hsbcfraud/config.py. The pydantic models there are the source of truth, "
+                "not this YAML; regenerate with scripts/dump_config.py.",
                 file=sys.stderr,
             )
             return 1

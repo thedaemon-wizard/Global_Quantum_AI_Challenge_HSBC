@@ -3,7 +3,8 @@
 
 The site loop was rewritten as a binary reduction tree because the original was bound by
 kernel launches rather than arithmetic. Reassociating a matrix chain is only legitimate
-because the accumulated log-norm is discarded, so the output depends on the DIRECTION of the
+because the per-site scale factors are discarded rather than accumulated -- D-031 deleted the
+accumulator this sentence used to name -- so the output depends on the DIRECTION of the
 product and nothing else; and it is only safe if the site ordering survives, which is the
 class of defect this classifier has already shipped twice.
 """
@@ -21,7 +22,17 @@ from hsbcfraud.quantum.mps import (
     tune_contraction_chunk,
 )
 
-pytestmark = pytest.mark.skipif(not torch.cuda.is_available(), reason="the fit requires CUDA")
+# Applied per test rather than to the module.  Four of the five tests below move tensors to
+# the device or call `tune_contraction_chunk`, which refuses without CUDA; but
+# `test_the_default_is_the_sequential_fold` only reads configuration, and a module-level mark
+# withdrew that guard on every machine without a GPU.  That is the guard standing between the
+# committed tables and a default that silently reassociates the product (D-037), so the one
+# reader most likely to run this suite on a laptop was the one it stopped protecting.  The
+# same shape of module-level mark had already made a `pytest.raises` unreachable in
+# `test_mps_guards.py`.
+needs_cuda = pytest.mark.skipif(
+    not torch.cuda.is_available(), reason="this test measures or fits on the GPU"
+)
 
 WIDTHS = (1, 8, 32, 128, 439)
 
@@ -32,6 +43,7 @@ def build(sites: int, chi: int, chunk: int) -> MPSClassifier:
     return model.cuda()
 
 
+@needs_cuda
 @pytest.mark.parametrize(("sites", "chi"), [(439, 4), (439, 32), (431, 16), (64, 8), (9, 4)])
 def test_every_width_agrees_with_the_sequential_fold(sites: int, chi: int) -> None:
     """Reassociation changes the rounding, not the answer.
@@ -53,6 +65,7 @@ def test_every_width_agrees_with_the_sequential_fold(sites: int, chi: int) -> No
         assert float((expected - actual).abs().max()) < 1e-4, f"width {width}"
 
 
+@needs_cuda
 def test_site_ordering_survives_the_reduction(sites: int = 439) -> None:
     """Matrix multiplication is associative but not commutative.
 
@@ -96,6 +109,7 @@ def test_site_ordering_survives_the_reduction(sites: int = 439) -> None:
     )
 
 
+@needs_cuda
 def test_gradients_agree_so_the_training_trajectory_is_unchanged() -> None:
     """A matching forward is not sufficient evidence that the model trains the same.
 
@@ -103,6 +117,12 @@ def test_gradients_agree_so_the_training_trajectory_is_unchanged() -> None:
     intermediate gradients even when the output agrees. What matters downstream is the
     gradient direction and its norm, because the training loop now guards on the norm.
     """
+    # Seed before drawing: `build()` is the only caller of `torch.manual_seed` in this file,
+    # and it runs after these two lines, so the inputs were inheriting whatever CUDA RNG state
+    # the preceding tests left behind.  Three fresh processes drew three different tensors
+    # (input sums 56172.289, 56114.883, 56326.0), and the assertions here are tight enough to
+    # fail on the input alone -- a failure that could not be reproduced from this file.
+    torch.manual_seed(0)
     x = torch.rand(256, 439, device="cuda")
     y = torch.randint(0, 2, (256,), device="cuda")
     loss_fn = torch.nn.CrossEntropyLoss()
@@ -135,6 +155,7 @@ def test_the_default_is_the_sequential_fold() -> None:
     assert MPSConfig(contraction_chunk=None).contraction_chunk is None
 
 
+@needs_cuda
 def test_tuning_prefers_the_tree_at_small_bond_and_the_fold_at_large() -> None:
     """The crossover is arithmetic, not an artefact of one machine.
 
@@ -152,6 +173,7 @@ def test_tuning_prefers_the_tree_at_small_bond_and_the_fold_at_large() -> None:
     )
 
 
+@needs_cuda
 def test_tuning_reports_every_width_it_could_measure() -> None:
     """A width skipped for memory and a width that lost are different facts."""
     _, timings = tune_contraction_chunk(64, MPSConfig(bond_dimension=4, seed=0))

@@ -41,7 +41,7 @@ tables:
   - key: rolling
     source: results/tables/rolling_origin.csv
     caption: >
-      The temporal deviation across five rolling calibration origins.  Two of five breach and
+      The temporal deviation across five rolling calibration origins.  \ClaimRollingBreaches{} of \ClaimRollingOrigins{} breach and
       the earliest is conservative, so no single ratio characterises the effect.
     label: tab:rolling
     align: rrrl

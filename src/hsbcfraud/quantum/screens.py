@@ -29,7 +29,8 @@ The two-dimensional criterion
 A map must be **simultaneously** well conditioned and distinguishable from an RBF.  Neither
 axis alone is informative, which is why they are evaluated together:
 
-* effective-rank ratio inside a band bracketing where classical kernels sit on the same data;
+* effective-rank ratio inside a stipulated band -- see the note below on where the classical
+  kernels on this data actually sit;
 * correlation with the best-fitting RBF kernel below a threshold.
 
 Measured on isotropic uniform data during design, no bandwidth satisfied both at once for an
@@ -38,7 +39,10 @@ Measured on isotropic uniform data during design, no bandwidth satisfied both at
 monotonically to 0.712.  Whether real fraud features behave the same way is what this module
 answers on the band block.
 
-Huang's geometric difference is computed alongside as a third, independent screen.
+Huang's geometric difference is computed and reported alongside these two, but it is a
+diagnostic and not a gate: no ``passes_*`` field consults it.  It was pre-registered as a gate
+and never implemented as one; see docs/protocol.md Amendment A6, which also records that the
+omission runs in the direction that flatters the rejection.
 """
 
 from __future__ import annotations
@@ -62,7 +66,11 @@ def effective_rank_ratio(gram: np.ndarray) -> float:
     A value near 1 means the eigenvalues are near-uniform: every direction carries the same
     weight, which is what a concentrated kernel looks like and which leaves a classifier
     nothing to key on.  A value near 0 means one direction dominates, which is a rank-one
-    kernel and equally useless.  Classical kernels that work on a given dataset sit between.
+    kernel and equally useless.  The gate's band is stipulated at [0.01, 0.35] rather than
+    measured: on the 300 screening rows the RBF at the natural bandwidth (gamma = 1/8) sits at
+    0.0039 and would itself be rejected, and the RBF family only enters the band above
+    gamma = 3.2.  Every candidate that passes conditioning is therefore better conditioned
+    than the classical reference, not merely comparable to it.
     """
     eig = np.linalg.eigvalsh(np.asarray(gram, dtype=float))
     eig = np.clip(eig, 0.0, None)
@@ -101,14 +109,33 @@ def rbf_correlation(
         gammas = np.logspace(-3.0, 1.0, 25)
     off = ~np.eye(gram.shape[0], dtype=bool)
     quantum = np.asarray(gram, dtype=float)[off]
-    best = (0.0, float("nan"))
+
+    # Tested once, before the gamma sweep, because it is a property of the candidate and not
+    # of any RBF it is compared against.  A constant off-diagonal is exponential
+    # concentration taken to its limit -- the positive result this screen exists to produce.
+    # Skipping such a candidate inside the loop instead would leave `best` at its (0.0, nan)
+    # initial value, and 0.0 passes the distinctness gate, so an information-free kernel
+    # would be certified distinguishable from every RBF.  It is unmeasurable here, and it
+    # fails: `nan <= rbf_correlation_max` is False.
+    if quantum.std() == 0:
+        return (float("nan"), float("nan"))
+
+    best: tuple[float, float] | None = None
     for gamma in gammas:
         classical = rbf_kernel(x, gamma=float(gamma))[off]
-        if classical.std() == 0 or quantum.std() == 0:
+        if classical.std() == 0:
+            # Unmeasurable at this gamma, not uncorrelated: a constant RBF off-diagonal leaves
+            # `corrcoef` nothing to divide by.  Three equidistant points do it at every gamma.
             continue
         r = abs(float(np.corrcoef(quantum, classical)[0, 1]))
-        if r > best[0]:
+        if best is None or r > best[0]:
             best = (r, float(gamma))
+    if best is None:
+        # Not one gamma was measurable, so no comparison ran.  Seeding `best` at 0.0 instead
+        # returned the strongest possible distinctness for a test that never happened, and 0.0
+        # passes the gate -- the same fail-open as the constant-Gram case above, reached from
+        # the classical side.  Unmeasurable is reported as unmeasurable, and it fails.
+        return (float("nan"), float("nan"))
     return best
 
 

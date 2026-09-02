@@ -38,6 +38,7 @@ from hsbcfraud.conformal.riskcontrol import (
 )
 from hsbcfraud.conformal.split import degeneracy_floor, mondrian_thresholds
 from hsbcfraud.data.splits import TestFoldGuard
+from hsbcfraud.paths import display_path, require_run_artefact
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -67,7 +68,7 @@ def band_edges(
     recomputed as quantiles of the deployment stream: a predicate estimated from the data it
     is applied to is data-dependent, which is exactly the selective-inference break that
     freezing the band exists to avoid.  The cost is that the routed volume drifts -- measured
-    here at 5.1 % of ``D_cal`` for a band budgeted at 7.0 % of ``D_band`` -- and that drift is
+    here at 4.20 % of ``D_cal`` for a band budgeted at 5.0 % of ``D_band`` -- and that drift is
     reported rather than engineered away.
     """
     hi_q = 1.0 - decline_budget
@@ -82,20 +83,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=REPO / "results" / "tables")
     parser.add_argument("--arm", default="temporal")
     parser.add_argument("--seed", type=int, default=None)
-    parser.add_argument("--tier", default="100", help="PSD2 exemption threshold value tier")
-    parser.add_argument(
-        "--max-decline-rate",
-        type=float,
-        default=0.05,
-        help="reject operating points that meet the ceiling only by declining more than this",
-    )
+    # There is deliberately no --tier and no --max-decline-rate.  Both were declared here and
+    # never read: the tiers are enumerated from cfg.psd2_reference_rates, and no operating
+    # point was ever rejected for declining too much, so `--max-decline-rate 0.001` produced a
+    # byte-identical certificate.  A flag that cannot change the output is worse than a missing
+    # one, because a reviewer reads it as a control that was exercised.
     args = parser.parse_args(argv)
 
     cfg = load_config(args.config)
     seed = args.seed or cfg.split.seeds[0]
-    scores_path = args.runs / f"scores_{args.arm}_{seed}.parquet"
-    if not scores_path.exists():
-        raise SystemExit(f"{scores_path} not found; run scripts/run_baselines.py first")
+    scores_path = require_run_artefact(
+        args.runs / f"scores_{args.arm}_{seed}.parquet", produced_by="baseline"
+    )
 
     frame = pd.read_parquet(scores_path)
     band_df = frame[frame["block"] == "band"]
@@ -290,7 +289,10 @@ def main(argv: list[str] | None = None) -> int:
     frontier.to_csv(args.out / "tradeoff.csv", index=False)
     pd.DataFrame(deg_rows).to_csv(args.out / "degeneracy.csv", index=False)
     pd.DataFrame(cov_rows).to_csv(args.out / "coverage.csv", index=False)
-    print(f"\nWrote envelope, riskcontrol, degeneracy and coverage tables to {args.out}")
+    print(
+        f"\nWrote envelope, riskcontrol, tradeoff, degeneracy and coverage tables to "
+        f"{display_path(args.out)}"
+    )
     return 0
 
 

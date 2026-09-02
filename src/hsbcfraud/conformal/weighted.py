@@ -38,11 +38,14 @@ Two constraints follow, and both are load-bearing:
    paper's separate covariate-time-series treatment.  So this study does not quote ``rho^k``
    as though it were an evaluated number.
 
-What is reported instead is the *inverse*: given the risk gap actually observed between
+What this module makes available instead is the *inverse*: given a risk gap observed between
 calibration and test, :func:`implied_total_variation` returns the average per-step total
-variation distance that would be required to explain it.  That turns an unquantifiable
-forward bound into a quantity a reader can judge -- and it is honest about direction, since
-it is a necessary consequence of the observation rather than a guarantee about the future.
+variation distance that would be required to explain it.  It is not exercised in this round
+-- no script calls it and no results table carries the quantity, matching CP-5 in
+``docs/REFERENCE_IMPLEMENTATION.md`` ("not certified; the weighted arm is reported as not
+carrying a numeric penalty").  It would turn an unquantifiable forward bound into a quantity
+a reader could judge, and it is honest about direction, since it is a necessary consequence
+of an observation rather than a guarantee about the future.
 """
 
 from __future__ import annotations

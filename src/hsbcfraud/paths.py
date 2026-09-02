@@ -34,12 +34,17 @@ def require_run_artefact(path: Path, *, produced_by: str) -> Path:
 
     Everything under ``results/runs/`` is gitignored deliberately: the per-seed score files are
     large intermediates, and the repository commits the tables derived from them instead.  So a
-    fresh clone does not carry them, and three scripts read the same one.
+    fresh clone does not carry them, and ten scripts read the same one.
 
     A bare ``FileNotFoundError`` on an absolute path to a file a reader has never heard of is
     the least useful thing a build can say, and it is what a clean-room checkout produced.
     There is no fallback to add here -- the score cannot be invented -- so the only improvement
     available is to turn the crash into an instruction.
+
+    All ten readers now route through here; six did not when the clean-room checkout failed.
+    The count is worth stating because the helper is only worth having if it is the single
+    door: one unwrapped ``read_parquet`` reproduces the original failure verbatim, and no test
+    enumerates the readers, so the next one added is the one that regresses this.
     """
     if path.exists():
         return path

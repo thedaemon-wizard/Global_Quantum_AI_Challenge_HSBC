@@ -10,13 +10,17 @@ assignment under copy-on-write returns no error at all, and an off-by-one in a c
 quantile inflates the abstention rate without ever failing a test.
 
 The house rule is that a skip is a failure unless the reason is provably true on this host.
-``--allow-optional`` relaxes exactly one check -- S1, the GPU cross-check -- because its
-dependency is deliberately not installed by ``make venv`` (installing it pulls a
-proprietary NVIDIA binary; see NOTICE section 4).  Nothing else may be skipped.
+Three checks may skip, and only for the reasons their own docstrings state: S1 and S5 both
+exercise Aer, which lives in the ``gpu-crosscheck`` extra that ``make venv`` deliberately
+does not install (it pulls a proprietary NVIDIA binary; see NOTICE section 4), and S7 needs
+the ULB dataset, which is not obtainable from this repository.  The set is ``OPTIONAL``
+below.  Nothing else may be skipped, and there is no flag that relaxes any of this: this
+docstring described a ``--allow-optional`` that the parser never accepted, and named one
+optional check where the code has always had three.
 
 Usage
 -----
-    .venv/bin/python scripts/smoke.py            # all checks, S1 skipped if Aer GPU absent
+    .venv/bin/python scripts/smoke.py            # all nine; S1, S5, S7 skip if unavailable
     .venv/bin/python scripts/smoke.py --only S3  # one check, for iterating on a failure
 """
 

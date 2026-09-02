@@ -15,10 +15,10 @@ A row is ticked only when the check was actually run, not when it was planned.
 
 | | Document | Checked | Result |
 |---|---|---|---|
-| `[x]` | HSBC Challenge Statement (vFinalRevised, 16 pp.) | 2026-08-31, all seven sections | Four Expected Outcomes each answered by a named artefact; two named requirements were unmet and are now met (class-imbalance handling, the sponsor's own cited comparators) |
-| `[x]` | Challenge Statement, revised against original | 2026-08-31, word-by-word diff | The revision **adds URLs** and three words. No requirement changed. An audit agent reported the two as textually identical, which the diff does not support |
-| `[x]` | Phase 1 Submission Guidelines | 2026-08-31 | 6 pages + 3 appendix, A4, 10 pt floor, 20 MB per file, five slots -- all asserted by `scripts/check_pdf.py` and `scripts/assemble_submission.py` rather than by eye |
-| `[x]` | Assessment Criteria | 2026-08-31; findings re-verified 2026-09-02 | See §4 below. An adversarial pass over 10 criteria findings **confirmed none of them** -- each was either already satisfied elsewhere in the submission or rested on a stale copy of a file. Two proposed fixes carried factual errors that would have contradicted the claim ledger |
+| `[x]` | HSBC Challenge Statement (vFinalRevised, 16 pp.) | 2026-08-31, all seven sections | The statement itself has no "Expected Outcomes" heading: §5.2 is "Expected Outputs" over three rows, with four separate "Reporting Considerations". The four Expected Outcomes are the portal challenge panel's wording, and each is answered by a named artefact. Two named requirements were unmet and are now met (class-imbalance handling, the sponsor's own cited comparators) |
+| `[x]` | Challenge Statement, revised against original | 2026-08-31, word-by-word diff; re-run at character level 2026-09-02 | The revision **removes** the parenthetical "(~24,000 rows)" and re-paginates from 18 pages to 16. **No URL is added and no word is added** -- after whitespace normalisation the only content opcode is that one deletion, and the apparent URL differences are line-wrap points moving under re-pagination. No requirement changed. An earlier automated diff reported the two as textually identical, which a character-level diff does not support |
+| `[x]` | Phase 1 Submission Guidelines | 2026-08-31 | 6 pages + 3 appendix, A4, 10 pt floor, five slots -- all asserted by `scripts/check_pdf.py` and `scripts/assemble_submission.py` rather than by eye. §5 says "File size must not exceed 20 MB" without specifying per file or total; **no script checks it**, and the staged set is 12 MB total with an 11 MB largest file, so it is under the cap on either reading |
+| `[x]` | Assessment Criteria | 2026-08-31; findings re-verified 2026-09-02 | An adversarial pass over 10 criteria findings **confirmed none of them** -- each was either already satisfied elsewhere in the submission or rested on a stale copy of a file. Two proposed fixes carried factual errors that would have contradicted the claim ledger. §4 below is about the Terms, not these criteria |
 | `[x]` | Terms and Conditions | 2026-08-31; full clause pass 2026-09-02 | All 13 sections, see §4 below |
 
 ## 2. Live surfaces, re-verified in a browser
@@ -41,7 +41,7 @@ A row is ticked only when the check was actually run, not when it was planned.
 |---|---|---|---|
 | `[x]` | Clean-room, first pass | 2026-08-30 | [`CLEANROOM.md`](CLEANROOM.md) §2 |
 | `[x]` | Clean-room, second pass covering the four producers written afterwards | 2026-08-31 | All five derived tables byte-identical; found one defect, a verdict literal that had drifted between a row builder and its summary. [`CLEANROOM.md`](CLEANROOM.md) §2b |
-| `[x]` | Every committed table has a producer | continuous, `tests/test_repo_hygiene.py` | One documented exemption, recorded in [`PROVENANCE.md`](PROVENANCE.md) §1.4 |
+| `[x]` | Every committed table has a producer | continuous, `tests/test_repo_hygiene.py` | **Three tables have none, not one.** `mps_seed_spread.csv` is the documented exemption ([`PROVENANCE.md`](PROVENANCE.md) §1.4); `coverage_by_arm.csv` and `coverage_by_arm_seeds.csv` should have had producers and are carried as strict xfails so the entries clear themselves the moment one is written. This row read "one documented exemption" while the gate behind it searched for the file name anywhere in `scripts/` and `src/`, which counted the three scripts that *read* `coverage_by_arm.csv` as producing it |
 | `[x]` | Walkthrough against the committed tables | `make walkthrough` | Every assertion holds |
 | `[ ]` | Full-scale sweep re-run | not re-run | 13 GPU-hours; the frozen manifest covers it and no claim depends on re-deriving it |
 
@@ -66,8 +66,10 @@ tick with the wrong evidence is worse than an unticked row**, because it stops a
 again.
 
 **The clause-by-clause pass has since been run** (2026-09-02). `COMPLIANCE_CHECKLIST.md`
-section D went from 5 rows to 19, one per clause, and three of the five originals were restated
-because their reasoning did not reach the clause they ticked. Two rows are **要確認 and belong
+section D went from 5 rows to 22, at least one per clause and one per lettered sub-clause of §4,
+and three of the five originals were restated because their reasoning did not reach the clause
+they ticked. The first attempt at that pass wrote 19 rows and described them as "one per
+clause" while still omitting §1, §4.5 and §13. Two rows are **要確認 and belong
 to the author, not to this repository**: whether any current engagement makes him a "Contractor
 of ... Challenge enterprise sponsors" under §2, and whether to register a trading name, since
 §4.2 permits Resonance to publicise the entry by team name and withholds personal names.
@@ -83,7 +85,7 @@ row and a considered-and-null row are indistinguishable to the next reader.
 | `[x]` | QIntern 2026 Project 12 role | Programme and role named; the supporting repository is **private**, so no locator into it is cited. Third-party names and contact addresses removed |
 | `[x]` | Yale Peaked Hackathon placement and score | 13th of 549 at 450 of 550. Two separate corrections. **The placement is a team's** -- the leaderboard row and the CV both read *MerQury*, and section 8 of the proposal presented it without a qualifier two lines under the words "Single-person team". Now attributed. Separately, the section claimed the solved count follows from the score, which is arithmetically false -- ten subsets of the weights sum to the missing 100 -- and paired the 69-qubit figure with a method the repository's own verifier reports as failing on it ([D-102](decisions.md), [D-105](decisions.md)) |
 | `[x]` | unitaryHACK merges | **Three** pull requests, not the two the proposal implied: `cuda-quantum#4693`, `QuEST#783`, `cuda-quantum#4751`. Merge dates and branches read from the GitHub API on 2026-09-02. Two closed bounty issues, USD 200; the third is a follow-on and is not a bounty ([D-102](decisions.md)) |
-| `[ ]` | CV sole-proprietorship date | **要確認**: the CV reads "Jul 2026 - Present"; the portfolio and the filing say 1 August 2026. The submission uses 1 August. A reviewer comparing the two would see the discrepancy, and it is the author's to settle |
+| `[x]` | CV sole-proprietorship date | **Settled 2026-09-02.** The filing records a business start date of **1 August 2026**, which is what the submission and the portfolio use. The CV's "Jul 2026 - Present" is the error, and it is outside this repository. ⚠ **The CV should be corrected before it is sent anywhere alongside this submission**, since §8 links the portfolio and a reviewer who opens both sees the discrepancy |
 
 ## 5b. The seven open questions this study started with
 

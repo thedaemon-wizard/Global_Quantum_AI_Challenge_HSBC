@@ -41,7 +41,7 @@ TEXT_WIDTH_IN = (210.0 - 2 * 18.0) / 25.4
 NEUTRAL = "#dfe6ee"
 
 
-def architecture_figure(tables: Path) -> Figure:
+def architecture_figure(tables: Path) -> tuple[Figure, str]:
     """The four-block temporal split, and which block may touch which parameter.
 
     This is the argument for why the guarantee holds, not decoration.  Two exchangeability
@@ -116,7 +116,7 @@ def draw_split_row(axis, tables: Path, *, bottom: float, height: float) -> None:
                                       "shrinkA": 0, "shrinkB": 0})
 
 
-def overview_figure(tables: Path) -> Figure:
+def overview_figure(tables: Path) -> tuple[Figure, str]:
     """The whole picture for the README: the split above, the decision it produces below.
 
     The proposal has six pages and its version of this had to drop the decision flow.  The
@@ -194,7 +194,7 @@ def overview_figure(tables: Path) -> Figure:
     return figure, "overview"
 
 
-def coverage_figure(tables: Path) -> Figure:
+def coverage_figure(tables: Path) -> tuple[Figure, str]:
     """Empirical over nominal rate by arm, against the Beta-Binomial interval.
 
     The interval is what makes the plot honest.  A bar chart of ratios alone invites the eye
@@ -238,7 +238,7 @@ def coverage_figure(tables: Path) -> Figure:
     return figure, "coverage_by_arm"
 
 
-def mps_figure(tables: Path) -> Figure:
+def mps_figure(tables: Path) -> tuple[Figure, str]:
     """The H4 difference with its interval, against the effect the study could resolve."""
     frame = pd.read_csv(tables / "mps_h4.csv").sort_values("bond_dimension")
     figure, axis = plt.subplots(figsize=(5.2, 2.8))
@@ -257,7 +257,7 @@ def mps_figure(tables: Path) -> Figure:
     return figure, "mps_h4"
 
 
-def tradeoff_figure(tables: Path) -> Figure:
+def tradeoff_figure(tables: Path) -> tuple[Figure, str]:
     """Which (band budget, alpha) pairs certify, and at which missed-fraud budget.
 
     The certificate's reach is the study's headline deliverable and the easiest thing to

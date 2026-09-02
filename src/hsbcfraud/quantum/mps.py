@@ -33,7 +33,7 @@ Optimisation
 ------------
 Trained by Adam on the log-loss rather than by DMRG-style sweeping.  Sweeping is the canonical
 method and adapts the bond dimension automatically, but it needs a careful gauge and a
-truncation schedule; on 439 features and an 18-day budget a fixed-``chi`` gradient fit is the
+truncation schedule; on 431 features and an 18-day budget a fixed-``chi`` gradient fit is the
 defensible choice, and the bond dimension is swept explicitly instead so the capacity
 dependence is measured rather than adapted away.
 
@@ -49,9 +49,9 @@ reported here is conditional on the optimiser, and that a sweeping implementatio
 item rather than a settled improvement.
 
 Numerical conditioning is the one thing this ansatz does badly by default.  A product of ``d``
-matrices underflows or overflows long before ``d = 439``, so the contraction carries a running
-log-norm and renormalises at every site.  Without it the loss is ``nan`` within a few steps,
-silently, which is exactly the failure this project's discipline exists to catch.
+matrices underflows or overflows long before ``d = 431``, so the contraction renormalises the
+running vector at every site and discards the divisor.  Without it the loss is ``nan`` within
+a few steps, silently, which is exactly the failure this project's discipline exists to catch.
 """
 
 from __future__ import annotations
@@ -77,7 +77,10 @@ class MPSConfig:
     """Hyperparameters, all swept rather than tuned to a single value."""
 
     bond_dimension: int = 16
-    epochs: int = 40
+    # 30, because that is what every committed run used and what the cost arithmetic further
+    # down this file assumes.  The default was 40 for a while, which no run passed and no
+    # table descends from, so constructing MPSConfig() directly reproduced nothing.
+    epochs: int = 30
     batch_size: int = 512
     # None means "scale with chain length", which is what long chains require.  A single
     # fixed rate does not work across the range this study uses: measured on 2,000 rows over
@@ -91,7 +94,10 @@ class MPSConfig:
     learning_rate: float | None = None
     weight_decay: float = 1e-5
     # Positive-class weight in the loss.  At a 3.5 % base rate an unweighted fit collapses to
-    # the majority class; this is the study's documented class-imbalance handling for this arm.
+    # the majority class.  This is the one place in the study where imbalance is handled by
+    # loss weighting rather than by threshold placement, and it applies to this arm only --
+    # the certified pipeline still scores every block as it falls.  See docs/decisions.md
+    # D-099, which must name the exception.
     positive_weight: float = 8.0
     init_scale: float = 3e-3
     # Sites folded into one reduction tree before the running vector is renormalised.
@@ -138,9 +144,10 @@ def local_feature_map(x: torch.Tensor) -> torch.Tensor:
 class MPSClassifier(torch.nn.Module):
     """Binary classifier whose decision function is an MPS contraction.
 
-    The network is ``d`` rank-4 cores of shape ``(chi, 2, chi)`` with one carrying an extra
-    output leg, contracted left to right against the local feature maps.  Boundary cores are
-    ``(1, 2, chi)`` and ``(chi, 2, 1)`` so the contraction closes to a scalar per class.
+    The network is ``d`` rank-3 cores of shape ``(chi, 2, chi)`` contracted left to right
+    against the local feature maps.  The first core is ``(1, 2, chi)``; every right bond
+    including the last stays at ``chi``, and a separate ``(chi, 2)`` head closes the network
+    to two class logits.
     """
 
     def __init__(self, n_features: int, config: MPSConfig) -> None:
@@ -205,8 +212,8 @@ class MPSClassifier(torch.nn.Module):
         The contraction is reassociated into a binary reduction tree, which is where almost
         all of the runtime went.
 
-        **Why reassociating is legitimate.**  The accumulated log-norm is discarded rather
-        than returned (D-031), and the loop's last act is to divide by the running norm, so
+        **Why reassociating is legitimate.**  The per-site scale factors are discarded rather
+        than accumulated (D-031), and the loop's last act is to divide by the running norm, so
         the output is exactly ``normalise(v0 @ M_1 @ ... @ M_d) @ head`` where ``M_i`` is the
         transfer matrix at site ``i``.  The per-site renormalisation exists only to keep the
         product inside float32 range; it cannot change the direction of the result.  Matrix
@@ -258,8 +265,6 @@ class MPSClassifier(torch.nn.Module):
         # exactly the kind of defect this file already carries two entries about.
         partial = torch.einsum("pr,bp->br", self.cores[0][0], phi[:, 0, :])
         partial = self._renormalise(partial)
-        if self.n_features == 1:
-            return torch.einsum("bl,lc->bc", partial, self.head)
 
         # One batched einsum builds every remaining transfer matrix, replacing d separate
         # launches with one.
@@ -306,7 +311,10 @@ class MPSClassifier(torch.nn.Module):
         """Divide by the per-sample norm, clamped away from zero.
 
         Without it the product underflows to zero within about forty sites in float32.  The
-        discarded scale is identical across both logits and cancels in the softmax.
+        discarded scale is a positive per-sample factor common to both logits.  It is dropped
+        rather than carried: this model's decision function is defined as the normalised
+        contraction, so the scale is not part of the output.  It would not cancel if it were
+        kept -- softmax is invariant to an additive shift, not a multiplicative one.
         """
         norm = torch.clamp(torch.linalg.vector_norm(partial, dim=-1, keepdim=True), min=1e-12)
         return partial / norm
@@ -332,7 +340,12 @@ CHUNK_CANDIDATES = (1, 8, 32, 128, 512)
 
 
 def tune_contraction_chunk(
-    n_features: int, config: MPSConfig, *, batch_size: int | None = None, repeats: int = 3
+    n_features: int,
+    config: MPSConfig,
+    *,
+    batch_size: int | None = None,
+    repeats: int = 3,
+    reporter: ProgressReporter | None = None,
 ) -> tuple[int, dict[int, float]]:
     """Time each candidate reduction width and return the fastest, with the measurements.
 
@@ -343,12 +356,18 @@ def tune_contraction_chunk(
     another, and being wrong here costs hours.
 
     Tuning runs on a throwaway model with random inputs, so it cannot perturb the fit: no
-    parameter of the real model is touched and no data is read.  The cost is
-    ``len(CHUNK_CANDIDATES) * (repeats + 1)`` steps, about twenty against the twenty-one
-    thousand a full-scale job runs.
+    parameter of the real model is touched and no data is read.  The cost is two warmup steps
+    plus ``repeats`` timed steps per candidate, so ``n_candidates * (repeats + 2)`` -- at 431
+    sites that is five candidates and twenty-five steps, against the twenty-one thousand a
+    full-scale job runs.
 
     Candidates that exhaust memory are skipped and reported as such rather than silently
     dropped, because "the tree did not help" and "the tree did not fit" are different facts.
+    The returned ``timings`` carries only the widths that fitted, so it cannot express the
+    difference on its own; the skipped widths go to ``reporter`` instead.  Without that a
+    reader of the run log sees a width simply absent and cannot tell which of the two
+    happened -- and this is the regime the class docstring identifies as memory-bound, where
+    "did not fit" is the likelier of the two.
     """
     if not torch.cuda.is_available():
         raise RuntimeError("chunk tuning requires CUDA; pass contraction_chunk explicitly")
@@ -379,6 +398,15 @@ def tune_contraction_chunk(
             torch.cuda.synchronize()
             timings[candidate] = (time.perf_counter() - start) / repeats
         except torch.cuda.OutOfMemoryError:
+            # Recorded, not merely skipped.  `timings` is keyed by candidate, so a width that
+            # ran out of memory and a width that was never a candidate both show up as an
+            # absent key, and the note in the run log is the only place the two stay apart.
+            if reporter is not None:
+                reporter.note(
+                    f"reduction width {candidate} did not fit in memory at {n_features} "
+                    f"sites, bond dimension {config.bond_dimension}, batch {batch}",
+                    contraction_chunk=candidate,
+                )
             torch.cuda.empty_cache()
 
     if not timings:
@@ -410,8 +438,10 @@ def fit_mps(
     ``src/hsbcfraud/`` writes or prints -- the library returns data and the scripts report it.
     Passing ``None`` leaves the loop as it was.
 
-    ``evaluate`` is called once per epoch with the model in eval mode and its result attached
-    to the tick.  It exists because a falling loss is not evidence of learning: two silent
+    ``evaluate`` is called once per epoch with its result attached to the tick.  The model is
+    left in train mode at the call: the study's callbacks go through ``predict_proba``, which
+    sets eval mode itself, so a callback that reads the model directly must do the same.  It
+    exists because a falling loss is not evidence of learning: two silent
     bugs in this classifier produced steadily decreasing loss with an AUC of exactly 0.5000,
     and only a ranking metric would have caught them.  It is optional because it costs a
     forward pass over the evaluation set -- measured at roughly 11 % of an epoch on the full
@@ -431,7 +461,7 @@ def fit_mps(
     model = MPSClassifier(x_train.shape[1], config).to(device)
 
     if config.contraction_chunk is None:
-        chunk, timings = tune_contraction_chunk(x_train.shape[1], config)
+        chunk, timings = tune_contraction_chunk(x_train.shape[1], config, reporter=reporter)
         model.contraction_chunk = chunk
         if reporter is not None:
             reporter.note(

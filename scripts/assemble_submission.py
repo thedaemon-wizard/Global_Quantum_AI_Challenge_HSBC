@@ -38,6 +38,20 @@ PORTAL_FORMATS = frozenset({
 # The portal exposes five upload slots.
 PORTAL_SLOTS = 5
 
+# Phase 1 Submission Guidelines section 5: "File size must not exceed 20 MB."  Nothing in this
+# repository checked that, and the sentence is ambiguous twice over, so both ambiguities are
+# resolved toward the stricter reading rather than left to the person doing the upload:
+#
+#  * Per file or over the staged set?  Only the per-file bound holds under both readings, so
+#    that is what fails the run; the total is printed beside it so a human can see the other.
+#  * MB or MiB?  20,000,000 bytes is the smaller number, so a set that passes here also passes
+#    a portal counting in MiB.  Sizes are reported in the same unit they are judged in.
+#
+# predictions.csv grows with the held-out block and is deliberately unrounded, so it is the one
+# staged file that can walk into this limit.
+BYTES_PER_MB = 1_000_000
+MAX_UPLOAD_BYTES = 20 * BYTES_PER_MB
+
 # What is uploaded, and under what name.  The portal sees these names, so they carry the track
 # and the artefact rather than the repository's internal layout.  Five artefacts, chosen so
 # that a reviewer who opens only one still gets something self-contained: the two documents,
@@ -45,9 +59,12 @@ PORTAL_SLOTS = 5
 # implementation that produces the certificate, and the one picture that shows how little of the
 # pre-registered grid actually certifies.
 #
-# The certificate table held this slot and was dropped for the predictions: every one of its
-# certified rows is printed in the appendix and its full 48-cell grid is what the figure plots,
-# so it was the only staged file whose content a reviewer could already read elsewhere.
+# The certificate table held this slot and was dropped for the predictions, which the challenge
+# statement names as an expected output and the table is not.  The justification here used to
+# read that every certified row was printed in the appendix; none of the five is, in either PDF
+# -- both carry only the aggregate "5 of 48" and the margin.  What is true is that the figure
+# plots the full 48-cell grid and the table itself is committed as
+# results/tables/riskcontrol.csv, so a reviewer can still reach every cell.
 STAGED: tuple[tuple[str, str], ...] = (
     ("submission/proposal.pdf", "HSBC-proposal.pdf"),
     ("submission/appendix.pdf", "HSBC-appendix.pdf"),
@@ -77,9 +94,23 @@ def main(argv: list[str] | None = None) -> int:
     problems: list[str] = []
     if len(STAGED) > PORTAL_SLOTS:
         problems.append(f"{len(STAGED)} files staged for {PORTAL_SLOTS} upload slots")
+    staged_bytes = 0
+    largest_bytes = 0
     for source, name in STAGED:
-        if not (REPO / source).exists():
+        path = REPO / source
+        if not path.exists():
             problems.append(f"{source} does not exist; run `make pdf` first")
+        else:
+            size = path.stat().st_size
+            staged_bytes += size
+            largest_bytes = max(largest_bytes, size)
+            if size > MAX_UPLOAD_BYTES:
+                problems.append(
+                    f"{name} is {size / BYTES_PER_MB:.1f} MB, over the "
+                    f"{MAX_UPLOAD_BYTES / BYTES_PER_MB:.0f} MB the guidelines allow. Truncating "
+                    "the held-out block would change what is reported, so drop the file from "
+                    "STAGED and record why instead."
+                )
         suffix = Path(name).suffix.lower()
         if suffix not in PORTAL_FORMATS:
             problems.append(
@@ -116,7 +147,12 @@ def main(argv: list[str] | None = None) -> int:
         shutil.copy2(REPO / source, args.out / name)
         print(f"  {name:24s} <- {source}")
 
-    print(f"\nStaged {len(STAGED)} file(s) in {display_path(args.out)}.")
+    print(
+        f"\nStaged {len(STAGED)} file(s) in {display_path(args.out)}: "
+        f"{staged_bytes / BYTES_PER_MB:.1f} MB in total, largest "
+        f"{largest_bytes / BYTES_PER_MB:.1f} MB, against a "
+        f"{MAX_UPLOAD_BYTES / BYTES_PER_MB:.0f} MB cap read per file."
+    )
     print("Re-verify the portal URLs in a browser before uploading.")
     return 0
 

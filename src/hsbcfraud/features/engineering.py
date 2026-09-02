@@ -104,14 +104,19 @@ def add_entity_aggregates(
     return out
 
 
-def add_uid(frame: pd.DataFrame) -> pd.DataFrame:
+def add_uid(frame: pd.DataFrame, *, amount_column: str = "TransactionAmt") -> pd.DataFrame:
     """The competition's reconstructed client key, for the ablation only.
 
     ``UID = card1_addr1 + floor(day - D1)``.  ``D1`` is days since the card first appeared,
     so ``day - D1`` is approximately the card's first-seen date and is stable across that
     card's transactions.
+
+    ``amount_column`` is checked with the key columns rather than assumed.  It is as much a
+    requirement as ``card1`` is -- the per-UID aggregates below are built from it -- and
+    hardcoding it meant a frame without it failed with a raw pandas KeyError instead of this
+    function's own message, unlike its sibling ``add_entity_aggregates`` in the same file.
     """
-    for required in ("card1", "addr1", "D1", "day"):
+    for required in ("card1", "addr1", "D1", "day", amount_column):
         if required not in frame.columns:
             raise KeyError(f"{required!r} is required to build the UID feature")
     out = frame.copy()
@@ -123,7 +128,7 @@ def add_uid(frame: pd.DataFrame) -> pd.DataFrame:
         + "_"
         + pd.Series(first_seen, index=out.index).astype("string").fillna("NA")
     )
-    grouped = out.groupby("uid", sort=False, observed=True)["TransactionAmt"]
+    grouped = out.groupby("uid", sort=False, observed=True)[amount_column]
     shifted = grouped.shift(1)
     expanding = shifted.groupby(out["uid"], sort=False, observed=True).expanding()
     out["uid_amt_mean_past"] = expanding.mean().reset_index(level=0, drop=True)
