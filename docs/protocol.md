@@ -638,7 +638,7 @@ direction of error that flatters the finding.
 
 The rejection stands on the two screens that were applied — 28 of 120 configurations pass
 conditioning, 0 pass distinctness, and the median RBF correlation is 0.974 with a maximum of
-exactly 1.000 — but the body now says which screens were gated and which was not.
+0.99999975 — but the body now says which screens were gated and which was not.
 
 ---
 

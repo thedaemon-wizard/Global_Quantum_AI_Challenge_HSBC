@@ -1,4 +1,4 @@
-component,stage,profile,batch_size,repetitions,rows_scored,per_call_p50_ms,per_call_p95_ms,per_call_p99_ms,per_transaction_p50_ms,per_transaction_p95_ms,per_transaction_p99_ms,authorisation_budget_ms,network_response_ms
+component,stage,profile,batch_size,repetitions,n_features,per_call_p50_ms,per_call_p95_ms,per_call_p99_ms,per_transaction_p50_ms,per_transaction_p95_ms,per_transaction_p99_ms,authorisation_budget_ms,network_response_ms
 classical scorer,all traffic,1-thread CPU,1,200,431,0.0841055,0.26282159999999993,0.31973170999999995,0.0841055,0.26282159999999993,0.31973170999999995,300.0,130.0
 classical scorer,all traffic,1-thread CPU,32,200,431,0.28094450000000004,0.47656939999999975,0.8875938999999963,0.008779515625000001,0.014892793749999992,0.027737309374999883,300.0,130.0
 classical scorer,all traffic,1-thread CPU,1024,200,431,3.8547415000000003,4.7180712499999995,5.5376144899999975,0.0037643959960937503,0.0046074914550781245,0.0054078266503906226,300.0,130.0

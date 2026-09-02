@@ -88,6 +88,12 @@ classifier the card-disjoint arm is the *most* distinguishable of the three (0.6
 the temporal arm's 0.5525). What the data supports is that the breach appears only in the arm
 ordered by time, on every seed, and that neither control reproduces it.
 
+How much calibration each certified configuration had. The tightest band budget leaves 847
+legitimate in-band rows in the calibration block and certifies nothing at any level; the
+configurations that do certify had 1572 or more. So the 847 figure describes the budget where
+the certificate fails, not the sample size any certificate works with -- a distinction the
+proposal's sample-starved sentence used to blur.
+
 The censoring control in full. The trailing-window fraud rate is 3.666 % against 3.281 %
 earlier -- higher, not lower, which is the opposite of what unresolved chargebacks would
 produce. The Mann-Kendall trend statistic over the per-bucket rates is -0.2857 at p = 0.3988,

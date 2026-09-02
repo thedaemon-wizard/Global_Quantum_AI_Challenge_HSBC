@@ -31,7 +31,8 @@ The challenge statement's four Expected Outcomes are each answered by a named ar
 per-transaction probabilities and binary predictions by upload 3; feature attribution by §5 of
 the proposal and [`attribution_examples.csv`](results/tables/attribution_examples.csv), which
 carries the Shapley contributions behind ten individual predictions; the classical-baseline
-comparison by §3 against tuned XGBoost and LightGBM; and the quantum encoding and circuit-design
+comparison by §3 against a gradient-boosted baseline at fixed hyperparameters, which is the
+one classical baseline the statement requires; and the quantum encoding and circuit-design
 documentation by §4 and §7.
 
 Upload 3 replaced the certificate table, which every certified row of the appendix already

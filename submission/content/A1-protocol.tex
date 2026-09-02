@@ -46,9 +46,10 @@ strongly than the code enforces it, and a dataset never obtained.
 \item \emph{Dated after the certificate was produced.} H5's pre-registered test was specified
   for the wrong mechanism --- an exact Beta-Binomial tail is the law for split-conformal
   coverage, not for a Learn-then-Test certificate applied unchanged to a held-out block.
-\item \emph{Recorded on discovery.} The geometric-difference screen was pre-registered as one
-  of two a-priori screens and never gated on. The arm was rejected by the other screen; the
-  first was computed and not enforced, which is a divergence between protocol and code.
+\item \emph{Recorded on discovery.} The geometric-difference screen was pre-registered as an
+  a-priori screen and computed but never gated on --- a divergence between protocol and code.
+  What rejected the arm was RBF distinctness, which admitted none of the
+  \ClaimScreenConfigs{} configurations; conditioning admitted \ClaimScreenPassConditioning{}.
 \item \emph{Disclosure of non-execution.} The protocol's drift section lists five measurements
   as ``measured, not assumed''. Three were never run --- the conformal test martingale, the
   block permutation test, and band-conditional against marginal drift. No script exists for any
@@ -76,5 +77,5 @@ the block for reporting without passing through it.
 H1, H2 and H3 all compare a quantum kernel against a control, and the a-priori screens rejected
 every kernel before any of them could run --- so they are not open questions but questions the
 stopping rule closed. H4 --- that the tensor network does not improve band-conditional average
-precision over the tuned baseline --- is the one the body reports, and it is reported as
+precision over the baseline --- is the one the body reports, and it is reported as
 underpowered against its own pre-registered ceiling. H5 is validated on the held-out block.

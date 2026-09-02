@@ -48,9 +48,13 @@ from hsbcfraud.paths import display_path
 
 REPO = Path(__file__).resolve().parents[1]
 
-# The in-band control, identical to the one the tensor-network arm is compared against.  Kept
-# here as a literal rather than imported because run_mps.py constructs it inline too; the two
-# must not drift, which is what the parity assertion below is for.
+# The in-band re-scorer this script explains.  It is NOT the control the tensor-network arm is
+# compared against: that one, at run_mps.py:265-268, sets neither `subsample` nor
+# `colsample_bytree`, so the two differ in exactly those two hyperparameters.  An earlier
+# comment here claimed they were identical and pointed at a parity assertion that does not
+# exist.  The difference is harmless -- the attribution is about which features this model uses,
+# not about a comparison -- but the two are separate objects and saying otherwise invited a
+# reader to treat an attribution figure as a statement about the H4 baseline.
 BAND_MODEL = dict(
     n_estimators=400,
     max_depth=6,

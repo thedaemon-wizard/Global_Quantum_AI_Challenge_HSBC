@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 90
+    value: 93
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -213,7 +213,7 @@ claims:
       the typical configuration is a near-perfect RBF, not a marginal one.
 
   - key: ScreenMaxRbf
-    value: 1.0000
+    value: 0.99999975
     source: results/tables/screens.csv
     reduce: {op: max, column: rbf_correlation}
     tolerance: 0.00005
@@ -702,11 +702,17 @@ claims:
   - key: BandGbdtSeconds
     value: 0.28
     source: results/tables/mps_band.csv
-    reduce: {op: min, column: fit_seconds}
+    reduce:
+      op: min
+      column: fit_seconds
+      where_equals: {model: xgboost}
     tolerance: 0.005
     note: >
-      The tuned gradient-boosted baseline's in-band fit, for scale: the classical core of the
+      The gradient-boosted baseline's in-band fit, for scale: the classical core of the
       pipeline is not the expensive part, which is what makes the abstention band affordable.
+      The model filter is load-bearing: mps_band.csv holds both arms, and without it the
+      reduction returned whichever fit was fastest -- right only because the baseline happened
+      to be faster than every tensor-network fit in this run.
 
   # ------------------------- the challenge statement's primary metrics, on the test block
   # Section 4.1 of the challenge statement names AUC-ROC, AUPRC, F1, precision, recall and a

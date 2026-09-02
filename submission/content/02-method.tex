@@ -40,18 +40,20 @@ temporal break survives, and we measure it.
 
 \paragraph{Risk control.} Learn-then-Test controls family-wise error over a finite grid fixed
 in advance, using Hoeffding--Bentkus $p$-values with Holm. Two risks are controlled jointly:
-$R(\lambda)$ at level $\alpha$, and the false-negative rate at $\alpha_{\mathrm{FN}}$.
+$R(\lambda)$ at level $\alpha$, and the false-negative rate at $\alpha_{\mathrm{FN}}$. A grid
+point is admissible only when both nulls are rejected, so the joint statement inherits one
+confidence: $\mathbb{P}\bigl(R(\lambda) \le \alpha\bigr) \ge 1 - \delta$ at $\delta = 0.05$.
 
-The bound applies only to a \emph{mean of per-observation losses}. Our first formulation was a
-nonlinear transform of a mean and did not produce valid $p$-values; it is now a genuine $0/1$
-loss averaged over frauds, equivalent to a recall floor at $1 - \alpha_{\mathrm{FN}}$.
+The bound applies only to a \emph{mean of per-observation losses}; our first formulation was a
+nonlinear transform of one and produced invalid $p$-values. It is now a $0/1$ loss averaged over
+frauds, a recall floor at $1 - \alpha_{\mathrm{FN}}$.
 
 \paragraph{Coverage is judged against the exact law, not against $\alpha$.} For a sound
 split-conformal system the test-error count follows
 $E \sim \mathrm{BetaBinomial}(m,\ n{+}1{-}k,\ k)$ with $k = \lceil (n{+}1)(1-\alpha) \rceil$.
 Checking $\hat r \le \alpha$ is a one-sided test against the wrong null: on a correctly
-calibrated system it passes only about half the time. Every verdict below is a two-sided
-Beta-Binomial interval.
+calibrated system it passes only about half the time. Every verdict below is the two-sided
+Beta-Binomial interval at the 99\,\% level.
 
 \paragraph{Intervals resample entities, not rows.} The IEEE-CIS label propagates a reported
 chargeback to later transactions sharing an account, email or billing address, so rows are

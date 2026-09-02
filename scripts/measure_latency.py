@@ -163,9 +163,14 @@ def time_calls(fn, payloads: list[np.ndarray], reporter: ProgressReporter | None
 
 
 def summarise(
-    name: str, stage: str, profile: str, batch: int, timings: np.ndarray, rows: int
+    name: str, stage: str, profile: str, batch: int, timings: np.ndarray, n_features: int
 ) -> dict:
-    """One row of the table: per-call and per-transaction cost at the given batch size."""
+    """One row of the table: per-call and per-transaction cost at the given batch size.
+
+    The last column counts FEATURES, not rows.  It was named ``rows_scored`` and the call site
+    has always passed ``source.shape[1]``, so the name said one thing and the value another in
+    a table whose whole purpose is timing per transaction.
+    """
     per_call_ms = timings / 1e6
     return {
         "component": name,
@@ -173,7 +178,7 @@ def summarise(
         "profile": profile,
         "batch_size": batch,
         "repetitions": len(timings),
-        "rows_scored": rows,
+        "n_features": n_features,
         **{
             f"per_call_p{p}_ms": float(np.percentile(per_call_ms, p)) for p in PERCENTILES
         },

@@ -2841,3 +2841,70 @@ line by line against the cited source:
 Section 2 of that file is checked for attribution rather than line by line, and says so. The
 judgement half of this check cannot be generated, which is the reason to write down where it has
 been done and where it has not.
+
+### D-091 The certificate was stated at a level and never at a confidence
+
+Both PDFs said "certified at level $\alpha$" throughout and neither ever printed $\delta$.
+`riskcontrol.py` defines the object as $\mathbb{P}(R(\lambda) \le \alpha) \ge 1 - \delta$ and
+`configs/default.yaml` pins `delta: 0.05`; the number lived only in a config file. A
+distribution-free finite-sample certificate without its confidence level is half a statement,
+and model risk is the first reader to ask.
+
+Section 2 now says it, and says it as one statement rather than two: a grid point is admissible
+only when both nulls are rejected, so the joint certificate inherits a single $1 - \delta$ --
+which is what `riskcontrol.py` states and what an intersection-union test delivers. Writing it
+as two marginal statements would have been weaker than the code.
+
+The same gap applied to the interval level. Every coverage verdict in section 3 -- "outside on
+every seed", the seeds-outside column of Table 2, Figure 2 -- is decided by
+`risk.coverage_band_level`, and 99 % appeared nowhere in either document.
+
+### D-092 "Tuned" described a baseline that was never tuned, in eight places
+
+There is no hyperparameter search anywhere in this repository: no grid search, no randomised
+search, no optuna, no hyperopt. `fit_xgboost` sets hand-chosen constants, and Table 1's own
+caption says "the same hyperparameters". The word "tuned" nonetheless described the classical
+baseline eight times in the shipped documents, and section 7 called it "deliberately the
+strongest available baseline" -- which is the load-bearing claim of the hybrid argument, since
+the next sentence says a weak classical half proves nothing.
+
+It is also not established as strongest. `baselines.csv` contains one model. `run_baselines.py`
+registers three fitters and only XGBoost was ever written to the table, so no comparison exists
+that would rank it against the other two.
+
+Every occurrence describing the baseline is gone. Two survive and should: the RBF at
+04-quantum.tex is genuinely tuned -- `rbf_correlation` maximises over a 25-point bandwidth grid
+-- and "nothing is tuned or ranked there" is about selection on the test fold.
+
+**And a claim the README made that was simply false**, written during this same round while
+documenting the Expected Outcomes: "§3 against tuned XGBoost and LightGBM". There is no LightGBM
+row in any shipped table. The challenge statement asks for at least one classical baseline and
+XGBoost is one; claiming two was gratuitous and checkable.
+
+### D-093 Four smaller defects the same audit confirmed
+
+**The latency figure was quoted in the wrong unit.** 96.577 ms is one Gram *row* against a
+64-row support set -- 64 kernel evaluations -- and section 5 called it "one in-band kernel
+evaluation". Off by the support size, in the direction that makes the kernel look cheaper per
+evaluation than it is.
+
+**A claim reduced over the wrong rows.** `BandGbdtSeconds` took the minimum `fit_seconds` over
+all of `mps_band.csv`, which holds both the tensor-network and the gradient-boosted arms, under
+a note about the gradient-boosted baseline. The value was right only because the baseline
+happened to be the faster of the two in this run. It now filters on the model.
+
+**A GPU guard tolerated the case it exists to stop.** `require_idle_gpu` raised at
+`len(listing) > 1`, and it runs before any CUDA context is created, so this process is not in
+the listing -- one foreign process passed, which is exactly the contended-run scenario its
+docstring cites as having produced a three-fold error in a reported column.
+
+**A column named for rows held features.** `latency.csv` carried `rows_scored`, and the call
+site has always passed `source.shape[1]`. Renamed in the producer and in the table; no value
+changed and nothing referenced the old name.
+
+Also corrected: the appendix said the kernel arm was "rejected by the other screen" without
+naming it, when three screens were in play and the one that rejected all 120 configurations was
+RBF distinctness -- conditioning admitted 28. The distinctness gate is inclusive in the code
+(`corr <= 0.60`) and the proposal stated it strictly. And `CREDENTIALS.md` said the IBM
+`ibm_fez` hardware run "now appears in the team section where it counts", which had stopped
+being true when the section was compressed; it is back, in a section carrying 10 % of the score.

@@ -7,14 +7,15 @@ pre-registered screens over \ClaimScreenConfigs{} configurations of encoding $\t
 $\times$ bandwidth $\times$ entanglement, and gated on two: a kernel is usable only if it is
 not exponentially concentrated --- effective rank
 $r_{\mathrm{eff}} = \exp(-\sum_i p_i \log p_i)/n$ at $p_i = \sigma_i/\sum_j \sigma_j$, inside a
-usable band --- \emph{and} not reproducible by a tuned RBF, where $\rho_{\mathrm{RBF}}$ is the
-largest absolute off-diagonal correlation over a bandwidth grid and must fall below 0.60.
+usable band --- \emph{and} not reproducible by a tuned RBF, where $\rho_{\mathrm{RBF}}$ is the largest
+absolute off-diagonal correlation over a bandwidth grid and must satisfy
+$\rho_{\mathrm{RBF}} \le 0.60$.
 
 \ClaimScreenPassConditioning{} of \ClaimScreenConfigs{} pass conditioning.
 \textbf{\ClaimScreenPassBoth{} pass both.} The closest any configuration came to distinctness
 was $\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$; the median is
-\ClaimScreenMedianRbf{} and the maximum \ClaimScreenMaxRbf{}, indistinguishable to floating
-point. On \ClaimScreenSamples{} stratified rows with at most eight features, no configuration
+\ClaimScreenMedianRbf{} and the maximum \ClaimScreenMaxRbf{}. On \ClaimScreenSamples{}
+stratified rows with at most eight features, no configuration
 cleared the pre-registered bar --- which reporting a downstream accuracy would have hidden. One caveat: the protocol names the Huang geometric
 difference first and the implementation computes it without gating on it (amendment~A6); since
 Huang treats a \emph{large} difference as favourable, gating would have made this rejection
@@ -30,14 +31,14 @@ f_\ell(\mathbf{x}) = \sum_{\{s\}} \bigl[A^{s_1} \cdots A^{s_N}\bigr]_\alpha W_{\
 where $W$ is the head that closes the final bond into the two class logits $\ell$, sweeping the
 bond dimension $\chi$ rather than tuning it. In the band, on identical rows and features, it reaches average
 precision \ClaimMpsApBestChi{} at the largest bond dimension against \ClaimGbdtApBand{} for
-the tuned gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi.
+the gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi.
 
 \input{generated/table-mps}
 
 \paragraph{At full scale it loses by a wider margin, with replication behind it.} On all 431
 features, trained on $\Dtrain$ and scored once on $\Dtest$, across \ClaimSweepJobs{} fits ---
 four bond dimensions at four seeds each --- the best draw reaches \ClaimSweepBestAp{} average
-precision against \ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the tuned baseline. Every one
+precision against \ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the baseline. Every one
 of the \ClaimSweepJobs{} loses by a factor of two or more at a \ClaimTestFraudRate\,\% positive
 rate, so which draw is reported does not change the conclusion.
 

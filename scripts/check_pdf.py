@@ -74,6 +74,7 @@ ALLOWED_LITERALS = {
     "0.001", "0.002", "0.005", "0.01", "0.010", "0.05", "0.10", "0.45",  # pre-registered levels
     "0.60",  # the RBF-distinctness screen threshold, fixed in configs/default.yaml
     "90",  # the PSD2 SCA-RTS rolling window, in days
+    "99",  # risk.coverage_band_level in configs/default.yaml, as a percentage
     "431",  # sites in the full-scale chain, i.e. the feature count
     "64",  # SUPPORT_ROWS in scripts/measure_latency.py: an assumption the kernel timing prices
 }

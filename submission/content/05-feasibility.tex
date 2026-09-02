@@ -10,7 +10,7 @@ of roughly a month with a month of slack --- split integrity, then calibration a
 certification, then the quantum re-ranker, last because it is the only stage that can fail to
 produce a result.
 
-\textbf{Compute, measured rather than estimated.} The classical core is cheap: the tuned
+\textbf{Compute, measured rather than estimated.} The classical core is cheap: the
 baseline fits the in-band problem in \ClaimBandGbdtSeconds{} seconds, and calibration is a sort.
 The expensive component is the quantum-inspired arm: \ClaimSweepJobs{} full-scale
 tensor-network fits over \ClaimSweepTrainRows{} rows and 431 sites took
@@ -24,14 +24,12 @@ ansatz. No QPU is required (Section~\ref{sec:hybrid}).
 \ClaimLatencyAuthorisationBudgetMs{}\,ms authorisation ceiling about \ClaimLatencyNetworkMs{}\,ms
 is network, leaving roughly \ClaimLatencyBudgetResidualMs{}\,ms issuer-side. Scoring one
 authorisation costs \ClaimLatencyScorerMedian{}\,ms, \ClaimLatencyScorerTail{}\,ms at the tail;
-one in-band kernel evaluation would cost \ClaimLatencyKernelMedian{}\,ms ---
-\ClaimLatencyKernelVersusScorer{} times as much, its tail taking
-\ClaimLatencyKernelBudgetShare\,\% of that budget. The classical core is therefore not the
-latency risk and the kernel is. That kernel figure prices a fixed 64-row support set and is
-linear in it, so a deployment would have to hold the support set to that order; the band bounds
-aggregate kernel compute, not per-request latency, which a transaction landing in the band pays
-in full. Both figures bound model cost on this workstation, single-threaded, rather than
-production latency.
+scoring one in-band authorisation against a fixed 64-row support set --- one Gram row, not one
+kernel evaluation --- would cost \ClaimLatencyKernelMedian{}\,ms, \ClaimLatencyKernelVersusScorer{}
+times as much, its tail taking \ClaimLatencyKernelBudgetShare\,\% of that budget. Cost is linear
+in the support set, so the classical core is not the latency risk and the kernel is; the band
+bounds aggregate kernel compute, not the per-request tail, which a transaction landing in the
+band pays in full. Both figures bound model cost on this workstation, single-threaded.
 
 \textbf{Data, and why the PoC cannot reuse this file.} The method needs settled labels and an
 entity key to cluster on; both are ordinary in an issuer's data and only approximated here, and
@@ -46,13 +44,11 @@ extrapolates past it. The label is partly an entity flag, since a chargeback pro
 later transactions sharing an account, email or billing address, and Shapley attribution makes
 that concrete: \ClaimAttributionTopShare{} of the in-band model's total contribution falls on
 \texttt{card1} alone, across \ClaimAttributionFeatures{} features. A governance review would
-read that as a model which mostly recognises cards --- the strongest argument for running this
-on an issuer's own data, where an entity key is a key and not a predictor. The certificate is
-sample-starved by design: conditioning on a narrow band is what makes the guarantee bind the
-component we care about, and also what leaves \ClaimBandLegitCalMin{} legitimate rows to certify
-with at the tightest budget --- the configurations that do certify had
-\ClaimBandLegitCalCertifiedMin{} or more. A larger calibration block or a wider band buys
-tighter $\alpha$; the method is unchanged.
+read that as a model which mostly recognises cards, which is the strongest argument for running
+this on an issuer's own data, where an entity key is a key and not a predictor. The certificate
+is sample-starved by design: conditioning on a narrow band is what makes the guarantee bind the
+component we care about and what limits how tight $\alpha$ can go. A larger calibration block or
+a wider band buys a tighter one; the method is unchanged.
 
 \textbf{What would change the quantum conclusion.} An encoding demonstrably outside the RBF
 family, at a bandwidth that does not concentrate, would pass the same screens unmodified; we did

@@ -73,7 +73,10 @@ def require_idle_gpu() -> None:
         text=True,
         check=True,
     ).stdout.split()
-    if len(listing) > 1:
+    # `> 0`, not `> 1`. This runs before any CUDA context is created, so this process does not
+    # appear in the listing; `> 1` tolerated exactly one foreign process, which is the case the
+    # docstring above says the guard exists to stop.
+    if len(listing) > 0:
         raise SystemExit(
             f"{len(listing)} processes hold the GPU ({listing}); fit_seconds would be wrong"
         )
