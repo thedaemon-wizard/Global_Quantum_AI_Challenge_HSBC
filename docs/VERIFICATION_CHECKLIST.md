@@ -65,6 +65,28 @@ as they are confirmed.
 | `[x]` | unitaryHACK merges | CUDA-Q and QuEST |
 | `[ ]` | CV sole-proprietorship date | **要確認**: the CV reads "Jul 2026 - Present"; the portfolio and the filing say 1 August 2026. The submission uses 1 August. A reviewer comparing the two would see the discrepancy, and it is the author's to settle |
 
+## 5b. The seven open questions this study started with
+
+The earliest planning round listed seven things that could not be settled at the time and fixed
+how each would be handled. All seven are now closed, and they are listed here because a reader
+should be able to see that the questions the work opened with were answered rather than
+forgotten.
+
+| # | The question | How it closed |
+|---|---|---|
+| 1 | Whether a local simulator satisfies "use Amazon Braket" | Settled by the statement itself: hardware execution is "not expected nor required" and entries that do not use it "are not penalized". Section 7 states that both arms are simulator-only and that no number comes from a QPU |
+| 2 | Whether the transaction stream is beta-mixing | Not claimed, as planned. The empirical proxies that were to stand in for it -- a block permutation test and a martingale wealth curve -- were **not run**, and amendment A7 discloses that rather than leaving the plan's intention to imply they were |
+| 3 | Whether a temporal split of ULB leaves fraud in every fold | Moot: ULB was withdrawn by amendment A9, and the statement permits using one or two of its three datasets |
+| 4 | Whether a label-maturity buffer would shrink calibration below the degeneracy floor | Measured and closed early: no trailing censoring was detected, and the floor never binds -- the smallest headroom in `degeneracy.csv` is 1,122 rows |
+| 5 | Whether the GPU wheel for a particular quantum framework carries `sm_120` | The plan's rule was to claim no GPU acceleration until it was shown to work. It was never shown and is never claimed: that framework appears nowhere in this repository |
+| 6 | A published AUPRC table that a paywall blocked, to be verified by hand before citing | The strongest form of closure: it was never cited. The rule was "verify before quoting"; nothing quotes it, so nothing rests on it |
+| 7 | The issuer-side cost of a false decline, which is not public | Parameterised, as planned. Section 1 uses the public figures the challenge statement supplies and leaves the issuer-side multiplier to the bank |
+
+Item 2 is the one worth reading twice. The plan's answer was to substitute empirical proxies for
+an unprovable assumption; the proxies were then not executed. What makes that acceptable is that
+the appendix says so by name, rather than the plan's intention being allowed to read as a
+result.
+
 ## 6. Standing limits
 
 Three things this apparatus cannot check, stated so they are not mistaken for covered:
