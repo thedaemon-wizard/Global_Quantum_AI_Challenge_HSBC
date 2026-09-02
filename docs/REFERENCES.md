@@ -237,19 +237,23 @@ DMRG-Lanczos and gradient descent within 0.1 percentage point at fixed constrain
 **[QM-16]** Deloitte and AWS. "Digital Payments Fraud Detection Using Quantum Machine Learning
 and Amazon Braket". *AWS Machine Learning Blog*, 2024.
 Hybrid quantum neural network on three qubits, precision 0.87, with 1,296 parameters against a
-classical counterpart's 1,329. Cited by the challenge statement as evidence that quantum
-approaches report competitive results, and engaged in proposal section 4: it reports a
-downstream score without first testing whether the kernel is distinct from a classical one,
-which is the screen this study applies before any downstream evaluation.
+classical counterpart's 1,329 -- all as reported by the challenge statement, which is the only
+source consulted for it here. **要確認:** the underlying blog post has not been read, so nothing
+beyond the statement's own summary is asserted about it. Proposal section 4 accordingly says
+only that the precision is quoted with no recall and no base rate, and that no distinctness
+screen precedes it.
 Cited as: `Deloitte and AWS, 2024`
 
-**[QM-17]** Karimi, A. et al. "Comparative Performance Analysis of Quantum Machine Learning
-Architectures for Credit Card Fraud Detection". arXiv:2412.19441, 2024.
-Variational quantum classifier with a Z and Pauli-Two-Design feature map, $F_1 = 0.88$ on the
-European Cardholder dataset. Cited by the challenge statement alongside the entry above, and
-engaged on the same two grounds: no distinctness screen, and no stated search budget for the
-classical arm it is compared against.
-Cited as: `Karimi et al., 2024`
+**[QM-17]** El Alami, Innan, Shafique and Bennai. "Comparative Performance Analysis of Quantum
+Machine Learning Architectures for Credit Card Fraud Detection". arXiv:2412.19441; *Applied
+Intelligence*, 2026. DOI 10.1007/s10489-026-07110-7.
+Variational quantum classifier with a Z and Pauli-Two-Design feature map, $F_1 = 0.88$. The
+challenge statement cites it as "Karimi et al., 2024", which is a common miscitation; section 7
+of this file recorded the correct attribution before the paper was cited here, and the proposal
+uses the correct one. The $F_1$ was obtained on a 984-row balanced undersample of ULB reduced to
+seven principal components, **with no classical baseline** -- so it is neither this task's base
+rate nor a comparison, which is what proposal section 4 says about it.
+Cited as: `El Alami et al., 2024`
 
 ## 4. Datasets and evaluation protocol
 
@@ -405,12 +409,6 @@ Learning Models". *International Journal of Quantum Information* 22(02):2350044,
 DOI 10.1142/S0219749923500442. The reported QSVC F1 of 0.98 was obtained on 200 rows of
 BankSim, balanced 100/100, with four features and no classical baseline. Not comparable to a
 full imbalanced test fold, and not a ULB result.
-
-**El Alami, Innan, Shafique and Bennai.** "Comparative Performance Analysis of Quantum Machine
-Learning Architectures for Credit Card Fraud Detection". arXiv:2412.19441; *Applied
-Intelligence*, 2026, DOI 10.1007/s10489-026-07110-7. The VQC F1 of 0.88 was obtained on a
-984-row balanced undersample of ULB reduced to seven principal components, with no classical
-baseline. Frequently miscited as "Karimi et al."
 
 **Grossi, M. et al.** "Mixed Quantum-Classical Method for Fraud Detection with Quantum Feature
 Selection". *IEEE Transactions on Quantum Engineering* 3:3102512, 2022.

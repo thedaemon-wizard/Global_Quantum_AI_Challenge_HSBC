@@ -2997,3 +2997,35 @@ revision adds URLs -- dataset links, AWS documentation, reference locators -- an
 No requirement changed. An audit agent reported the two as textually identical, which is close
 but not what the diff shows; the substantive conclusion survives and the claim of identity does
 not.
+
+### D-098 I propagated a miscitation this repository had already caught, and asserted a fact I never checked
+
+D-095 added the challenge statement's two positive quantum results to section 4. Both halves of
+how I did it were wrong, and an adversarial verification pass found them before submission.
+
+**The miscitation.** The statement cites the $F_1 = 0.88$ result as "Karimi et al., 2024". It is
+not. `REFERENCES.md` section 7 already recorded the correct attribution -- El Alami, Innan,
+Shafique and Bennai, arXiv:2412.19441 -- and ended with the sentence **"Frequently miscited as
+'Karimi et al.'"** I created a second entry for the same arXiv identifier under the miscited
+name, and cited it that way in the proposal. The repository had the answer written down and I
+did not read it before adding a reference to the same paper.
+
+**The unsupported assertion.** My sentence said both papers "report a downstream score without
+first testing distinctness from a classical kernel, and neither states a search budget for its
+classical arm". The second clause is false of one and unverified for the other: the El Alami
+paper has **no classical arm at all**, which is stronger than what I wrote and was already in
+the file; and nothing in this repository documents the Deloitte and AWS report, so I had no
+basis for any claim about its classical arm. I asserted a fact about a source I never opened, in
+a submission whose entire pitch is that every claim resolves to something.
+
+Both corrected. The proposal now says what is checkable: the 984-row balanced undersample at
+seven principal components with no classical arm, which is neither this task's base rate nor a
+comparison; and for the other, a precision quoted with no recall and no base rate, which is all
+the statement's own text supports. The Deloitte entry carries a 要確認 saying the underlying
+post has not been read. The duplicate section 7 record is gone, because one paper in two
+sections under two attributions is how the miscitation propagated.
+
+**The lesson, and it is about me rather than the repository.** Adding a reference is exactly the
+moment to search for it first. The check that caught this was an agent instructed to refute
+rather than confirm, reading the same file I had edited; it is the second time in this project
+that adversarial verification caught a defect introduced by the fix for another defect.
