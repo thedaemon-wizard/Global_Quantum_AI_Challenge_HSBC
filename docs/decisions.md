@@ -2937,3 +2937,63 @@ programme and a role in it, the way a competition placement does, and it is the 
 go. The one address remaining anywhere is the author's own, in the paragraph establishing that
 two git identities are the same person; it is already public in his own commits, and it is his
 to keep or remove.
+
+### D-095 The submission ignored the two positive quantum results its own sponsor cites
+
+The challenge statement's executive summary cites a hybrid quantum neural network at 0.87
+precision (Deloitte and AWS, 2024) and a variational classifier at $F_1 = 0.88$ (Karimi et al.,
+2024), and section 4.1 says participants are "encouraged to benchmark against these published
+results and clearly report comparison methodology". This submission reports two negative quantum
+arms and mentioned neither. Reporting a negative while silently passing over the sponsor's own
+positive citations is the weakest available position: it invites the reading that the result is
+a failure of execution.
+
+Section 4 now names both and says why they differ, on two specific grounds rather than
+rhetorically. Neither applies a distinctness screen -- both report a downstream score without
+first testing whether the kernel is separable from a classical one, which is the test that
+rejected all 120 configurations here. And neither states a search budget for its classical arm,
+which is the failure mode the one controlled comparator in the literature identifies as
+producing an apparent advantage.
+
+Both are now reference entries, copied from the statement's own list.
+
+### D-096 The statement supplies the economics the proposal declined to use
+
+Section 1 read "We attach no monetary figure: issuer-side false-decline costs are not public".
+That was defensible when the figures were not to hand. The challenge statement's own executive
+summary supplies them: 443 billion USD of legitimate transactions falsely declined globally in
+2021 (Aite-Novarica, 2019), and more than 40 % of customers abandoning after a decline (Radial,
+2023). Declining to price impact on the criterion worth 25 % of the score, while the sponsor
+puts the price in the problem statement, reads as a gap rather than as restraint.
+
+Section 1 now uses both, attributed to the sources the statement attributes them to, and keeps
+the restraint where it is still correct: the *issuer-side* cost of one false decline is not
+public, so the study certifies the rate and leaves the bank to multiply it.
+
+### D-097 No hardware run, and the statement is the reason
+
+The statement asks participants to "use Amazon Braket (real QPUs and simulators)", which reads
+as a requirement until the rest of the document is read. It is not one:
+
+* Section 4.2: "full end-to-end model training or inference on quantum hardware is not expected
+  nor required."
+* Section 5.4: "participants who do not execute on hardware are not penalized, but hardware
+  execution is encouraged."
+* The noise and error-mitigation documentation bullet sits in an "is valued" list introduced by
+  "Teams using hardware are encouraged to", so it is conditioned on hardware use.
+* DM1 is offered as a way to "prototype noise-aware circuits **before** hardware execution".
+  There is no hardware execution here for it to precede.
+
+The one mandatory clause in the whole hardware block is a reporting clause -- "the total number
+of samples used for quantum execution must be explicitly stated" -- and section 7 states it.
+
+So no hardware task and no noise simulation was run, and none should be. A noise-aware study of
+the kernel arm would measure the noise sensitivity of a method this study rejected on noiseless
+grounds, before it ever reached the task. That is work that cannot change a conclusion.
+
+**One version check, because a recommendation not to work rests on the text.** The revised and
+the original challenge statements were compared word by word. They differ only in that the
+revision adds URLs -- dataset links, AWS documentation, reference locators -- and three words.
+No requirement changed. An audit agent reported the two as textually identical, which is close
+but not what the diff shows; the substantive conclusion survives and the claim of identity does
+not.

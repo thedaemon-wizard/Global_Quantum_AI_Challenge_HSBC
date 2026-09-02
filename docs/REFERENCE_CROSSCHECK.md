@@ -10,7 +10,7 @@ identifier, its first author's surname, and an alias the entry declares as
 surname is usually the handle that finds them; the alias covers the entries that have
 no author to cite -- an instrument named in prose, or a lower-case package name.
 
-**49 entries. 49 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
+**53 entries. 53 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
 
 ---
 
@@ -46,11 +46,15 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **QM-12** | Supervised Learning with Tensor Networks | `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/mps.py`, `docs/RESULTS.md`, `docs/decisions.md` |
 | **QM-13** | Initialization and training of matrix product state probabilistic models | `docs/decisions.md` |
 | **QM-15** | Tensor Network Kernel Machines: A JAX Framework for Machine Learning and Nonlinear System Identification | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/mps.py` |
+| **QM-16** | Digital Payments Fraud Detection Using Quantum Machine Learning and Amazon Braket | `docs/decisions.md`, `submission/content/04-quantum.tex` |
+| **QM-17** | Comparative Performance Analysis of Quantum Machine Learning Architectures for Credit Card Fraud Detection | `docs/decisions.md`, `submission/content/04-quantum.tex` |
 | **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md`, `docs/SUBMISSION_CHECKLIST.md` and 19 more |
 | **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 19 more |
 | **DS-3** | Calibrating Probability with Undersampling for Unbalanced Classification | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/metrics.py` |
 | **DS-4** | Database: Open Database, Contents: Database Contents | `docs/decisions.md`, `NOTICE`, `docs/PROVENANCE.md`, `docs/protocol.md`, `submission/content/A1-protocol.tex` |
 | **DS-5** | Leveraging Machine Learning to Detect Fraud: Tips to Developing a Winning Kaggle Solution | `docs/decisions.md` |
+| **DS-6** | The E-Commerce Conundrum: Balancing False Declines and Fraud Prevention | `docs/decisions.md`, `submission/content/01-problem.tex` |
+| **DS-7** | False Declines: Driving Customers Away | `docs/decisions.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/mps.py`, `src/hsbcfraud/quantum/screens.py`, `submission/content/01-problem.tex` |
 | **RG-1** | Commission Delegated Regulation (EU) 2018/389 supplementing Directive (EU) 2015/2366 as regards regulatory tec | `docs/FACTCHECK_LOG.md`, `docs/REGULATORY_SOURCES.md`, `docs/decisions.md` |
 | **RG-2** | Regulation (EU) 2024/1689 (the Artificial Intelligence Act), Annex III point 5(b) | `docs/REGULATORY_SOURCES.md`, `docs/decisions.md`, `docs/SUBMISSION_CHECKLIST.md`, `docs/protocol.md`, `submission/content/01-problem.tex` |
 | **RG-3** | Regulation (EU) 2026/1744, published in the Official Journal 24 July 2026 | `docs/REGULATORY_SOURCES.md`, `docs/decisions.md` |

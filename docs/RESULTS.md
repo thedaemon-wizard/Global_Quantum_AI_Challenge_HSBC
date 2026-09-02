@@ -88,6 +88,12 @@ classifier the card-disjoint arm is the *most* distinguishable of the three (0.6
 the temporal arm's 0.5525). What the data supports is that the breach appears only in the arm
 ordered by time, on every seed, and that neither control reproduces it.
 
+The card-disjoint arm, level by level. At alpha = 0.001 the single outside seed runs at ratio
+1.5245 against four below one, the lowest 0.6502 -- one against four reads as noise, but it is
+under-coverage, so the arm is not a pass. At alpha = 0.01 both outside seeds over-cover, which
+is a two-sided fit failure rather than a one-sided breach. The proposal states the verdict; the
+per-level ratios are here.
+
 How much calibration each certified configuration had. The tightest band budget leaves 847
 legitimate in-band rows in the calibration block and certifies nothing at any level; the
 configurations that do certify had 1572 or more. So the 847 figure describes the budget where

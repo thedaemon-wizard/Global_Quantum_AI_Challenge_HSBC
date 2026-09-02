@@ -19,9 +19,13 @@ stratified rows with at most eight features, no configuration
 cleared the pre-registered bar --- which reporting a downstream accuracy would have hidden. One caveat: the protocol names the Huang geometric
 difference first and the implementation computes it without gating on it (amendment~A6); since
 Huang treats a \emph{large} difference as favourable, gating would have made this rejection
-less decisive, not more. The closest published comparator agrees: a controlled benchmark on real
-card-transaction data \Cited{(Faryad, arXiv:2608.15718, 2026)} reports no robust quantum
-advantage, and finds one apparent advantage to be an artefact of unequal search budgets.
+less decisive, not more. The statement cites two positive results, \Cited{0.87} precision and
+\Cited{0.88} $F_1$ \Cited{(Deloitte and AWS, 2024; Karimi et al., 2024)}; both report a
+downstream score without first testing distinctness from a classical kernel, and neither states
+a search budget for its classical arm. The comparator that does control for that agrees with us:
+a controlled benchmark on real card-transaction data \Cited{(Faryad, arXiv:2608.15718, 2026)}
+reports no robust quantum advantage, and finds one apparent advantage to be an artefact of
+unequal search budgets.
 
 \paragraph{The tensor network ran, and did not win.} A matrix-product-state classifier contracts
 \[

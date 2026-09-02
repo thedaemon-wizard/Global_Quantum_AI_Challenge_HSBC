@@ -234,6 +234,23 @@ closed-form core update is a least-squares construction and does not transfer to
 trained here. Read with Jäger, Plenio and Rieser (ESANN 2025, pp. 537-542), who find
 DMRG-Lanczos and gradient descent within 0.1 percentage point at fixed constraint.
 
+**[QM-16]** Deloitte and AWS. "Digital Payments Fraud Detection Using Quantum Machine Learning
+and Amazon Braket". *AWS Machine Learning Blog*, 2024.
+Hybrid quantum neural network on three qubits, precision 0.87, with 1,296 parameters against a
+classical counterpart's 1,329. Cited by the challenge statement as evidence that quantum
+approaches report competitive results, and engaged in proposal section 4: it reports a
+downstream score without first testing whether the kernel is distinct from a classical one,
+which is the screen this study applies before any downstream evaluation.
+Cited as: `Deloitte and AWS, 2024`
+
+**[QM-17]** Karimi, A. et al. "Comparative Performance Analysis of Quantum Machine Learning
+Architectures for Credit Card Fraud Detection". arXiv:2412.19441, 2024.
+Variational quantum classifier with a Z and Pauli-Two-Design feature map, $F_1 = 0.88$ on the
+European Cardholder dataset. Cited by the challenge statement alongside the entry above, and
+engaged on the same two grounds: no distinctness screen, and no stated search budget for the
+classical arm it is compared against.
+Cited as: `Karimi et al., 2024`
+
 ## 4. Datasets and evaluation protocol
 
 **[DS-1]** IEEE-CIS Fraud Detection. Kaggle, 2019. Provided by Vesta Corporation.
@@ -278,6 +295,18 @@ measures that feature at +0.0015 average precision under a forward holdout; see
 `docs/decisions.md` D-021.
 
 ---
+
+**[DS-6]** Aite-Novarica Group. "The E-Commerce Conundrum: Balancing False Declines and Fraud
+Prevention", 2019.
+Projected 443 billion USD in false-decline losses by 2021. The figure the challenge statement
+uses to price the cost this study's certificate bounds; quoted in proposal section 1 with the
+statement's own attribution.
+Cited as: `$443bn in 2021`
+
+**[DS-7]** Radial. "False Declines: Driving Customers Away", 2023.
+More than 40 % of customers abandon a purchase after a payment decline. The second half of the
+same cost, and the reason a three-valued rule routes to a challenge rather than a decline.
+Cited as: `40\,\%`
 
 ## 5. Regulation and model governance
 
