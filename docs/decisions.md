@@ -3723,3 +3723,29 @@ open and would have failed the other way the moment a producer appeared, which i
 the registry entry to be removed in the same change. Both registries in the suite --- this one
 and `SILENT_WITHOUT_A_DESTINATION` --- are now empty and kept rather than deleted. The
 mechanism is the asset, not the entries.
+
+### D-123 A control experiment that stopped a false finding
+
+Verifying the README in a browser on 2026-09-02 showed every formula as raw LaTeX --
+`$$R(\lambda) \;=\; \mathbb{P}\bigl(...\bigr)$$` displayed as text on the Preview tab, and the
+same for every inline span. On its face that is a serious defect: the README is the public face
+of the submission and the proposal links it.
+
+It is not a defect. **GitHub's own documentation page for writing mathematical expressions
+displayed `$\sqrt{3x-1}+(1+x)^2$` as raw text in the same browser session, with zero math nodes
+in the DOM.** GitHub renders math client-side, and that renderer was not executing. The Mermaid
+diagram, which was watched rendering earlier the same day in a different browser, also reported
+absent -- the same cause.
+
+The source is correct and unchanged: ` ```math ` fences and paired `$...$`, 96 dollar signs
+outside code, all balanced, and `check_markdown_math.py` green.
+
+**The lesson is about the shape of the check, not the outcome.** A rendering check that has no
+control cannot distinguish "the content is broken" from "the renderer did not run", and the
+first conclusion is the one that costs a page of the submission to act on. One navigation to a
+page whose correct rendering is not in question settled it in under a minute.
+
+This project has now been wrong in both directions on GitHub rendering: [D-082](#d-082) used
+KaTeX as the oracle when GitHub uses MathJax and produced two wrong conclusions and one wrong
+fix; this time the oracle was right and the instrument was broken. Both were caught by going to
+a source whose answer was already known.
