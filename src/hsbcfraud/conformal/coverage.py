@@ -39,6 +39,7 @@ questions and collapsing them hides the interesting case:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
@@ -183,3 +184,66 @@ def verify(
         band_level=band_level,
         tail_p=tail_probability(n_calibration, order_index, n_test, observed_errors),
     )
+
+
+def split_conformal_coverage(
+    cal_scores: np.ndarray,
+    cal_labels: np.ndarray,
+    test_scores: np.ndarray,
+    test_labels: np.ndarray,
+    *,
+    alpha_grid: Sequence[float],
+    band_level: float,
+) -> list[dict[str, object]]:
+    """One coverage verdict per level, for one calibration/test pair.
+
+    Extracted from ``scripts/run_conformal.py``, which computed this inline for a single arm
+    and seed.  Two committed tables report the same quantity across three arms and five
+    seeds -- ``coverage_by_arm.csv`` and ``coverage_by_arm_seeds.csv`` -- and **no script
+    wrote either of them**, so ``make reproduce`` could not regenerate the evidence behind
+    the results section's central contrast.  The tests recorded that as a strict xfail rather
+    than hiding it.
+
+    Putting the computation here rather than copying it into a second script is what makes
+    the two tables comparable: a producer that re-derived the order statistic independently
+    could drift from the one the certificate uses, and the whole point of the by-arm table is
+    that it is the same procedure applied to a different split.
+
+    A level whose order index exceeds the calibration block is skipped rather than clamped:
+    the quantile does not exist at that sample size, and reporting a clamped one would assert
+    coverage the data cannot support.
+    """
+    legit_cal = cal_scores[cal_labels == 0]
+    legit_test = test_scores[test_labels == 0]
+    rows: list[dict[str, object]] = []
+    for alpha in alpha_grid:
+        order_index = int(np.ceil((1 - alpha) * (legit_cal.size + 1)))
+        if order_index > legit_cal.size:
+            continue
+        threshold = float(np.sort(legit_cal)[order_index - 1])
+        observed = int((legit_test >= threshold).sum())
+        verdict = verify(
+            n_calibration=legit_cal.size,
+            order_index=order_index,
+            n_test=legit_test.size,
+            observed_errors=observed,
+            alpha=alpha,
+            band_level=band_level,
+        )
+        rows.append(
+            {
+                "alpha": alpha,
+                "threshold": threshold,
+                "n_cal_legit": int(legit_cal.size),
+                "n_test_legit": int(legit_test.size),
+                "observed_errors": observed,
+                "empirical_rate": verdict.empirical_rate,
+                "band_low": verdict.band_low,
+                "band_high": verdict.band_high,
+                "tail_p": verdict.tail_p,
+                "expectation_ok": verdict.expectation_ok,
+                "finite_sample_ok": verdict.finite_sample_ok,
+                "conservative": verdict.conservative,
+            }
+        )
+    return rows

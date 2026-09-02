@@ -3687,3 +3687,39 @@ tuned value.
 because a browser held a compositing context throughout, and `fit_seconds` came in at 3,060 to
 3,369 seconds against 2,747 to 3,145 for the uncontended committed run. That is the stamp doing
 its job: the numbers are visibly marked rather than silently wrong.
+
+### D-122 The two tables behind the central contrast had no producer, and now reproduce byte for byte
+
+`coverage_by_arm.csv` and `coverage_by_arm_seeds.csv` carry the comparison the three-arm design
+exists to make: the temporal split breaches its coverage interval at the loose levels, the
+stratified split never does, and the card-disjoint split sits between. Section 3 leads on that
+contrast and `claims.yaml` binds four claims to it.
+
+**No script wrote either.** They were committed by hand. That is worse than it sounds, because
+`freeze.py --check` passed them on every run: **a file nothing regenerates can never differ
+from its own hash.** The manifest was asserting that a table equalled itself. `make reproduce`
+carried them forward untouched, so the evidence behind the central contrast was the one part of
+the study a reviewer could not rebuild.
+
+`scripts/run_coverage_arms.py` now produces both, and the result is the strongest available:
+**both are byte-identical to the committed files**, all 72 rows, every column.
+
+The computation was *extracted* rather than reimplemented.
+`coverage.split_conformal_coverage` now holds the per-split coverage verdict, and both
+`run_conformal.py` and the new producer call it. A second implementation of the order statistic
+could have drifted from the one under test, and then the by-arm table would no longer be the
+same procedure applied to a different split -- which is the only thing that makes comparing the
+arms mean anything.
+
+Two smaller choices are recorded because either could have hidden a selection. The headline
+table takes the **first configured seed**, not the best: [D-020](#d-020) retracted a
+maximum-across-seeds ratio that had been quoted as a centre, and `summarise_coverage.py` exists
+because of it. And a level whose order index exceeds the calibration block is **skipped rather
+than clamped**, because the quantile does not exist at that sample size and a clamped one would
+assert coverage the data cannot support.
+
+**The strict xfail is what made this fixable.** It failed loudly for as long as the gap was
+open and would have failed the other way the moment a producer appeared, which is what forced
+the registry entry to be removed in the same change. Both registries in the suite --- this one
+and `SILENT_WITHOUT_A_DESTINATION` --- are now empty and kept rather than deleted. The
+mechanism is the asset, not the entries.

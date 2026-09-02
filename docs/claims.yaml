@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 121
+    value: 122
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0

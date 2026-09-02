@@ -20,7 +20,7 @@
     "results/tables/coverage_by_arm_seeds.csv": "2c3b386b1af7309d68eccbc4aa54bbdeadfbc1d9e789a3956f33f5e3b8923065",
     "results/tables/coverage_seed_summary.csv": "856b9fc36895a5b53a0c2089381f72efc143afa0e8f6b3310dccabbb0c016b4f",
     "results/tables/data_integrity.csv": "79622ed7e5aecf1fad2256ec89b21f7498e5df4e27caa12d8471375a4ebc7e7c",
-    "results/tables/decision_log.csv": "31421a45d306d9f9314c5ba8c03dc42523b68609aa9a8a7e58f0b3ab11c02973",
+    "results/tables/decision_log.csv": "1bf76006b85b86a2dba8c74adf145a98e720d471ee461bec3707d8a8df4cf66f",
     "results/tables/degeneracy.csv": "276f74f149e4e327dcecd1eed963c38a0355fddd719f63fe76e74861fff5f74c",
     "results/tables/envelope.csv": "f2ea606df51028d851162a79d8b7e7ef113e2713a8b9b0ed891b8957508e588d",
     "results/tables/h5_validation.csv": "26496256782729eec5cad65fd1a2a3dcaa2a38cae531e6f4863e8916a0c48a74",
@@ -45,14 +45,14 @@
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
     "results/tables/test_access.json": "e83c79936cc9c734e823cc30f9dc44462c089466c255a59dc4a109ed30a5a448",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "9af66735b8af5347f03087639e8944a29375bde4f95816dcd6b689f955750868",
-    "submission/proposal.pdf": "35623a660e9a59d11912eb8812b700a8ff4bcbe32dd0ff171734c5137fb6be41"
+    "submission/appendix.pdf": "25088f4c98c69796b0ef2b601b842203a64ae6e9d86f346b699e7e25bd5b934b",
+    "submission/proposal.pdf": "4f63cd9be5cf9551822065bdc460d9af5282ba1f6827963f182d9af6174c5f52"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
     "docs/REFERENCES.md": "86f3419e7748966f8f7e06b699e0ec49a32dc2d512beb089f6210636920cc38a",
-    "docs/claims.yaml": "38abffadb30db21dec5706f104cda2d45528dbd35dc7494570eab91808fbc1b5",
-    "docs/decisions.md": "60e6dad4d1a19c241d9b05edc5795afa9bf0fb590445f8d7a47416c6717e473a",
+    "docs/claims.yaml": "6a4ceef333c986dbacfcee360dd76900e6977e2c64689ac54b174d4a69442a08",
+    "docs/decisions.md": "225953f9c1b439c30c1decd41813c39dfd91a323137815f197b7f04e8b4eb5e5",
     "docs/protocol.lock.json": "c45826a1140aeb8089a0849ef5fea933fa974b29cbf75c40c080ad3618c1c212",
     "docs/protocol.md": "dda52983844921225cdce2425acc3e2992f972ac91c8efd17101733e599361fd",
     "docs/tables.yaml": "733fc794c24427f54e68901b97de12461deb806cf4acadcf6d1a26bf39a4c8b7"

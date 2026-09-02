@@ -98,6 +98,7 @@ baseline:
 conformal:
 	$(PY) scripts/run_conformal.py
 	$(PY) scripts/run_power.py
+	$(PY) scripts/run_coverage_arms.py
 	$(PY) scripts/summarise_coverage.py
 	$(PY) scripts/validate_certificate.py
 

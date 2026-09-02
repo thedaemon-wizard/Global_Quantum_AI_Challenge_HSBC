@@ -408,15 +408,12 @@ TABLES_WITHOUT_A_PRODUCER = {
 # above because these are a defect rather than a decision, and recorded as expected failures
 # rather than exempted so that the run summary carries them: `xfail(strict=True)` fails the
 # suite the moment a producer appears, which is what forces the entry back out again.
-TABLES_WHOSE_PRODUCER_IS_MISSING = {
-    "coverage_by_arm.csv": (
-        "three scripts name it and none writes it -- make_figures.py reads it, and "
-        "summarise_coverage.py and validate_certificate.py name it in a module docstring"
-    ),
-    "coverage_by_arm_seeds.csv": (
-        "read by summarise_coverage.py and by the walkthrough notebook, written by nothing"
-    ),
-}
+# Empty, and kept rather than deleted.  It held the two by-arm coverage tables, which were
+# committed by hand and which nothing rewrote -- so `freeze.py --check` passed them trivially,
+# because a file no script regenerates can never differ from its own hash.  Both now have a
+# producer in `scripts/run_coverage_arms.py`, and it reproduces them byte for byte.  The strict
+# xfail is what forced that to be visible instead of quietly true.
+TABLES_WHOSE_PRODUCER_IS_MISSING: dict[str, str] = {}
 
 
 def _tables_written_by_a_script() -> set[str]:
