@@ -68,6 +68,28 @@ repository:
 | [`docs/FACTCHECK_LOG.md`](docs/FACTCHECK_LOG.md) | What was checked, against which source, on what date, and which claims the check overturned |
 | [`docs/CLEANROOM.md`](docs/CLEANROOM.md) | Reproducing from an empty directory: the procedure, what it costs, and which steps were actually exercised |
 | [`docs/SUBMISSION_CHECKLIST.md`](docs/SUBMISSION_CHECKLIST.md) | The pre-submission verification list |
+| [`docs/VERIFICATION_CHECKLIST.md`](docs/VERIFICATION_CHECKLIST.md) | Which official documents and external artefacts were checked against the submission, and which checks remain open |
+
+**Where every number was measured.** One workstation, no cloud: Intel Core i5-13600K (14 cores,
+20 threads), NVIDIA RTX PRO 6000 Blackwell Workstation Edition 96 GB on driver 580.105.08,
+125 GB memory, AlmaLinux 9.7, Python 3.12.11, PyTorch 2.13.0+cu130 on CUDA 13.0. No quantum
+hardware: both quantum arms are simulator-only, which the challenge statement permits and does
+not penalise.
+
+**What each stage costs**, so a reader can judge the resource claim without running it:
+
+| Stage | Work | Measured cost | Device |
+|---|---|---|---|
+| Classical baseline | 590,540 rows, 431 features, one fit | ~16 s | GPU |
+| Quantum kernel screens | 120 configurations, 300 rows each | 17.5 s total | CPU |
+| Tensor network, in-band | 8 sites, four bond dimensions | 0.69 – 1.91 s per fit | GPU |
+| Tensor network, full scale | 431 sites, 356,216 rows, 30 epochs | 2,747 – 3,145 s per fit | GPU |
+| Conformal calibration | a sort and a grid scan | seconds | CPU |
+| Full sweep (`make seedsweep`) | 16 fits, four bond dimensions x four seeds | ~13 GPU-hours | GPU |
+
+`make reproduce` excludes the sweep. Everything else completes in well under an hour.
+[`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) carries the pinned versions, the per-stage detail
+and the two environment traps that cost real time.
 
 ---
 

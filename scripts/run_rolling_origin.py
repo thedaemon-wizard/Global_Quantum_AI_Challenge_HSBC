@@ -55,6 +55,17 @@ ALPHA = 1e-2
 BAND_LEVEL = 0.99
 
 
+# The three verdicts, named once. BREACHED is capitalised because `docs/claims.yaml` selects on
+# that exact string to count breaches and the LaTeX table lowercases it for display; emphasis in
+# a data file is not a habit worth spreading, but changing it would move a bound claim for no
+# gain a reader sees. They are constants rather than literals because they are read in two
+# places -- the rows and the summary below -- and a literal in each drifted: the summary counted
+# "breached" against rows saying "BREACHED" and reported none where there were two.
+CONSERVATIVE = "conservative"
+BREACHED = "BREACHED"
+INSIDE = "inside"
+
+
 def origins() -> list[int]:
     return [FIRST_ORIGIN + step * STEP_DAYS for step in range(N_ORIGINS)]
 
@@ -75,16 +86,12 @@ def evaluate(scores: pd.DataFrame, cal_start: int) -> dict[str, object]:
     observed = int((evaluation["score"].to_numpy() >= threshold).sum())
     low, high = coverage_band(n=n_calibration, k=order_index, m=m, level=BAND_LEVEL)
 
-    # "BREACHED" in capitals because `docs/claims.yaml` selects on that exact string to count
-    # breaches, and the LaTeX table lowercases it for display. Emphasis in a data file is not
-    # a habit worth spreading, but changing it here would move a bound claim for no gain a
-    # reader sees.
     if observed < low:
-        verdict = "conservative"
+        verdict = CONSERVATIVE
     elif observed > high:
-        verdict = "BREACHED"
+        verdict = BREACHED
     else:
-        verdict = "inside"
+        verdict = INSIDE
 
     return {
         "cal_start": cal_start,
@@ -112,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
     target = args.out / "rolling_origin.csv"
     frame.to_csv(target, index=False)
 
-    breached = int((frame["verdict"] == "breached").sum())
+    breached = int((frame["verdict"] == BREACHED).sum())
     print(
         f"{N_ORIGINS} origins, {CALIBRATION_DAYS}-day calibration and {TEST_DAYS}-day test "
         f"windows stepped by {STEP_DAYS}, alpha {ALPHA:g}"

@@ -4,9 +4,11 @@ What a third party has to do to get from a clone to a verified certificate, what
 measured to cost, and — the part that matters more — **which steps were actually exercised and
 which were not**.
 
-Executed 2026-08-30 on the machine in [ENVIRONMENT.md](ENVIRONMENT.md), from a copy of the
-working tree with `.venv`, `.git`, `datasets/` and every cache excluded, so nothing from the
-development environment could leak into it.
+Executed 2026-08-30 and again on 2026-08-31 on the machine in
+[ENVIRONMENT.md](ENVIRONMENT.md), from a copy of the working tree with `.venv`, `.git`,
+`datasets/` and every cache excluded, so nothing from the development environment could leak
+into it. Section 2b covers the second run, which exists because four producers were written
+after the first.
 
 ---
 
@@ -69,6 +71,36 @@ line and its results, so on a busy machine it was indistinguishable from a wedge
 now reports twelve units with elapsed and remaining time. Twenty-three of the twenty-six scripts
 in `scripts/` still have no progress reporting; this one is instrumented because it is the first
 thing a reviewer runs.
+
+## 2b. Second run, 2026-08-31: the four producers written after the first run
+
+The first run predates `summarise_split_arms.py`, `summarise_seed_sweep.py`,
+`run_rolling_origin.py` and `export_predictions.py`, which is four of the repository's producers
+and five of its committed tables. A reproduction record that predates the scripts it is meant to
+cover is not a record, so the procedure was repeated from `git archive HEAD` extracted into an
+empty directory.
+
+**Every derived table reproduces byte-identically.** `split_arm_baselines.csv`,
+`mps_seed_sweep_summary.csv`, `rolling_origin.csv`, `predictions.csv` and `operating_point.csv`
+are identical to the committed files, from a checkout containing no results of their own beyond
+the frozen scorer output the producers read.
+
+**It found one defect, which is the reason to do this.** `run_rolling_origin.py` printed
+"0 of 5 breach" against a table containing two. The verdict string had been changed to
+`BREACHED` in the row builder to match the selector in `claims.yaml`, and the summary line two
+functions below still counted `breached`. The CSV was correct throughout and every gate passed,
+because nothing in this repository compares a console line to the file it summarises. The three
+verdicts are now named constants read in both places.
+
+**Three tests cannot run from an archive extraction, and should not be expected to.**
+
+| Test | Why it cannot run here | Correct behaviour |
+|---|---|---|
+| `test_the_built_proposal_has_no_clipped_lines` | needs `submission/proposal.log`, which only a LaTeX build produces | fails rather than passes, which is the rule stated in `check_pdf.py`: silently passing when the evidence is absent is the worst thing a gate can do |
+| `test_every_source_file_is_tracked` | calls `git ls-files`; an extracted archive is not a repository | same |
+| `test_results_tables_are_tracked` | same | same |
+
+172 of 175 pass. Run `make pdf` first, or clone rather than extract, and all three run.
 
 ## 3. Two levels of verification, and what each answers
 

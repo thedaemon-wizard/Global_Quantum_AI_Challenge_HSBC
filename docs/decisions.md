@@ -3048,3 +3048,48 @@ scope the challenge explicitly permits. What is actually disclosable is that the
 the two it is.
 
 Four lines of displacement came from restatement in sections 2, 3 and 6.
+
+### D-100 The clean room found a defect the gates could not, which is why it is run
+
+The first clean-room pass predates `summarise_split_arms.py`, `summarise_seed_sweep.py`,
+`run_rolling_origin.py` and `export_predictions.py` -- four producers and five committed tables.
+A reproduction record that predates the scripts it covers is not a record, so the procedure was
+repeated from `git archive HEAD` into an empty directory.
+
+Every derived table reproduced byte-identically. And the run found a defect nothing else could:
+`run_rolling_origin.py` printed **"0 of 5 breach"** against a table containing two. When the
+verdict string was capitalised to match the selector in `claims.yaml`, the summary line two
+functions below kept counting the lowercase form. The CSV was right the whole time and every
+gate passed, because **nothing in this repository compares a console line to the file it
+summarises** -- the claim gate reads tables, the freeze gate reads hashes, and neither reads
+stdout.
+
+The three verdicts are now named constants, read in both places. The general point is that a
+literal used twice is a literal that will drift, and this project has now seen it four times.
+
+Three tests cannot run from an archive extraction -- two call `git ls-files` and one needs the
+LaTeX build log. All three fail rather than skip, which is correct and is the rule `check_pdf.py`
+already states: silently passing when the evidence is absent is the worst thing a gate can do.
+[`CLEANROOM.md`](CLEANROOM.md) §2b records which and why, so a third party following the
+procedure is not alarmed by them.
+
+### D-101 Two governing documents had never been read against the submission
+
+Five audit rounds checked this submission against itself and against the challenge statement.
+Neither the **Assessment Criteria** nor the **Terms and Conditions** had been read against it --
+the document that governs how it is scored, and the one that governs what the entrant undertakes
+by submitting. Both are now in the loop, and the gap is recorded in
+[`VERIFICATION_CHECKLIST.md`](VERIFICATION_CHECKLIST.md) rather than quietly closed, because the
+interesting fact is not what they contained but that five rounds of thorough work never opened
+them.
+
+That checklist is new and is deliberately not a third copy of the other two. `COMPLIANCE_CHECKLIST`
+maps requirements to where they are met; `SUBMISSION_CHECKLIST` is the pre-upload walk; this one
+records **which sources were read against the submission, on what date, and which checks remain
+open** -- including the three that cannot be automated at all: the figures, the formulas against
+the literature, and the upload itself.
+
+**And one claim in the older checklist was weaker than it read.** It ticked "README carries the
+development environment and the measured benchmark timings" and cited a *link* to
+`ENVIRONMENT.md`. Carrying and linking are not the same thing for a reader who opens one file.
+The README now states the machine and a six-row stage-cost table inline.
