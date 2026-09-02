@@ -8,9 +8,9 @@ than declarative.
 
 \textbf{Learn-then-Test} controls family-wise error over a \emph{finite grid fixed in
 advance}. Enlarging the grid after seeing which value looks good inflates the very error rate
-the procedure bounds. \textbf{Non-exchangeable split conformal} separately requires the
-weights to be fixed rather than fitted; fitting the decay on the calibration set voids the
-theorem.
+the procedure bounds. \textbf{Split-conformal coverage} separately requires
+$\alpha$ to be fixed before the calibration scores are seen; choosing the level after looking
+at them moves the order statistic the exact Beta-Binomial law is stated for.
 
 \texttt{scripts/check\_protocol.py} hashes the guarantee-bearing fields of
 \texttt{configs/default.yaml} --- every $\alpha$ grid, $\delta$, $\rho$, the decision-grid

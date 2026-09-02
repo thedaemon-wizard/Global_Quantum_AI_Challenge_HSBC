@@ -3,8 +3,9 @@
 \label{sec:quantum}
 
 \paragraph{The kernel never reached the task.} Before running a fidelity quantum kernel we
-pre-registered screens over \ClaimScreenConfigs{} configurations of encoding $\times$ qubits
-$\times$ bandwidth $\times$ entanglement, and gated on two: a kernel is usable only if it is
+pre-registered screens over \ClaimScreenConfigs{} configurations of encoding
+(\texttt{z}, \texttt{zz} and dense-angle feature maps) $\times$ qubits $\times$ bandwidth
+$\times$ entanglement (linear or none), and gated on two: a kernel is usable only if it is
 not exponentially concentrated --- effective rank
 $r_{\mathrm{eff}} = \exp(-\sum_i p_i \log p_i)/n$ at $p_i = \sigma_i/\sum_j \sigma_j$, inside a
 usable band --- \emph{and} not reproducible by a tuned RBF ($\rho_{\mathrm{RBF}} \le 0.60$, the

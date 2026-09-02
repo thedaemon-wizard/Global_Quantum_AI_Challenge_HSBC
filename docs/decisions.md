@@ -3496,3 +3496,36 @@ it unnecessary and `check_claims.py` refuses a claim nothing cites. That refusal
 noting: it is the gate that stops the ledger accumulating definitions no document uses, and it
 fired within a minute of the claim becoming dead. The overlap is in `operating_point.csv`,
 which the roll-up rows name explicitly.
+
+### D-117 A requirement ticked against a section that did not contain it
+
+The challenge statement asks, in §5.2 Reporting Considerations, for a "Description of quantum
+approach, encoding strategy, and circuit design choices". `COMPLIANCE_CHECKLIST.md` ticked it:
+`C17 | §4.2 Describe encoding strategy and circuit design | met | §4`.
+
+Section 4 named no encoding. It described the screen's *dimensions* --- "configurations of
+encoding $\times$ qubits $\times$ bandwidth $\times$ entanglement" --- which is a sentence about
+the shape of the search, not about what was encoded. `screens.csv` and `circuits.csv` carry
+`z`, `zz` and `dense_angle` with `linear` and `none` entanglement, and **none of those words
+reached either PDF**. A reviewer checking this requirement against the submission would find the
+word "encoding" and no encoding.
+
+Now named in section 4, at the cost of one line. The circuit-design half was already discharged
+by section 7's transpiled depth and two-qubit gate counts.
+
+**This is the fourth checklist row found ticked on evidence that did not reach its clause**,
+after D3 (third-party information, argued from datasets), the predictions row (an Expected
+Outcome ticked while citing a rejected file format), and D1 (eligibility, quoting words the
+Terms do not contain). The pattern is now specific enough to name: **the evidence column tends
+to point at the section where the topic is discussed rather than at the sentence that discharges
+the requirement**, and the two are not the same thing.
+
+**Two more of today's own sentences were overstatements.** Section 6 opened "Every step below
+was executed in this study on public data" --- two of its four steps are Phase II governance in
+the future tense, and one of those is the power-sized evaluation block that section 4 reports as
+*not* achieved. That sentence was written earlier today, while compressing the section. And
+appendix A1 warned that non-exchangeable split conformal "requires the weights to be fixed
+rather than fitted", a guarantee **the body never claims**: nothing in sections 1--8 makes a
+non-exchangeable statement, and `weighted.py` reaches no committed table. The warning now
+covers the guarantee the body does make, which is that $\alpha$ must be fixed before the
+calibration scores are seen.

@@ -75,7 +75,7 @@ understood but satisfying it depends on something outside this repository.
 | C14 | §4.2 State the **sample count used for quantum execution** | met | proposal §7 |
 | C15 | §4.2 Subsampling must be **stratified** | met | `screen_kernels.py` stratifies on the label |
 | C16 | §4.2 Robustness under distribution shift | met | this is the study's central result, §3 |
-| C17 | §4.2 Describe encoding strategy and circuit design | met | §4 |
+| C17 | §4.2 and §5.2 Describe the quantum approach, encoding strategy and circuit design | met **now**. The earlier tick pointed at §4, which described the screen dimensions ("encoding x qubits x bandwidth x entanglement") without naming a single feature map. The three the screens actually ran -- `z`, `zz` and dense-angle -- and the two entanglement patterns are now named in §4, and the transpiled depths and two-qubit counts are in §7 ([D-117](decisions.md)) |
 | C18 | §4.2 Hardware execution | not applicable | simulator only; STMT §5.4 states participants who do not execute on hardware are not penalised, and §7 says so |
 | C19 | §5.3 "Good to have": inference latency | met | E13 measured: `results/tables/latency.csv`, reported in proposal §5 and [ENVIRONMENT.md](ENVIRONMENT.md) §5 |
 | C20 | §5.3 "Good to have": training time comparison | met | §5 reports fit times for both arms |
