@@ -10,6 +10,28 @@ except in compliance with the License. You may obtain a copy of the License at
 
 
 ------------------------------------------------------------------------------------------
+0. What the Apache-2.0 grant above does and does not cover
+------------------------------------------------------------------------------------------
+
+The grant covers the author's own work in this repository: the source, the documentation, the
+build, and the derived tables and figures.
+
+It does not, and cannot, extend to third-party material quoted or transcribed here for
+compliance purposes. Two categories are worth naming because the repository is public and the
+quotations are extensive:
+
+  * Material of Resonance Alliance Inc. (operating as The Quantum Insider) and of the
+    challenge sponsor -- the challenge statement, the submission guidelines, the assessment
+    criteria and their weights, and the terms and conditions. These are quoted and tabulated
+    in docs/COMPLIANCE_CHECKLIST.md and docs/decisions.md so that each requirement can be
+    traced to where it is met. The Terms reserve all right and interest in this material to
+    Resonance (section 4.5); it is reproduced here as fair quotation for compliance and is
+    not licensed onward by anything in this file.
+
+  * The two datasets, which are licensed by their own publishers and are not redistributed
+    here at all. Section 3 below records their terms.
+
+------------------------------------------------------------------------------------------
 1. Code derived from the author's other repositories
 ------------------------------------------------------------------------------------------
 

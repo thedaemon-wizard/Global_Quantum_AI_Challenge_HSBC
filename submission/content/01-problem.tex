@@ -12,8 +12,9 @@ false-negative rate on card fraud, \Cited{Nayak and Bushara} report a fraud obje
 own paper calls conformal-style rather than a finite-sample guarantee, and
 \Cited{Chen et al.} carry the temporal case to a graph model --- but none conditions the
 guarantee on the abstention region it routes to, and those that do order time certify a
-prediction set rather than a decision. Both are what this submission adds, and the second
-turns out to matter.
+prediction set rather than a decision. Selection-conditional risk control does condition on the
+retained region \Cited{(Xu et al.; Bai and Jin)}, under exchangeability and not on payments.
+Both are what this submission adds, and the second turns out to matter.
 
 \textbf{What we contribute.} A three-valued rule whose \emph{abstention band} carries a
 distribution-free, finite-sample risk certificate under a pre-registration frozen before any
@@ -53,8 +54,7 @@ attach no figure of our own: the issuer-side cost is not public, so the study ce
 quantum kernel was rejected by its own a-priori screens before it was run on the task --- a
 decisive negative. A matrix-product-state classifier ran and did not beat gradient boosting, but
 that comparison is underpowered, so what it yields is a non-superiority bound rather than a null
-result. Both are in the body rather than the appendix, because a screen that only ever passes is
-not a screen and the pre-registration committed us to reporting whatever it returned.
+result.
 
 \textbf{What we do not claim.} No quantum advantage of any kind. No portfolio-level PSD2
 compliance figure --- the SCA-RTS ceilings govern exemption eligibility, not a decline threshold,

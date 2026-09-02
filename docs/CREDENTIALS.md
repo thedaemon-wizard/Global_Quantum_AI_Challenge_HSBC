@@ -30,9 +30,9 @@ made the author's record look weaker than the evidence supports.
 | C2 | B.S. Physics, Tokyo Denki University | not checkable here | diploma, held by the author |
 | C3 | IBM Qiskit Advocate (2026) | **confirmed, not publicly verifiable** | acceptance email held by the author (`Congratulations and welcome to the Qiskit advocate program!.pdf`, not in this repository); the programme is at Tier 0 and no badge has been issued, so there is no URL to cite |
 | C4 | QIntern 2026 Project 12 (QWorld), Team A — split-conformal calibration and results freeze | **verified, and independently attributed by a teammate** | see §2. Both the Day-15 calibration module and the Days 26–27 freeze are named as the author's in handoff documents committed by a teammate, who re-ran each and reproduced the numbers |
-| C5 | Yale Peaked Hackathon 2026, rank 13 of 549 entries at 450 of 550 points, nine of ten circuits to 69 qubits by an MPS marginal attack | **verified on the organiser's leaderboard, method verified by merged pull request** | see §3 |
+| C5 | Yale Peaked Hackathon 2026, rank 13 of 549 entries at 450 of 550 points, team MerQury; MPS runs exact to 60 qubits | **rank and score verified on the organiser's leaderboard; the solved count and the method boundary are the author's own record** | see §3. The two have different sources and are no longer stated as though they had one |
 | C6 | QPoland 2025 runner-up | not checkable here | no artefact on this machine; the placement stands with no technical detail attached |
-| C7 | unitaryHACK 2026, merged into NVIDIA CUDA-Q and QuEST | **verified by merged pull request** | see §4 |
+| C7 | unitaryHACK 2026, three pull requests merged into NVIDIA CUDA-Q and QuEST, two closing bounty issues | **verified by merged pull request; bounty status verified against the maintainers' label** | see §4 |
 
 ## 2. C4 — QIntern 2026 Project 12
 
@@ -42,28 +42,38 @@ rather than pointing at commits nobody outside the team can open. Commit identif
 local paths they were read from have been removed for that reason; the checks themselves were
 run and are described.
 
-Per the Phase I submission guidelines, no third party's information is reproduced here: the
-teammates who made the attributions below are identified by role, not by name or contact
-address.
+**What this section does and does not reproduce.** The Terms and Conditions warrant that a
+submission contains no "confidential or proprietary information of any third party disclosed
+without permission" (§3), and this repository becomes public on 2026-09-15. The source
+repository is private and its handoff documents are two teammates' unpublished writing. So the
+attributions below are **described, not quoted**, and the teammates are identified by role
+rather than by name or contact address. Nothing is lost by it: a verbatim quotation from a
+repository a reviewer cannot open carries no more weight than a description of the same
+document, because neither can be checked from outside. An earlier version of this section
+asserted that no third party's information was reproduced here while carrying four block
+quotations of exactly that kind ([D-104](decisions.md)).
+
+The one exception is the team's own four-word caveat on the provisional status of its numbers,
+which the proposal also prints. It is retained because it *limits* the author's claim rather
+than supporting it, and removing a third party's disclaimer while keeping the credit it
+qualifies would be the wrong trade.
 
 **What is the author's own.** The split-conformal calibration module and the results freeze.
-The freeze commit (2026-07-30) first commits
-`week5/scripts/{disentanglement,table_a,figure2_coverage,freeze_results}.py` under his
-authorship; `freeze_results.py` computes the SHA-256 manifest rows.
+The freeze commit (2026-07-30) first introduces four Week-5 scripts under his authorship ---
+disentanglement, the results table, the coverage figure and the freeze itself --- and it is the
+last of these that computes the SHA-256 manifest rows.
 
 **The calibration module is independently attributed, and the earlier 要確認 was wrong.**
-`week3/scripts/conformal_calibrate.py` does arrive in a bulk "Initial commit", so
+the calibration module does arrive in a bulk "Initial commit", so
 per-file provenance is absent — but that commit was made by a **teammate**, on whose account
 the repository is hosted, not by the author, and three days later the same teammate committed
-`week3/OWAIS_TASK16_17_HANDOFF.md`, which is third-party attribution of exactly this artefact:
-
-> "built on **AK's Day-15 CQ-ZDR module** and Iwo's Day-13/14 package. Also records the
-> independent verification of AK's Day-15 numbers he requested." (lines 4–5)
->
-> "Full suite re-run on this machine: **35/35 pass** (24 Iwo + 11 AK)." (line 9)
->
-> "`conformal_calibrate.py` re-run, trio @ α = 0.05: q(CIC) = 0.300551, coverage 0.9514,
-> FZR 0.0486 — **exact match**, BoT/UNSW previews match to the 6th decimal." (lines 10–11)
+a Days 16--17 handoff document that attributes exactly this artefact to the author. That
+document, in the teammate's own commit, does three things: it names the Day-15 calibration
+module as the author's and builds on it; it records a full-suite re-run on the teammate's own
+machine, 35 of 35 passing, itemised by which contributor wrote which test; and it records
+re-running `conformal_calibrate.py` and reproducing the author's α = 0.05 figures --- the
+CIC quantile, the coverage and the false-zero-day rate --- as an exact match, with the other two
+corpora agreeing to the sixth decimal.
 
 That is stronger than an attribution: a teammate re-ran the module and reproduced its numbers to
 six decimals, in a commit he signed. An earlier version of this file called the authorship
@@ -71,30 +81,32 @@ six decimals, in a commit he signed. An earlier version of this file called the 
 directories away that had not been read.
 
 **What is the team's.** The paper's conformal-coverage proposition belongs to **Team A**, a
-three-person team — `week4/README.md` and `week5/README.md` state it as "Team A owns the
-paper's **Proposition 3 (conformal coverage)**". (`week3/README.md` says "statistical-guarantee
-centrepiece"; an earlier version of this file cited it for the stronger wording.) The
-Beta-Binomial harness and the McNemar/Holm protocol are a teammate's Days 16–17 — git puts
-`week3/scripts/coverage_harness.py` and `stats_protocol.py` in a commit by another
+three-person team, and two of the weekly READMEs say so directly: Team A, not any individual,
+owns the paper's **Proposition 3 (conformal coverage)**. (An earlier week's README uses the
+looser phrase "statistical-guarantee centrepiece", and an earlier version of this file cited
+that one for the stronger reading.) The Beta-Binomial coverage harness and the McNemar/Holm
+protocol are a teammate's Days 16--17: git puts both scripts in a commit by another
 contributor. The proposal previously read as though both were the author's; §8 now attributes
 them to the team.
 
 **The 135 checks are exactly 135, at the freeze, and the count is the teammate's.** Counted at
-the freeze commit. The repository is at 183 today, so the proposal says "green at that freeze".
+the freeze commit. The repository is at 182 today by its own Week-5 README --- 183 is the raw `def test_` count,
+which over-counts --- so the proposal says "green at that freeze".
 The freeze itself is independently verified in a second teammate's handoff document,
-`week5/OWAIS_TASK28_30_HANDOFF.md`: "**Every number verifies.** Full suite 135 passed + 8
-subtests … `freeze_results.py --reproduce` returns all 39 scalars to 1e-9 … Reproduced on a
-*different* environment (Python 3.10, scikit-learn 1.7.2) with identical bytes", and
-"byte-identical to AK's v1.0 manifest".
+a Days 28--30 handoff document, which records that every number verifies: the full suite at 135
+passing plus 8 subtests, all 39 scalars returned by `freeze_results.py --reproduce` to 1e-9, and
+the whole reproduced on a *different* environment --- Python 3.10 with scikit-learn 1.7.2 ---
+to identical bytes and a manifest byte-identical to the author's v1.0.
 
 **The numbers are provisional and the proposal says so.** All eleven Week-5 artefacts carry a
-**run-level** `"source_kind": "dummy"` and `"scores_root": "week2/interface/dummy_scores"`.
-Six **row-level** entries in two of them read `"real"` — the XGBoost classical baseline, one per
+**run-level** source stamp reading *dummy*, pointing at the placeholder score interface. Six
+**row-level** entries in two of them read *real* — the XGBoost classical baseline, one per
 dataset, which is genuinely measured; only the quantum arm is a placeholder. An earlier version
 of this file said "every artefact", which understated the work.
 
-The team's own README states: *"Everything quantum is still on the dummy interface, so every
-QS-Net number this week is PROVISIONAL … protocol-final, numbers-provisional."* The coverage result therefore
+The team's own README says the quantum side is still on the dummy interface and that every
+QS-Net number that week is therefore provisional, in the four words the proposal reuses:
+*"protocol-final, numbers-provisional."* The coverage result therefore
 verifies the **harness**, over five seeds and three intrusion-detection corpora, not a model.
 The proposal uses the team's own phrase and claims the machinery rather than a result.
 
@@ -116,8 +128,15 @@ The event's own title on that page is **Yale Peaked Hackathon 2026**.
 **Two denominators exist, they are one apart, and conflating them is the trap.**
 
 * **550 is the maximum score.** Every row reads `450/550` in a column headed SCORE, and the ten
-  problems carry weights 10, 20, ... 100, which sum to 550. A score of 450 is every problem but
-  the last, so **nine of ten** follows from the score itself.
+  problems carry weights 10, 20, ... 100, which sum to 550.
+
+  An earlier version of this bullet added that "a score of 450 is every problem but the last, so
+  nine of ten follows from the score itself." **That inference is false.** The missing 100 points
+  are made up by ten different subsets of the weights --- $\lbrace 100 \rbrace$,
+  $\lbrace 10, 90 \rbrace$, ... , $\lbrace 10, 20, 30, 40 \rbrace$ --- so 450 is consistent
+  with six, seven, eight or nine solved. The count of nine is true, but it comes from the
+  author's own repository, not from the leaderboard, and the two documents that claimed it was
+  derivable were claiming an independence they did not have ([D-105](decisions.md)).
 * **549 is the field.** The pagination control reads `11–20 of 549`, so the leaderboard holds
   549 ranked entries and the rank of 13 is **13 of 549**.
 
@@ -191,11 +210,20 @@ author's own working repository only.
 
 | Contribution | Pull request | State |
 |---|---|---|
-| Recursive Quantum Shannon decomposition, MLIR unitary synthesis | `NVIDIA/cuda-quantum#4693` | merged into the default branch, carrying the maintainers' own `unitaryhack-accepted` label |
-| GPU backend change | `QuEST-Kit/QuEST#783` | merged by the project lead into `devel` |
+| Recursive Quantum Shannon decomposition, MLIR unitary synthesis | `NVIDIA/cuda-quantum#4693` | merged into `main` 2026-06-15, carrying the maintainers' own `unitaryhack-accepted` label. **Bounty** |
+| GPU backend change, projector and small-allocation path | `QuEST-Kit/QuEST#783` | merged by the project lead into `devel` 2026-06-22. **Bounty** |
+| Unitary synthesis driven through the dialect-conversion framework | `NVIDIA/cuda-quantum#4751` | merged into `main` 2026-07-02. A follow-on to #4693. **Not a bounty**, and titled without the `[unitaryhack]` prefix the other two carry |
 
-Both are merged upstream and independently checkable by pull request. The decomposition is
-genuinely self-recursive rather than a name reused for something flatter.
+All three are merged upstream and independently checkable by pull request; the merge dates and
+target branches above were read from the GitHub API on 2026-09-02 rather than from the author's
+own record. The two bounties paid **USD 200** in total. The decomposition is genuinely
+self-recursive rather than a name reused for something flatter.
+
+The third is listed because the proposal's earlier text said only "merged into CUDA-Q and
+QuEST", and this table said only two. **An understatement in a credential is a defect in the
+same way an overstatement is** -- a reviewer who checks the author's public record and finds
+more than was claimed learns that the claims were not carefully made, which is the same lesson
+as finding less.
 
 ---
 

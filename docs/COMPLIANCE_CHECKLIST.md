@@ -98,13 +98,33 @@ artefact a reviewer receives and nothing else checks them.
 
 ## D. Terms and conditions (TERMS)
 
+**This section had five rows against thirteen clauses**, and two of them were satisfied by
+reasoning that did not reach the clause. It is now clause by clause. Where a clause imposes
+nothing on the entrant, the row says so rather than being omitted, because an absent row and a
+null row are indistinguishable to the next reader — which is how D3 stayed ticked through three
+separate findings ([D-104](decisions.md)).
+
 | | Requirement | Status |
 |---|---|---|
-| D1 | §2 Eligibility — open to teams worldwide; single-person team permitted | met; §8 records the sole-proprietor registration |
-| D2 | §3 Submission is original work, no third-party IP infringement | met; all dependencies are listed in `NOTICE` with their licences |
-| D3 | §3 No confidential or proprietary third-party information | met; both datasets are public, and neither is redistributed |
-| D4 | §4.1 Participant retains all IP | no action needed |
-| D5 | §4.2 Non-exclusive licence to Resonance for assessment and promotion | no action needed |
+| D1 | §2 Eligibility — the enumerated categories are "startups, research teams, universities, and industry teams", which does not name individuals | met, but not by the phrase the earlier row used. "Single-person team permitted" appears nowhere in the Terms. What covers the entry is the second bullet, "the legal authority to enter into these Terms **on behalf of yourself** or your team/organization", which contemplates an individual entrant; and the registered sole proprietorship is in any case an organisation. §8 records the registration |
+| D1a | §2 "Not be subject to any applicable sanctions, export controls, or trade restrictions" | met. Japan is not a sanctioned jurisdiction; the submission carries no controlled technology, ships no cryptographic implementation, and uses public datasets and open-source software throughout. The quantum work is simulator-only (§7), so no controlled hardware access is transferred |
+| D1b | §2 "Employees and Contractors of Resonance or its Challenge enterprise sponsors may not submit proposals as Participants" — a disqualification bar with no row before now | **要確認**, and the answer is the author's alone. The bar reaches sponsors as well as the organiser, and the entrant is a sole proprietor who takes inbound consulting work, so "Contractor of a Challenge enterprise sponsor" is a live category rather than an academic one. Nothing in this repository can settle it. **To confirm before upload: no current or recent engagement with Resonance Alliance Inc. / The Quantum Insider, HSBC, or any other listed Challenge sponsor** |
+| D2 | §3 Original work, no third-party IP infringement | met; all dependencies are listed in `NOTICE` with their licences, and the conformal implementation was written from the published papers rather than adapted from the unlicensed team repository. §8 said "which this submission reuses", which read as the opposite and contradicted the appendix; corrected ([D-106](decisions.md)) |
+| D3 | §3 No confidential or proprietary third-party information **disclosed without permission** | met **now**. The earlier tick reasoned only about datasets — "both datasets are public, and neither is redistributed" — which is true and was blind to the actual exposure twice: two teammates' names and email addresses ([D-094](decisions.md)), then their unpublished prose quoted at length from a private repository ([D-104](decisions.md)). Both are removed. The datasets reasoning still holds and is now one leg of three |
+| D3a | §3 "You have the right to submit the materials provided" | met. Every artefact in the five portal files is the author's own or derived from the two datasets under their stated terms; nothing originates in the private team repository |
+| D3b | §3 "Your submission complies with all applicable laws and regulations" | met. Regulation is cited structurally and never as a compliance assertion — `REGULATORY_SOURCES.md` states this explicitly, and the submission makes no high-risk classification claim under the EU AI Act |
+| D4 | §4.1 Participant retains all IP | null for the entrant; nothing to do. Worth recording that it is what makes the Apache-2.0 release on 2026-09-15 permissible: §4.1 reserves the right to "license, or otherwise exploit your work", and §4.3 confirms sponsors acquire no ownership by access |
+| D5 | §4.2 Non-exclusive licence to Resonance for assessment and promotion | null for the entrant. Note the direction of the two halves: the licence Resonance takes is limited to administration, evaluation and judging, and it expressly does **not** extend to commercial exploitation of the underlying IP |
+| D5a | §4.2 "Resonance will not share the full content ... unless it is already publicly available" | **switched off deliberately, and the trade is recorded.** The repository goes public on 2026-09-15, the same day as the upload, so this protection lapses by its own terms from that moment. That is the intended choice — the proposal's verifiability rests on a reader being able to open the repository — but it is a choice, not an oversight ([D-107](decisions.md)) |
+| D5b | §4.2 "Reference your **team name**, submission title, and a summary description ... Personal names of individual team members will not be disclosed without your prior written consent" | **要確認, author decision.** The entry has no team name: both title blocks carry the Challenge's own programme name. For a single-person entry, the two things Resonance may publicise are a team name that does not exist and a title; and the one identifier that does exist, the author's personal name, is the one §4.2 withholds absent written consent. **If the author wants the entry publicised, a trading name should go in the portal's team-name field** |
+| D6 | §4.3 Sponsor access, review-only, no ownership acquired | null for the entrant |
+| D7 | §4.4 Post-Challenge engagement governed by a separate bilateral agreement | null for Phase I. Relevant to Phase II: §5 already records that the IEEE-CIS competition rules permit non-commercial research use only, so a commercial PoC cannot reuse this file. The protocol ports; the data does not |
+| D8 | §5 Evaluation criteria may be adjusted; all decisions final | null. Section C tracks the criteria as published |
+| D9 | §6 Prizes may be modified; taxes are the recipient's | null for Phase I |
+| D10 | §7 Confidentiality of sponsor material, **conditioned on being selected as a finalist** | not yet attached. §1 calls the Phase I statements "published", so quoting the statement here is unobjectionable. **It attaches at Phase II, and this repository is public** — any non-public sponsor material received as a finalist must not enter it. Recorded here because the constraint arrives with the selection, not with the work |
+| D11 | §8 Data and privacy — Resonance's handling of the entrant's data | null for the entrant. Note the onward direction the Terms are silent on: the upload transfers 115,534 rows to a company in Ontario. See E1a |
+| D12 | §9–§11 Disclaimers, code of conduct, modification and cancellation | null |
+| D13 | §12 Governing law: Ontario, Canada | null; recorded so a later reader does not assume Japanese law governs |
 
 ## E. Data licensing
 
@@ -114,6 +134,7 @@ artefact a reviewer receives and nothing else checks them.
 | E2 | ULB: database under **ODbL**, contents under **DbCL v1.0** | met | `NOTICE` always stated both; `README.md`, `PROVENANCE.md`, `A3-reproduction.tex` and `SUBMISSION_CHECKLIST.md` now do too |
 | E3 | Third-party software licences recorded | met; `NOTICE` |
 | E4 | cuQuantum proprietary surface disclosed and scoped | met; installed only by the optional `make venv-gpu`, used only by E11's parity cross-check, no scientific figure depends on it — [D-050](decisions.md) |
+| E1a | What the uploaded `predictions.csv` actually contains, against both the IEEE-CIS competition licence (E1) and TERMS §8 | met. The file carries a row index, a model score, the decision it implies, the day offset and the three thresholds — **no feature values and no dataset field**. It is model output over a public benchmark's row ordering, not a redistribution of the Competition Data, and it carries nothing that could identify a cardholder. Both the licence question and the privacy question are answered by the same fact about the column set |
 
 ---
 

@@ -1970,9 +1970,12 @@ the organiser's own label.
 
 **Both earlier readings of "550" were wrong, in opposite directions.** It is the maximum score,
 not the field size: the column is headed SCORE, every row on the first two pages reads `450/550`,
-and the ten problems carry weights 10 through 100, which sum to 550. That arithmetic also
-confirms the count independently -- 450 is every problem but the last, so nine of ten follows
-from the score without needing the author's repository at all.
+and the ten problems carry weights 10 through 100, which sum to 550.
+
+**The sentence that followed here was wrong and is retracted** -- see [D-105](#d-105). It read
+"that arithmetic also confirms the count independently -- 450 is every problem but the last, so
+nine of ten follows from the score without needing the author's repository at all." Ten subsets
+of the weights sum to the missing 100, so the score is consistent with six through nine solved.
 
 **The "Top 10" that started this is not a contradiction.** Ranks 1 to 20 are all tied at 450 and
 separated only by time penalty. A team can be in the top score tier and thirteenth overall.
@@ -3093,3 +3096,195 @@ the literature, and the upload itself.
 development environment and the measured benchmark timings" and cited a *link* to
 `ENVIRONMENT.md`. Carrying and linking are not the same thing for a reader who opens one file.
 The README now states the machine and a six-row stage-cost table inline.
+
+### D-102 A team result presented inside a paragraph that says "single-person team"
+
+Section 8 declares "Single-person team." and, two lines below, listed the Yale Peaked Hackathon
+placement with no qualifier. Every source attributes it to a team: the CV lists "Team MerQury"
+against that project and writes "team score 450", and the addendum heads the section the same
+way. A reviewer who opens the CV -- which the proposal invites, since the portfolio is linked --
+finds a team placement presented as an individual one, in the section carrying 10 % of the score
+and immediately after a sentence asserting the opposite.
+
+Now attributed: "with team MerQury, on his own matrix-product-state attack". Both halves are
+supported -- the placement is the team's and the attack is the author's, which the addendum
+states separately.
+
+**And the same section understated the upstream work.** It said only "merged into CUDA-Q and
+QuEST". The addendum says "Three PRs merged. Two closed bounty issues, for USD 200 total", and
+`CREDENTIALS.md` listed only two of the three, which is why the proposal was short. It now
+states three merged pull requests and two closing bounty issues.
+
+An understatement is a defect here in the same way an overstatement is, and this project has
+now found four of them in the same section.
+
+**A footnote on the correction itself.** Writing the dollar figure into these three documents
+introduced an unpaired `$`, and `check_markdown_math.py` refused the commit. By rule 4 it would
+in fact have rendered, because the delimiter touches a digit -- but it renders by an exception,
+and any later `$` in the same file can pair with it. The gate built for the reported bug caught
+a fresh instance of the same bug class inside the entry describing an unrelated fix, which is
+the only evidence worth having that a gate is doing its job.
+
+### D-103 A rule stated in the same section it was broken in
+
+D-094 removed two teammates' full names and email addresses from `CREDENTIALS.md`, and added a
+sentence saying "the teammates who made the attributions below are identified by role, not by
+name or contact address."
+
+Five given names survived that scrub in the same file and one other, embedded where a
+search for full names and addresses would not look: inside quoted filenames of the form
+`week3/<GIVENNAME>_TASK16_17_HANDOFF.md`, and inside the block quotations themselves, which
+refer to people by initials and given names.
+
+So the section stated a rule and broke it four lines later. That is worse than stating no rule,
+because a reader who sees the undertaking stops checking. All five are replaced by role, with
+the substitutions marked in the quotations so a reader knows the text was altered rather than
+paraphrased.
+
+The Terms and Conditions clause behind this -- "your submission does not contain any
+confidential or proprietary information of any third party" -- was already ticked in the
+compliance checklist, and was ticked on the strength of an argument about *datasets*. A tick
+with the wrong evidence stops anyone looking again, which is exactly what happened here.
+
+### D-104 A section that reproduced a private repository's contents while saying it did not
+
+`CREDENTIALS.md` §2 opened with "Per the Phase I submission guidelines, no third party's
+information is reproduced here", and then reproduced four block quotations from two teammates'
+unpublished handoff documents and a team README, all held in a repository that is **private**.
+It also said "commit identifiers and the local paths they were read from have been removed",
+while eight internal paths remained in the same section.
+
+The Terms and Conditions §3 warrant that a submission contains no "confidential or proprietary
+information of any third party disclosed without permission". This repository goes public on
+2026-09-15 and the proposal links to it. A teammate's unpublished prose, quoted at length
+without a recorded permission, is the clause's central case rather than an edge of it.
+
+Every quotation is now a description, and the internal paths are gone. **Nothing evidentiary was
+lost**, and the reason is worth stating: a verbatim quotation from a repository a reviewer
+cannot open carries no more weight than a description of the same document, because neither can
+be checked from outside. The quotations were serving the author's confidence, not the reader's.
+
+One four-word phrase is kept -- the team's own "protocol-final, numbers-provisional" -- because
+it *limits* the credential rather than supporting it, and because the proposal already prints
+it. Removing a third party's disclaimer while keeping the credit it qualifies would be the wrong
+trade.
+
+Note what the compliance checklist had said about this clause: D3, "met; both datasets are
+public, and neither is redistributed". Correct about datasets, and blind to the actual exposure
+twice over -- first the teammates' names and addresses ([D-094](#d-094)), then their prose.
+Three findings against one row.
+
+<a id="d-105"></a>
+### D-105 An arithmetic claim of independence that the arithmetic does not support
+
+Two documents asserted that the Yale solved-count follows from the score alone: "the ten
+problems carry weights 10 through 100, which sum to 550 ... 450 is every problem but the last,
+so nine of ten follows from the score without needing the author's repository at all."
+
+It does not follow. The missing 100 points are made up by **ten** distinct subsets of
+$\lbrace 10, 20, \ldots, 100 \rbrace$ -- $\lbrace 100 \rbrace$, $\lbrace 10, 90 \rbrace$,
+$\lbrace 20, 80 \rbrace$, $\lbrace 30, 70 \rbrace$, $\lbrace 40, 60 \rbrace$,
+$\lbrace 10, 20, 70 \rbrace$, $\lbrace 10, 30, 60 \rbrace$, $\lbrace 10, 40, 50 \rbrace$,
+$\lbrace 20, 30, 50 \rbrace$ and $\lbrace 10, 20, 30, 40 \rbrace$ -- so a score of 450 is
+consistent with six, seven, eight or nine circuits solved.
+
+The count of nine is still true. What was false is the claim that it was *independently*
+derivable, and that is the more damaging error of the two: the whole point of D-061 was to
+prefer organiser-issued facts over author-issued ones, and this sentence smuggled an
+author-issued fact across that line by dressing it as arithmetic. The leaderboard has no
+"solved" column. The count's only source is the author's own README.
+
+**The same section carried a second, related overreach.** Section 8 read "his own
+matrix-product-state attack on 69-qubit circuits", which is precisely the attribution
+[D-057](#d-057) and [D-059](#d-059) removed: the repository's own `verify_results.py` reports
+P9 at 69 qubits as FAIL at Hamming 32/69, and the run that produced the correct answer was never
+saved. D-059 had settled the honest form -- the saved runs are exact to 60 qubits and degrade
+above it -- and section 8 had drifted back off it. Restated to match, which is also the better
+sentence: a proposal whose section 4 is titled "how each failed" is more credible for naming
+where its own method stops working, not less.
+
+**The lesson is about the shape of the error, not the number.** Both defects survived five audit
+rounds because they read as *more* rigorous than the truth. "It follows from the score itself"
+sounds like a verification; it was an assumption wearing one. A derivation stated in a document
+is a claim like any other, and this project had been checking numbers against tables while
+leaving the sentences that connect them unchecked.
+
+<a id="d-106"></a>
+### D-106 "Which this submission reuses", said of a private and unlicensed repository
+
+Section 8 described the QIntern work and closed: "so it establishes machinery, which is what
+this submission reuses."
+
+Read against the Terms' originality warranty -- "All submissions must be original work and must
+not infringe on any third-party intellectual property rights" (§3) -- the natural reading of
+*reuses*, applied to another team's private repository with no licence, is that code was carried
+across. The appendix says the opposite in as many words: "The conformal implementation was
+written from the published papers rather than adapted from an unlicensed repository, and that
+decision is recorded with its date."
+
+So the two documents contradicted each other on precisely the clause a reviewer would care
+about, and the weaker of the two was in the section under the Team criterion. Corrected to say
+what is true: what carries over is the author's practice with the machinery, and no code
+crossed over.
+
+The sentence was not trying to claim reuse -- "machinery" was meant in the sense of *technique*.
+That is what makes it the dangerous kind of error: it was written for one reading and is
+load-bearing under another, and only the second one is a warranty.
+
+<a id="d-107"></a>
+### D-107 Publishing on the submission date switches off a protection the Terms give
+
+Terms §4.2: Resonance "will not share the full content of your submission with third parties
+outside the evaluation and judging process without your prior written consent, **unless it is
+already publicly available**."
+
+This repository goes public on 2026-09-15, the same day as the upload, and the proposal prints
+its URL in the title block. So the protection lapses by its own terms at the moment of
+submission, and Resonance may from then on share the full content with anyone.
+
+That is the intended trade and it is worth stating rather than discovering later. The whole
+argument of this submission is that a reviewer can check it: the claim ledger, the frozen
+manifest, the clean-room record and 175 tests are only worth anything if they can be opened. A
+guarantee nobody can audit is the thing this proposal is arguing against. Keeping the repository
+private to retain §4.2 would trade the submission's central property for a protection over
+material the author is choosing to publish anyway.
+
+Recorded because a null row and an unconsidered row look identical six months later.
+
+### D-108 A novelty claim that was true as written and unqualified as read
+
+Section 1 said conformal methods "reach this problem closely" and that "none conditions the
+guarantee on the abstention region it routes to". The "none" was grammatically bound to the four
+fraud papers named immediately before it, so the sentence was not false.
+
+It was still the wrong sentence. Conditioning a distribution-free guarantee on a *selected*
+region is an active named subfield, and this repository cited none of it -- a grep for the
+obvious terms returned nothing across 53 references. A reviewer who works in that area reads the
+sentence as a claim about the literature, not about four fraud papers, and finds it wrong.
+
+Two entries added, both resolved against arXiv before citing rather than after
+([D-098](#d-098) is why):
+
+* **CP-18**, Xu, Guo and Wei, *Selective Conformal Risk Control*, arXiv:2512.12844,
+  14 December 2025. Conformal risk control applied on the selected subset. Its SCRC-I variant
+  has the same PAC-style form as the Learn-then-Test certificate used here.
+* **CP-19**, Bai and Jin, *Conformal Selective Prediction with General Risk Control*,
+  arXiv:2603.24704, 25 March 2026. Abstention with finite-sample control of a general bounded
+  risk, via e-values rather than uniform concentration.
+
+Section 1 now says selection-conditional risk control *does* condition on the retained region,
+under exchangeability and not on payments. **The claim is narrower and much harder to attack**:
+what is new here is the pair -- band-conditional and time-ordered -- not the first half alone.
+
+Note the near-miss that made this worth checking: Wenge Guo co-authors CP-18 and also CP-17,
+which this submission already cited. The nearest prior art was one hop from a reference already
+in the file.
+
+**A comparator was considered and declined.** Peng, Lu and Chen, arXiv:2608.24631, 25 August
+2026, apply quantum kernels to card fraud and report ranking *second* on IEEE-CIS -- this
+submission's own dataset -- while stating that their kernel "can also be evaluated exactly on a
+classical computer" and so establishes "predictive and representational value rather than
+computational quantum speedup". It is not cited. It agrees with section 4's finding rather than
+challenging it, the challenge statement asks only that its own two cited results be engaged, and
+a 6-of-6 page is the wrong place to spend lines corroborating a negative result the document
+already reports. Recorded so the omission is visibly a decision.

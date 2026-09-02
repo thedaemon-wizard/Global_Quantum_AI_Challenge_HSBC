@@ -10,7 +10,7 @@ identifier, its first author's surname, and an alias the entry declares as
 surname is usually the handle that finds them; the alias covers the entries that have
 no author to cite -- an instrument named in prose, or a lower-case package name.
 
-**53 entries. 53 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
+**55 entries. 55 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
 
 ---
 
@@ -34,7 +34,9 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **FR-3** | DISCO: Decoupling representation learning and risk control for reliable credit card fraud detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/protocol.md`, `submission/content/01-problem.tex` |
 | **FR-5** | Temporal Graph Prototype-conditioned Conformal Prediction for Fraud Detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `submission/content/01-problem.tex` |
 | **FR-6** | Non-exchangeable Conformal Prediction for Temporal Graph Neural Networks | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
-| **CP-17** | Conformal Risk Control under Non-Monotone Losses | `docs/FACTCHECK_LOG.md` |
+| **CP-17** | Conformal Risk Control under Non-Monotone Losses: Theory and Finite-Sample Guarantees | `docs/FACTCHECK_LOG.md`, `docs/decisions.md` |
+| **CP-18** | Selective Conformal Risk Control | `docs/decisions.md`, `submission/content/01-problem.tex` |
+| **CP-19** | Conformal Selective Prediction with General Risk Control | `docs/decisions.md`, `submission/content/01-problem.tex` |
 | **QM-1** | Power of data in quantum machine learning | `docs/FACTCHECK_LOG.md`, `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `README.md`, `docs/decisions.md`, `docs/protocol.md` and 3 more |
 | **QM-2** | Exponential concentration in quantum kernel methods | `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
 | **QM-4** | Numerical evidence against advantage with quantum fidelity kernels on classical data | `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
@@ -56,7 +58,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **DS-6** | The E-Commerce Conundrum: Balancing False Declines and Fraud Prevention | `docs/decisions.md`, `submission/content/01-problem.tex` |
 | **DS-7** | False Declines: Driving Customers Away | `docs/decisions.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/mps.py`, `src/hsbcfraud/quantum/screens.py`, `submission/content/01-problem.tex` |
 | **RG-1** | Commission Delegated Regulation (EU) 2018/389 supplementing Directive (EU) 2015/2366 as regards regulatory tec | `docs/FACTCHECK_LOG.md`, `docs/REGULATORY_SOURCES.md`, `docs/decisions.md` |
-| **RG-2** | Regulation (EU) 2024/1689 (the Artificial Intelligence Act), Annex III point 5(b) | `docs/REGULATORY_SOURCES.md`, `docs/decisions.md`, `docs/SUBMISSION_CHECKLIST.md`, `docs/protocol.md`, `submission/content/01-problem.tex` |
+| **RG-2** | Regulation (EU) 2024/1689 (the Artificial Intelligence Act), Annex III point 5(b) | `docs/REGULATORY_SOURCES.md`, `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/SUBMISSION_CHECKLIST.md`, `docs/protocol.md`, `submission/content/01-problem.tex` |
 | **RG-3** | Regulation (EU) 2026/1744, published in the Official Journal 24 July 2026 | `docs/REGULATORY_SOURCES.md`, `docs/decisions.md` |
 | **RG-4** | effective challenge | `docs/REGULATORY_SOURCES.md`, `docs/decisions.md` |
 | **RG-5** | fraud | `docs/FACTCHECK_LOG.md`, `docs/REGULATORY_SOURCES.md`, `docs/decisions.md` |

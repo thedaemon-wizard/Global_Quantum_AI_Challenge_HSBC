@@ -18,8 +18,8 @@ A row is ticked only when the check was actually run, not when it was planned.
 | `[x]` | HSBC Challenge Statement (vFinalRevised, 16 pp.) | 2026-08-31, all seven sections | Four Expected Outcomes each answered by a named artefact; two named requirements were unmet and are now met (class-imbalance handling, the sponsor's own cited comparators) |
 | `[x]` | Challenge Statement, revised against original | 2026-08-31, word-by-word diff | The revision **adds URLs** and three words. No requirement changed. An audit agent reported the two as textually identical, which the diff does not support |
 | `[x]` | Phase 1 Submission Guidelines | 2026-08-31 | 6 pages + 3 appendix, A4, 10 pt floor, 20 MB per file, five slots -- all asserted by `scripts/check_pdf.py` and `scripts/assemble_submission.py` rather than by eye |
-| `[x]` | Assessment Criteria | 2026-08-31 | See §4 below |
-| `[x]` | Terms and Conditions | 2026-08-31 | See §4 below |
+| `[x]` | Assessment Criteria | 2026-08-31; findings re-verified 2026-09-02 | See §4 below. An adversarial pass over 10 criteria findings **confirmed none of them** -- each was either already satisfied elsewhere in the submission or rested on a stale copy of a file. Two proposed fixes carried factual errors that would have contradicted the claim ledger |
+| `[x]` | Terms and Conditions | 2026-08-31; full clause pass 2026-09-02 | All 13 sections, see §4 below |
 
 ## 2. Live surfaces, re-verified in a browser
 
@@ -42,18 +42,35 @@ A row is ticked only when the check was actually run, not when it was planned.
 | `[x]` | Walkthrough against the committed tables | `make walkthrough` | Every assertion holds |
 | `[ ]` | Full-scale sweep re-run | not re-run | 13 GPU-hours; the frozen manifest covers it and no claim depends on re-deriving it |
 
-## 4. What the two previously unread documents established
+## 4. The two governing documents, and how thinly they had been checked
 
-Recorded here rather than in the compliance checklist because the finding is about the
-*verification*, not about a requirement mapping.
+An earlier draft of this file said the Assessment Criteria and the Terms and Conditions had
+"never been read against this submission". That was wrong, and correcting it is the point of the
+section. [`COMPLIANCE_CHECKLIST.md`](COMPLIANCE_CHECKLIST.md) section D already carried five
+rows against the Terms.
 
-**要確認 until the audit completes.** The Assessment Criteria and the Terms and Conditions had
-never been read against this submission before 2026-08-31, through five audit rounds. That is
-itself the finding worth recording: the submission was checked exhaustively against its own
-internal consistency and against the challenge statement, and the two documents that govern how
-it is *scored* and what the entrant *undertakes* were not in the loop. Results are folded into
-[`COMPLIANCE_CHECKLIST.md`](COMPLIANCE_CHECKLIST.md) and [`FACTCHECK_LOG.md`](FACTCHECK_LOG.md)
-as they are confirmed.
+What is true is thinner and more useful: **five rows against thirteen sections**, and at least
+one of those rows was satisfied by evidence that did not cover the clause. D3 ticks "no
+confidential or proprietary third-party information" and reasons entirely about *datasets* --
+"both datasets are public, and neither is redistributed". It was blind to two teammates' names
+and personal email addresses sitting in `CREDENTIALS.md`, which is exactly the third-party
+information that clause is about, and which was found and removed on 2026-08-31 by looking for
+something else.
+
+That is the same failure as the predictions row, which ticked an Expected Outcome while citing a
+file format the portal rejects: **a checklist row is only as good as the evidence column, and a
+tick with the wrong evidence is worse than an unticked row**, because it stops anyone looking
+again.
+
+**The clause-by-clause pass has since been run** (2026-09-02). `COMPLIANCE_CHECKLIST.md`
+section D went from 5 rows to 19, one per clause, and three of the five originals were restated
+because their reasoning did not reach the clause they ticked. Two rows are **要確認 and belong
+to the author, not to this repository**: whether any current engagement makes him a "Contractor
+of ... Challenge enterprise sponsors" under §2, and whether to register a trading name, since
+§4.2 permits Resonance to publicise the entry by team name and withholds personal names.
+
+Null clauses now carry a row saying they are null. The reason is the failure below: an absent
+row and a considered-and-null row are indistinguishable to the next reader.
 
 ## 5. External artefacts reconciled against the submission
 
@@ -61,8 +78,8 @@ as they are confirmed.
 |---|---|---|
 | `[x]` | IBM `ibm_fez` hardware run | VQC and QSVM, June 2026, in a public repository. Restored to the team section after a compression round dropped it |
 | `[x]` | QIntern 2026 Project 12 role | Programme and role named; the supporting repository is **private**, so no locator into it is cited. Third-party names and contact addresses removed |
-| `[x]` | Yale Peaked Hackathon placement and score | 13th of 549 at 450 of 550 |
-| `[x]` | unitaryHACK merges | CUDA-Q and QuEST |
+| `[x]` | Yale Peaked Hackathon placement and score | 13th of 549 at 450 of 550. Two separate corrections. **The placement is a team's** -- the leaderboard row and the CV both read *MerQury*, and section 8 of the proposal presented it without a qualifier two lines under the words "Single-person team". Now attributed. Separately, the section claimed the solved count follows from the score, which is arithmetically false -- ten subsets of the weights sum to the missing 100 -- and paired the 69-qubit figure with a method the repository's own verifier reports as failing on it ([D-102](decisions.md), [D-105](decisions.md)) |
+| `[x]` | unitaryHACK merges | **Three** pull requests, not the two the proposal implied: `cuda-quantum#4693`, `QuEST#783`, `cuda-quantum#4751`. Merge dates and branches read from the GitHub API on 2026-09-02. Two closed bounty issues, USD 200; the third is a follow-on and is not a bounty ([D-102](decisions.md)) |
 | `[ ]` | CV sole-proprietorship date | **要確認**: the CV reads "Jul 2026 - Present"; the portfolio and the filing say 1 August 2026. The submission uses 1 August. A reviewer comparing the two would see the discrepancy, and it is the author's to settle |
 
 ## 5b. The seven open questions this study started with

@@ -140,13 +140,34 @@ DOI 10.1145/3711896.3737064. arXiv:2507.02151.
 
 ---
 
-**[CP-17]** Aldirawi, H., Li, Y. and Guo, X. "Conformal Risk Control under Non-Monotone
-Losses". arXiv:2604.01502, 2 April 2026.
+**[CP-17]** Aldirawi, T., Li, Y. and Guo, W. "Conformal Risk Control under Non-Monotone
+Losses: Theory and Finite-Sample Guarantees". arXiv:2604.01502, 2 April 2026; revised
+17 April 2026.
 Risk control over a finite grid can fail when the loss is not monotone in the tuning
 parameter, with excess risk scaling as `sqrt(log m / n)`. Checked rather than assumed here:
 both controlled risks are strictly monotone in `lambda` over the pre-registered grid, and
 `sqrt(log 11 / 2259) = 0.0326` is small against the certifying levels, so the counterexample
 does not apply. `tests/test_riskcontrol.py` pins the monotonicity.
+
+**[CP-18]** Xu, Y., Guo, W. and Wei, Z. "Selective Conformal Risk Control".
+arXiv:2512.12844, 14 December 2025.
+The closest published relative of the band-conditional certificate: conformal risk control
+applied *on the selected subset* rather than on all of it, in two variants -- SCRC-T, which
+preserves exchangeability by computing thresholds jointly over calibration and test points, and
+SCRC-I, a calibration-only variant with the same PAC-style form as the Learn-then-Test
+certificate used here. Cited in section 1 to bound the novelty claim rather than to support it:
+the construction is prior art for conditioning on a retained region, and what is not prior art
+is doing so on a payment stream under a split that orders time. Note the co-author overlap with
+CP-17, which this submission already cites.
+
+**[CP-19]** Bai, T. and Jin, Y. "Conformal Selective Prediction with General Risk Control".
+arXiv:2603.24704, 25 March 2026.
+Abstention with finite-sample control of any bounded, continuously-valued user-defined risk,
+built on e-values rather than on uniform concentration. Same role as CP-18 in section 1. The
+e-value construction is a genuinely different route to the same kind of statement and is the
+strongest available alternative to the Hoeffding-Bentkus grid used here; it is not adopted
+because the pre-registration was frozen on the grid before any model was fitted, and swapping
+the estimator afterwards would break exactly the property the certificate claims.
 
 ## 3. Quantum machine learning -- the state of the evidence
 
@@ -403,6 +424,20 @@ call it today.
 ## 7. Sources consulted and deliberately not relied upon
 
 Recorded because excluding a source is a decision.
+
+**Peng, H., Lu, J. and Chen, Y.** "When Similarity Is Interaction-Driven: Quantum Kernels for
+Regime-Sensitive Learning". arXiv:2608.24631, 25 August 2026. Verified against the arXiv record
+2026-09-02.
+The most recent published quantum-kernel result on this submission's own dataset, and the reason
+it is not cited is that it agrees rather than competes. Its kernel takes the top accuracy and F1
+on the ULB Credit Card Fraud file but **ranks second on IEEE-CIS**, against a comparison set of
+linear, RBF, Laplacian and polynomial kernels; and the authors close by stating that because the
+block-factorised kernel "can also be evaluated exactly on a classical computer", the results
+establish "predictive and representational value rather than computational quantum speedup".
+A quantum kernel that loses on IEEE-CIS and is exactly classically computable corroborates
+section 4's rejected-kernel finding. The challenge statement asks that its own two cited results
+be engaged, which section 4 does; spending a line of a full page to agree with a negative result
+already reported is the wrong trade. See [D-108](decisions.md).
 
 **Innan, N. et al.** "Financial Fraud Detection: A Comparative Study of Quantum Machine
 Learning Models". *International Journal of Quantum Information* 22(02):2350044, 2024.
