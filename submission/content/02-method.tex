@@ -34,9 +34,9 @@ Section~\ref{sec:results} rather than hidden.
 60/10/10/20\,\%, contiguous and snapped to day boundaries. The \textbf{temporal} break is that
 $\Dcal$ precedes $\Dtest$. The \textbf{selective} break is that band membership is a
 data-dependent event, if the edges were estimated on the data used to certify. Freezing the
-edges on $\Dband$ removes the second by construction: membership becomes a fixed measurable
-predicate, and filtering a sequence by one preserves exchangeability of what remains. Only the
-temporal break survives, and we measure it.
+edges on $\Dband$ removes the second by construction: membership becomes a fixed predicate, and
+filtering by one preserves exchangeability of what remains. Only the temporal break survives,
+and we measure it.
 
 \paragraph{Risk control.} Learn-then-Test controls family-wise error over a finite grid fixed
 in advance, using Hoeffding--Bentkus $p$-values with Holm. Two risks are controlled jointly:
@@ -54,6 +54,11 @@ $E \sim \mathrm{BetaBinomial}(m,\ n{+}1{-}k,\ k)$ with $k = \lceil (n{+}1)(1-\al
 Checking $\hat r \le \alpha$ is a one-sided test against the wrong null: on a correctly
 calibrated system it passes only about half the time. Every verdict below is the two-sided
 Beta-Binomial interval at the 99\,\% level.
+
+\paragraph{Imbalance is absorbed by thresholds, not by resampling.} At a
+\ClaimTestFraudRate\,\% positive rate that is a choice, and the guarantee makes it: resampling
+the calibration block would break the exchangeability the certificate needs, so every block is
+scored as it falls and the imbalance is carried by where $\taulo$, $\lambda$ and $\tauhi$ sit.
 
 \paragraph{Intervals resample entities, not rows.} The IEEE-CIS label propagates a reported
 chargeback to later transactions sharing an account, email or billing address, so rows are

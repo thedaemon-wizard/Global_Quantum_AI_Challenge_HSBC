@@ -3029,3 +3029,22 @@ sections under two attributions is how the miscitation propagated.
 moment to search for it first. The check that caught this was an agent instructed to refute
 rather than confirm, reading the same file I had edited; it is the second time in this project
 that adversarial verification caught a defect introduced by the fix for another defect.
+
+### D-099 Two named requirements of the statement, one unmet and one framed as a lapse
+
+**Class imbalance.** Section 5 of the challenge statement says "handling of class imbalance
+should be documented (e.g., resampling, loss weighting, threshold tuning)". Neither PDF
+addressed it, and the answer is a good one: this study does not resample and cannot, because
+resampling or reweighting the calibration block breaks the exchangeability the certificate
+depends on. Every block is scored as it falls and the imbalance is carried entirely by where the
+three thresholds sit. That is the requirement answered by the method rather than in spite of it,
+and leaving it unstated gave away a named "should" for nothing.
+
+**The withdrawn dataset.** Amendment A9 presented ULB as "a dataset promised and never
+obtained", which reads as a lapse. Section 5.4 of the statement lists "focus on one or two
+datasets rather than all three" among its acceptable simplifications, so using one of three is a
+scope the challenge explicitly permits. What is actually disclosable is that the
+*pre-registration* promised a third, not that the challenge expected one. A9 now says which of
+the two it is.
+
+Four lines of displacement came from restatement in sections 2, 3 and 6.

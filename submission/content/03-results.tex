@@ -12,17 +12,15 @@ It is also what separates this baseline from the published leaderboard. The 1st-
 solution \Cited{reports ROC AUC 0.9459} on the private leaderboard --- the competition's own
 held-out file --- and about \Cited{0.9363} in time-based cross-validation over the training
 file, against \ClaimGbdtFullAucMin--\ClaimGbdtFullAucMax{} here on a strict forward holdout of
-that training file. Different tasks, measured above rather than assumed; the appendix carries
-the primary metrics in full.
+that training file. Different tasks, measured above rather than assumed.
 
 \input{generated/table-splitarm}
 
 \paragraph{Coverage fails under time, on every seed, and the controls do not reproduce it.}
-Table~\ref{tab:coverageseeds} calibrates on $\Dcal$ and reports on $\Dtest$, five seeds per
-arm and level, each judged against the exact Beta-Binomial interval. The temporal arm falls
-outside on \emph{every} seed at the two loosest levels and on \ClaimTemporalOutsideMid{} of
-\ClaimCoverageSeeds{} at the third, and inside on every seed at the tightest; the
-stratified arm falls outside on none, at any level.
+Table~\ref{tab:coverageseeds} calibrates on $\Dcal$ and reports on $\Dtest$, five seeds per arm
+and level against the exact interval. The temporal arm falls outside on \emph{every} seed at the
+two loosest levels and on \ClaimTemporalOutsideMid{} of \ClaimCoverageSeeds{} at the third,
+inside at the tightest; the stratified arm falls outside on none, at any level.
 
 The card-disjoint arm is not clean either way: it \emph{over}-covers on
 \ClaimCardDisjointOutsideLoosest{} of \ClaimCoverageSeeds{} seeds at $\alpha = 0.01$ and
