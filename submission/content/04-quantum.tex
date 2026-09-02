@@ -7,27 +7,24 @@ pre-registered screens over \ClaimScreenConfigs{} configurations of encoding $\t
 $\times$ bandwidth $\times$ entanglement, and gated on two: a kernel is usable only if it is
 not exponentially concentrated --- effective rank
 $r_{\mathrm{eff}} = \exp(-\sum_i p_i \log p_i)/n$ at $p_i = \sigma_i/\sum_j \sigma_j$, inside a
-usable band --- \emph{and} not reproducible by a tuned RBF, where $\rho_{\mathrm{RBF}}$ is the largest
-absolute off-diagonal correlation over a bandwidth grid and must satisfy
-$\rho_{\mathrm{RBF}} \le 0.60$.
+usable band --- \emph{and} not reproducible by a tuned RBF ($\rho_{\mathrm{RBF}} \le 0.60$, the
+largest absolute off-diagonal correlation over a bandwidth grid).
 
 \ClaimScreenPassConditioning{} of \ClaimScreenConfigs{} pass conditioning.
 \textbf{\ClaimScreenPassBoth{} pass both.} The closest any configuration came to distinctness
 was $\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$; the median is
 \ClaimScreenMedianRbf{} and the maximum \ClaimScreenMaxRbf{}. On \ClaimScreenSamples{}
-stratified rows with at most eight features, no configuration
-cleared the pre-registered bar --- which reporting a downstream accuracy would have hidden. One caveat: the protocol names the Huang geometric
-difference first and the implementation computes it without gating on it (amendment~A6); since
-Huang treats a \emph{large} difference as favourable, gating would have made this rejection
-less decisive, not more. The statement cites two positive results, \Cited{0.87} precision and
-\Cited{0.88} $F_1$ \Cited{(Deloitte and AWS, 2024; El Alami et al., 2024)}. The second was
-measured on a \Cited{984}-row balanced undersample at seven principal components, with no
-classical arm: neither this task's \ClaimTestFraudRate\,\% base rate nor a comparison. The first
-is a precision with no recall and no base rate. Neither tests distinctness from a classical
-kernel before scoring, which is where this section stops. The comparator that does control for that agrees with us:
-a controlled benchmark on real card-transaction data \Cited{(Faryad, arXiv:2608.15718, 2026)}
-reports no robust quantum advantage, and finds one apparent advantage to be an artefact of
-unequal search budgets.
+stratified rows with at most eight features, no configuration cleared the pre-registered bar ---
+which reporting a downstream accuracy would have hidden. One caveat: the protocol names the
+Huang geometric difference first and the implementation computes it without gating on it
+(amendment~A6), which would have made this rejection less decisive, not more. The statement cites two positive results, \Cited{0.87} precision and
+\Cited{0.88} $F_1$ \Cited{(Deloitte and AWS, 2024; El Alami et al., 2024)}. The second is a
+\Cited{984}-row balanced undersample at seven principal components with no classical arm ---
+neither this task's \ClaimTestFraudRate\,\% base rate nor a comparison --- and the first is a
+precision with no recall or base rate. Neither tests distinctness from a classical kernel before
+scoring, which is where this section stops. The controlled benchmark on real card-transaction
+data that does \Cited{(Faryad, arXiv:2608.15718, 2026)} reports no robust quantum advantage, and
+finds one apparent advantage to be an artefact of unequal search budgets.
 
 \paragraph{The tensor network ran, and did not win.} A matrix-product-state classifier contracts
 \[
@@ -44,9 +41,11 @@ the gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi.
 \paragraph{At full scale it loses by a wider margin, with replication behind it.} On all 431
 features, trained on $\Dtrain$ and scored once on $\Dtest$, across \ClaimSweepJobs{} fits ---
 four bond dimensions at four seeds each --- the best draw reaches \ClaimSweepBestAp{} average
-precision against \ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the baseline. Every one
-of the \ClaimSweepJobs{} loses by a factor of two or more at a \ClaimTestFraudRate\,\% positive
-rate, so which draw is reported does not change the conclusion.
+precision against \ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the baseline ---
+\ClaimMpsShareFull\,\% of it, against \ClaimMpsShareBand\,\% in the band, so the gap widens
+with dimension rather than capacity. Every one of the \ClaimSweepJobs{} loses at a
+\ClaimTestFraudRate\,\% positive rate, so which draw is reported does not change the
+conclusion.
 
 \textbf{Capacity is not resolvable, and replication is how we know.} The largest spread across
 seeds at fixed bond dimension is \ClaimSweepSeedSpread{} average precision; the spread of the
@@ -54,9 +53,9 @@ seed \emph{means} across bond dimension is \ClaimSweepChiSpread{} --- seed noise
 \ClaimSweepSpreadRatio{} times the capacity signal, so a per-$\chi$ ordering is selection on a
 maximum. \textbf{And \ClaimSweepStalled{} of
 \ClaimSweepJobs{} fits never left chance}, both at one seed and at two different bond
-dimensions, on the sequential contraction --- the stable path. Failure to train at that rate is
-a property of this ansatz on this data, and a reader choosing a method for a payment system
-should be told.
+dimensions, on the sequential contraction --- the stable path. Excluding them \emph{raises} the
+ratio to \ClaimSweepSpreadRatioTrained{} --- they depressed two of the four means, so part of
+the apparent capacity signal was the failures themselves.
 
 
 \paragraph{The comparison is underpowered, and the gate that should have said so was itself

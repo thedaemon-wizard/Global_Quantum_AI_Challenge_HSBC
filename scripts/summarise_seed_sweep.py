@@ -37,6 +37,18 @@ STALLED_BELOW_AUC = 0.65
 METRICS = ("roc_auc", "average_precision")
 
 
+def _spreads(frame: pd.DataFrame) -> tuple[pd.Series, float]:
+    """The two spreads the sweep exists to compare, over whatever fits are passed in.
+
+    Within: the range across seeds at a fixed bond dimension, which is noise at fixed capacity.
+    Across: the range of the per-chi seed *means*, which is the whole capacity signal.
+    """
+    grouped = frame.groupby("bond_dimension")["average_precision"]
+    within = grouped.agg(lambda column: column.max() - column.min())
+    means = grouped.mean()
+    return within, float(means.max() - means.min())
+
+
 def summarise(sweep: pd.DataFrame) -> pd.DataFrame:
     """Per bond dimension: the spread across seeds, and how many fits never trained."""
     if sweep.empty:
@@ -58,10 +70,21 @@ def summarise(sweep: pd.DataFrame) -> pd.DataFrame:
         summary["average_precision_mean"].max() - summary["average_precision_mean"].min()
     )
 
+    # The same two spreads over the fits that actually trained.  Both figures are reported,
+    # because neither alone is honest.  Quoting only the all-fits ratio lets two runs that
+    # never left chance stand in for seed noise; quoting only the trained ratio hides an
+    # exclusion.  The exclusion happens to *strengthen* the conclusion, and that is exactly
+    # why it must be visible rather than silently applied -- a reader has to be able to see
+    # that the stalls were not dropped to rescue anything.
+    trained_within, trained_across = _spreads(sweep[~sweep["roc_auc"].lt(STALLED_BELOW_AUC)])
+    summary["ap_seed_spread_trained"] = summary["bond_dimension"].map(trained_within)
+    summary["ap_across_chi_spread_trained"] = trained_across
+
     ordered = [
         "bond_dimension", "n_seeds", "n_stalled",
         *(f"{metric}_{stat}" for metric in METRICS for stat in ("mean", "min", "max")),
         "ap_seed_spread", "ap_across_chi_spread",
+        "ap_seed_spread_trained", "ap_across_chi_spread_trained",
     ]
     return summary[ordered]
 
@@ -80,12 +103,16 @@ def main(argv: list[str] | None = None) -> int:
             f"  chi {row.bond_dimension:>3d}  AP {row.average_precision_mean:.4f}  "
             f"seed spread {row.ap_seed_spread:.4f}  stalled {row.n_stalled} of {row.n_seeds}"
         )
-    across = float(summary["ap_across_chi_spread"].iloc[0])
-    widest = float(summary["ap_seed_spread"].max())
-    print(
-        f"\nseed noise is {widest / across:.1f} times the capacity signal "
-        f"({widest:.4f} against {across:.4f})"
-    )
+    for label, spread_column, across_column in (
+        ("all fits", "ap_seed_spread", "ap_across_chi_spread"),
+        ("fits that trained", "ap_seed_spread_trained", "ap_across_chi_spread_trained"),
+    ):
+        across = float(summary[across_column].iloc[0])
+        widest = float(summary[spread_column].max())
+        print(
+            f"\n{label}: seed noise is {widest / across:.2f} times the capacity signal "
+            f"({widest:.4f} against {across:.4f})"
+        )
     print(f"Wrote {display_path(target)}")
     return 0
 

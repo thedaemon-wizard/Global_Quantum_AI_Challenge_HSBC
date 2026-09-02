@@ -127,7 +127,11 @@ def resolve_derived(claim: dict[str, Any], resolved: dict[str, float]) -> float:
             )
     if resolved[right] == 0:
         raise ClaimError(f"derived claim divides by {right!r}, which resolved to zero")
-    return (resolved[left] / resolved[right]) ** float(spec.get("power", 1))
+    ratio = (resolved[left] / resolved[right]) ** float(spec.get("power", 1))
+    # `scale` exists so a share can be stated as a percentage without the percentage itself
+    # being typed anywhere.  A hand-typed 87.8 does not move when its two inputs do, which is
+    # the whole reason this file exists.
+    return ratio * float(spec.get("scale", 1))
 
 
 def resolve(claim: dict[str, Any]) -> float:

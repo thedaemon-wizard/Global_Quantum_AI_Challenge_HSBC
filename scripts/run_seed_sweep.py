@@ -60,12 +60,18 @@ def display(path: Path) -> str:
     return display_path(path)
 
 
-def require_idle_gpu() -> None:
-    """Refuse to start if anything else holds the device.
+def require_idle_gpu(*, allow_shared: bool = False) -> bool:
+    """Refuse to start if anything else holds the device.  Return whether it was contended.
 
     Not fastidiousness.  A contended run reports a fit time that is wrong by a factor of
     three -- observed on this host when a test suite ran in the same window -- and
     ``fit_seconds`` is a reported column.
+
+    ``allow_shared`` exists for one case: a diagnostic run whose reported quantity is the loss
+    trajectory rather than the timing.  It does not weaken the guard, because it cannot be used
+    silently -- the caller gets ``True`` back and every row of the output carries a
+    ``gpu_contended`` column, so a timing produced under contention can never later be read as
+    if it were clean.
     """
     listing = subprocess.run(
         ["nvidia-smi", "--query-compute-apps=pid", "--format=csv,noheader"],
@@ -77,9 +83,12 @@ def require_idle_gpu() -> None:
     # appear in the listing; `> 1` tolerated exactly one foreign process, which is the case the
     # docstring above says the guard exists to stop.
     if len(listing) > 0:
-        raise SystemExit(
-            f"{len(listing)} processes hold the GPU ({listing}); fit_seconds would be wrong"
-        )
+        if not allow_shared:
+            raise SystemExit(
+                f"{len(listing)} processes hold the GPU ({listing}); fit_seconds would be wrong"
+            )
+        return True
+    return False
 
 
 def progress_probe(x_eval: np.ndarray, y_eval: np.ndarray, n_rows: int, seed: int):
@@ -152,6 +161,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument(
+        "--allow-shared-gpu",
+        action="store_true",
+        help=(
+            "run even when another process holds the device.  Every row is then stamped "
+            "gpu_contended=True and its fit_seconds must not be quoted as a timing."
+        ),
+    )
+    parser.add_argument(
         "--eval-rows",
         type=int,
         default=20_000,
@@ -159,7 +176,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    require_idle_gpu()
+    contended = require_idle_gpu(allow_shared=args.allow_shared_gpu)
     cfg = load_config(args.config)
     scores = pd.read_parquet(args.runs / f"scores_{args.arm}_{cfg.split.seeds[0]}.parquet")
     loaded = load_ieee_cis(args.zip, None, with_identity=True)
@@ -229,7 +246,17 @@ def main(argv: list[str] | None = None) -> int:
                     "roc_auc": float(roc_auc_score(y_test, predicted)),
                     "average_precision": float(average_precision_score(y_test, predicted)),
                     "final_loss": history[-1],
+                    # The trajectory was computed and thrown away, and two runs in the
+                    # committed sweep sit at a final loss of about ln 2 -- the value a model
+                    # that never left its initialisation returns.  `final_loss` alone cannot
+                    # distinguish "converged to a poor optimum" from "never moved", and that
+                    # distinction decides whether the row is evidence about capacity or about
+                    # the optimiser.  Three scalars separate them.
+                    "loss_initial": history[0],
+                    "loss_min": min(history),
+                    "epoch_of_min": int(min(range(len(history)), key=history.__getitem__)) + 1,
                     "fit_seconds": elapsed,
+                    "gpu_contended": contended,
                 }
             )
             # Written after every job.  A fourteen-hour run that is interrupted at hour ten

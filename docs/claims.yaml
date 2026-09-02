@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 111
+    value: 112
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -641,6 +641,67 @@ claims:
   # ------------------------------------------------------------ derived from other claims
   # A ratio typed by hand does not move when its inputs do.  The proposal claimed a
   # "thousandfold" FLOP span for a grid that spans sixty-four; these cannot drift that way.
+  - key: MpsShareBand
+    value: 87.8
+    derived:
+      op: ratio
+      scale: 100
+      of:
+      - MpsApBestChi
+      - GbdtApBand
+    tolerance: 0.05
+    note: >
+      Tensor-network average precision as a percentage of the gradient-boosted baseline on the
+      in-band problem: 8 features, identical rows.
+  - key: MpsShareFull
+    value: 49.1
+    derived:
+      op: ratio
+      scale: 100
+      of:
+      - SweepBestAp
+      - GbdtFullApMax
+    tolerance: 0.05
+    note: >
+      The same share at full scale: 431 features, the best of sixteen fits against the strongest
+      baseline seed.  Compare MpsShareBand -- the two together are the answer to the challenge
+      statement's secondary objective 4.2, which asks under what conditions quantum approaches
+      perform differently.
+  - key: SweepSeedSpreadTrained
+    value: 0.1274
+    source: results/tables/mps_seed_sweep_summary.csv
+    reduce:
+      op: max
+      column: ap_seed_spread_trained
+    tolerance: 5.0e-05
+    note: >
+      Largest average-precision spread across seeds at a FIXED bond dimension, over the
+      fourteen fits that trained.  The two degenerate fits are excluded by the same ROC AUC
+      rule the summary already used to count them, so no new threshold is introduced.
+  - key: SweepChiSpreadTrained
+    value: 0.0339
+    source: results/tables/mps_seed_sweep_summary.csv
+    reduce:
+      op: max
+      column: ap_across_chi_spread_trained
+    tolerance: 5.0e-05
+    note: >
+      Spread of the per-chi seed MEANS over the fourteen fits that trained.  It is 46 per cent
+      smaller than the all-fits figure, because the two degenerate fits sat at two different
+      bond dimensions and dragged both of those means down -- so a large part of the apparent
+      capacity signal was the stalls rather than capacity.
+  - key: SweepSpreadRatioTrained
+    value: 3.76
+    derived:
+      op: ratio
+      of:
+      - SweepSeedSpreadTrained
+      - SweepChiSpreadTrained
+    tolerance: 0.005
+    note: >
+      Seed noise against capacity signal over the fits that trained.  LARGER than the all-fits
+      ratio of 2.83, so excluding the degenerate runs strengthens the conclusion that capacity
+      is not resolvable rather than rescuing it.
   - key: SweepSpreadRatio
     value: 2.83
     derived: {op: ratio, of: [SweepSeedSpread, SweepChiSpread]}

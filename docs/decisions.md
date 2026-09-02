@@ -3363,3 +3363,45 @@ teams'.
 
 Note that this was carried as an open 要確認 rather than guessed at, and the guess that would
 have been natural --- solo, since the CV does not say otherwise --- would have been wrong.
+
+### D-112 The two degenerate fits were inflating the capacity signal, not the seed noise
+
+Section 4 reported that seed noise is \ClaimSweepSpreadRatio-fold the capacity signal at full
+scale, computed over all sixteen fits. It separately reported that two of those sixteen never
+left chance. Both statements were true and the second undercut the first, because a run whose
+cross-entropy never fell below the entropy of the prior is not a draw from the seed
+distribution -- it is a run that did not happen.
+
+The expected correction was that excluding them would *shrink* the ratio. It does the opposite.
+
+| | largest seed spread | capacity signal | ratio |
+|---|---|---|---|
+| all sixteen fits | 0.1781 | 0.0629 | **2.83** |
+| the fourteen that trained | 0.1274 | 0.0339 | **3.76** |
+
+The two stalls sat at **two different bond dimensions**, so they depressed two of the four
+per-chi means. That manufactured a spread *across* chi -- and the spread across chi is the
+capacity signal itself. Removing them cuts the capacity signal by 46 per cent against 28 per
+cent for the seed noise, and the ratio rises.
+
+So a large part of what the sweep was measuring as "capacity" was two optimiser failures. The
+conclusion the section draws -- that capacity is not resolvable at full scale -- was
+**understated**, and the corrected figure supports it more strongly than the reported one.
+
+**Both numbers are now reported, and that is the point.** Quoting only the all-fits ratio lets
+two runs that never trained stand in for seed noise. Quoting only the trained ratio hides an
+exclusion. Since the exclusion happens to help, it has to be visible, or a reader cannot tell it
+was not applied in order to help. `summarise_seed_sweep.py` computes both from the same
+`STALLED_BELOW_AUC` rule the summary already used to *count* the stalls, so no new threshold
+enters the analysis -- and that rule was chosen in a gap where any value between 0.54 and 0.76
+returns the same two runs.
+
+**Also answered here: the statement's secondary objective 4.2**, which asks participants to
+"characterize under what conditions (feature sets, data subsets, encoding strategies) quantum
+approaches perform differently". The answer was in the tables and was never stated as an answer:
+the tensor network reaches \ClaimMpsShareBand\,per cent of the baseline's average precision on
+the eight-feature in-band problem and \ClaimMpsShareFull\,per cent on the 431-feature full one.
+The gap widens with dimension, not with capacity. Section 4 now says so in the sentence that was
+already making the comparison.
+
+Paid for by deleting a sentence that restated the section title in a different register.
