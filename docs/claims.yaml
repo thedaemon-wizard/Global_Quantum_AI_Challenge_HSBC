@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 123
+    value: 124
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -641,6 +641,37 @@ claims:
   # ------------------------------------------------------------ derived from other claims
   # A ratio typed by hand does not move when its inputs do.  The proposal claimed a
   # "thousandfold" FLOP span for a grid that spans sixty-four; these cannot drift that way.
+  - key: BandFraudRate
+    value: 10.96
+    scale: 100
+    source: results/tables/mps_lift.csv
+    select: {setting: band}
+    column: positive_rate
+    tolerance: 0.01
+    note: >
+      Positive rate of the in-band evaluation block, against TestFraudRate for the held-out
+      block.  The band is where the scorer already concentrates fraud, so it is roughly three
+      times as positive -- which is why the two raw average-precision ratios are not
+      comparable.
+  - key: MpsLiftShareBand
+    value: 44.8
+    source: results/tables/mps_lift.csv
+    select: {setting: band}
+    column: ap_lift_share
+    tolerance: 0.05
+    note: >
+      Tensor-network average precision as a percentage of the baseline's, both measured as
+      lift over the base rate rather than raw.  Compare MpsShareBand, which is the same
+      quantity uncorrected and is inflated by the in-band floor.
+  - key: MpsLiftShareFull
+    value: 45.5
+    source: results/tables/mps_lift.csv
+    select: {setting: full}
+    column: ap_lift_share
+    tolerance: 0.05
+    note: >
+      The same share at full scale.  Within a point of MpsLiftShareBand, so the deficit does
+      not change with dimension -- which reverses the conclusion the raw shares supported.
   - key: MpsShareBand
     value: 87.8
     derived:
@@ -652,7 +683,9 @@ claims:
     tolerance: 0.05
     note: >
       Tensor-network average precision as a percentage of the gradient-boosted baseline on the
-      in-band problem: 8 features, identical rows.
+      in-band problem: 8 features, identical rows.  ⚠ Not comparable with MpsShareFull as it
+      stands: average precision floors at the base rate and the two evaluation sets do not
+      share one.  MpsLiftShareBand is the comparable figure.
   - key: MpsShareFull
     value: 49.1
     derived:
@@ -664,9 +697,10 @@ claims:
     tolerance: 0.05
     note: >
       The same share at full scale: 431 features, the best of sixteen fits against the strongest
-      baseline seed.  Compare MpsShareBand -- the two together are the answer to the challenge
-      statement's secondary objective 4.2, which asks under what conditions quantum approaches
-      perform differently.
+      baseline seed.  ⚠ Comparing this with MpsShareBand directly is what produced the
+      withdrawn "the gap widens with dimension" (D-124); the base rates differ by a factor of
+      three.  The answer to the statement's secondary objective 4.2 is the pair
+      MpsLiftShareBand and MpsLiftShareFull, which agree.
   - key: SweepSeedSpreadTrained
     value: 0.1274
     source: results/tables/mps_seed_sweep_summary.csv

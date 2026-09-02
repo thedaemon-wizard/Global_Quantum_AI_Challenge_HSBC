@@ -43,22 +43,20 @@ the gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi.
 features, trained on $\Dtrain$ and scored once on $\Dtest$, across \ClaimSweepJobs{} fits ---
 four bond dimensions at four seeds each --- the best draw reaches \ClaimSweepBestAp{} average
 precision against \ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the baseline ---
-\ClaimMpsShareFull\,\% of it, against \ClaimMpsShareBand\,\% in the band, so the gap widens
-with dimension rather than capacity. Every one of the \ClaimSweepJobs{} loses at a
-\ClaimTestFraudRate\,\% positive rate, so which draw is reported does not change the
-conclusion.
+\ClaimMpsShareFull\,\% of it. The in-band \ClaimMpsShareBand\,\% is not comparable with it:
+average precision floors at the base rate, and the band is \ClaimBandFraudRate\,\% positive
+against \ClaimTestFraudRate\,\%. As lift over that floor the two agree,
+\ClaimMpsLiftShareBand\,\% and \ClaimMpsLiftShareFull\,\%, so the deficit does not move with
+dimension. Every one of the \ClaimSweepJobs{} loses, so which draw is reported does not change
+the conclusion.
 
-\textbf{Capacity is not resolvable, and replication is how we know.} The largest spread across
-seeds at fixed bond dimension is \ClaimSweepSeedSpread{} average precision; the spread of the
-seed \emph{means} across bond dimension is \ClaimSweepChiSpread{} --- seed noise is
-\ClaimSweepSpreadRatio{} times the capacity signal, so a per-$\chi$ ordering is selection on a
-maximum. \textbf{And \ClaimSweepStalled{} of
-\ClaimSweepJobs{} fits diverged to the prior}, both at one seed and at two different bond
-dimensions, on the sequential contraction --- the stable path. A re-run against matched seeds
-reproduces both bit-identically: their best loss falls by epoch \Record{2} of \Record{30} and
-rises after, where the controls improve to the last. Excluding them \emph{raises} the
-ratio to \ClaimSweepSpreadRatioTrained{} --- they depressed two of the four means, so part of
-the apparent capacity signal was the failures themselves.
+\textbf{Capacity is not resolvable, and replication is how we know.} Seed noise at fixed bond
+dimension is \ClaimSweepSeedSpread{} average precision against \ClaimSweepChiSpread{} for the
+capacity signal --- \ClaimSweepSpreadRatio{} times --- so a per-$\chi$ ordering is selection on
+a maximum. \textbf{And \ClaimSweepStalled{} of \ClaimSweepJobs{} fits diverged to the prior},
+at one seed and two bond dimensions, on the stable contraction path; a matched re-run
+reproduces both bit-identically. Excluding them \emph{raises} the ratio to
+\ClaimSweepSpreadRatioTrained{}, so part of the apparent capacity signal was the failures.
 
 
 \paragraph{The comparison is underpowered, and the gate that should have said so was itself

@@ -107,6 +107,42 @@ artefact a reviewer receives and nothing else checks them.
 | P15 | Credentials that cannot be verified externally are marked as such rather than dropped or asserted | met | Qiskit Advocate is confirmed by an email the author holds; the programme is at Tier 0 and no badge exists, so no URL is offered — [CREDENTIALS.md](CREDENTIALS.md) §1 |
 | P16 | Supporting material not cited in the proposal is inventoried | met | CV, project addendum, portfolio and repositories listed in [CREDENTIALS.md](CREDENTIALS.md) §5, so brevity is a choice rather than an absence |
 
+## F. Assessment criteria (CRIT), and what the page budget actually spends on each
+
+Sections A to E track what the submission must *contain*. This one tracks what it is *scored*
+on, which no other section did -- the criteria were mapped in prose in the README and in D8's
+note, and never as a checklist.
+
+Share of body text measured from `proposal.pdf` on 2026-09-02 by locating each section heading
+in the extracted text. It is a proxy for pages, not a page count.
+
+| | Criterion | Weight | Answered in | Share of body | Gap |
+|---|---|---|---|---|---|
+| F1 | Problem Relevance and Impact | **25 %** | §1 | 16.5 % | **−8.5** |
+| F2 | Technical Approach and Innovation | **25 %** | §2 and §4 | 30.9 % | +5.9 |
+| F3 | Feasibility | **20 %** | §5 | 14.4 % | −5.6 |
+| F4 | Validation Plan | **15 %** | §3 and §6 | 27.4 % | **+12.4** |
+| F5 | Hybrid / Cross-Domain | **5 %** | §7 | 5.2 % | +0.2 |
+| F6 | Team Capability | **10 %** | §8 | 4.6 % | −5.4 |
+
+**Read the gaps with one caveat, which is large.** The mapping is not a partition. §3 reports
+the results, and those results are simultaneously the evidence for Technical (the two quantum
+arms), for Problem and Impact (what the rule does to a day of traffic) and for Validation (the
+held-out read). Attributing all of §3 to Validation is what produces the +12.4, and a reviewer
+scoring Technical will read §3 too. The honest statement is that the *reported* allocation
+over-weights the sections that carry measurements and under-weights the two that carry argument,
+§1 and §5.
+
+**What is worth acting on, and what is not.** F1 at 16.5 % against the joint-highest weight is
+the one real finding here. F6 at 4.6 % is not: §8 is a credentials list, every line of it is
+bound to a verified artefact in [`CREDENTIALS.md`](CREDENTIALS.md), and padding it would add
+words rather than evidence. F5 is at its weight. F2's surplus already narrowed once, when a
+paragraph duplicated between §4 and §5 was removed ([D-112](decisions.md)).
+
+⚠ **Both PDFs are at their limits**, 6/6 and 3/3, and neither may grow. Any move toward F1 has
+to displace something, and the project's rule is that displacement goes to
+[`RESULTS.md`](RESULTS.md) rather than to a smaller font, which the format gate rejects anyway.
+
 ## D. Terms and conditions (TERMS)
 
 **This section had five rows against thirteen clauses**, and two of them were satisfied by

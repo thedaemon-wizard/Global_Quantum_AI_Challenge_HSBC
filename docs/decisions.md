@@ -3749,3 +3749,46 @@ This project has now been wrong in both directions on GitHub rendering: [D-082](
 KaTeX as the oracle when GitHub uses MathJax and produced two wrong conclusions and one wrong
 fix; this time the oracle was right and the instrument was broken. Both were caught by going to
 a source whose answer was already known.
+
+<a id="d-124"></a>
+### D-124 The gap did not widen with dimension; the base rate did
+
+[D-112](#d-112) answered the challenge statement's secondary objective 4.2 -- "characterize
+under what conditions quantum approaches perform differently" -- by reporting the tensor
+network at **87.8 %** of the baseline's average precision on the eight-feature in-band problem
+and **49.1 %** at full scale, and concluding that the deficit widens with dimension.
+
+**The two numbers are not comparable, and the conclusion is an artefact.** Average precision
+floors at the positive rate: a random ranking scores the base rate, not zero. The two evaluation
+sets do not share one. The in-band block is **10.96 %** positive -- the band is where the scorer
+already concentrates fraud -- against **3.412 %** for the held-out block. The in-band ratio
+therefore starts from a floor three times higher and flatters whatever sits on it.
+
+Dividing lift by lift removes the floor from both sides:
+
+| | positive rate | raw AP share | share of lift |
+|---|---|---|---|
+| band, 8 features | 10.96 % | 87.8 % | **44.8 %** |
+| full, 431 features | 3.41 % | 49.1 % | **45.5 %** |
+
+They agree to seven tenths of a point. **The deficit does not move with dimension at all.**
+
+ROC AUC settles it independently, because its floor is a fixed 0.5 whatever the base rate and
+needs no correction. As a share of the baseline's lift over 0.5 the arm reaches **35.9 %** in
+the band and **79.2 %** at full scale -- the gap *narrows*, in the opposite direction to the raw
+shares. Three normalisations, and only the confounded one supported the sentence that shipped.
+
+`scripts/summarise_mps_lift.py` now computes all of this from committed tables, so the
+correction is bound rather than argued.
+
+**What makes this the worst kind of error this project has made.** It was not inherited: it was
+written today, deliberately, as the answer to a named objective, and it went in the direction
+that flatters the work -- the band is the setting this submission proposes to *use* a quantum
+model in, and the claim made the arm look strongest exactly there. It also survived a claim
+ledger, because both numbers were correctly bound to their tables. **A number can be right and
+the sentence joining two of them still wrong**, which is the same lesson as [D-105](#d-105),
+where an arithmetic claim of independence was false while every figure in it was correct.
+
+The corrected finding is not weaker as an answer to 4.2. "The deficit is invariant to dimension
+and to capacity" is a sharper statement about the ansatz than "it degrades with dimension", and
+it is the one the evidence supports.
