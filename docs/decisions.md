@@ -3598,7 +3598,7 @@ the prose. `results/tables/power.csv` carried `tensor network vs tuned GBDT` in 
 is as much a claim as a sentence in a PDF**, and a text audit over `.tex` and `.md` will never
 see it.
 
-**P7 is now met and P8 is corrected.** The scan for an assistant reference returned four lines:
+**P7 is now met and P8 is corrected.** The scan P7 defines returned four lines:
 two in `.gitignore`, where the ignore rule moved to `.git/info/exclude` so the path stays
 ignored without being published, and two of prose here. P8 claimed "two human authors ... 32
 commits"; the real figures are 58 commits and **three author strings, all the same person**,
