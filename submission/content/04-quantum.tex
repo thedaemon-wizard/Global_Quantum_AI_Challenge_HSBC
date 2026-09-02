@@ -53,8 +53,10 @@ seeds at fixed bond dimension is \ClaimSweepSeedSpread{} average precision; the 
 seed \emph{means} across bond dimension is \ClaimSweepChiSpread{} --- seed noise is
 \ClaimSweepSpreadRatio{} times the capacity signal, so a per-$\chi$ ordering is selection on a
 maximum. \textbf{And \ClaimSweepStalled{} of
-\ClaimSweepJobs{} fits never left chance}, both at one seed and at two different bond
-dimensions, on the sequential contraction --- the stable path. Excluding them \emph{raises} the
+\ClaimSweepJobs{} fits diverged to the prior}, both at one seed and at two different bond
+dimensions, on the sequential contraction --- the stable path. A re-run against matched seeds
+reproduces both bit-identically: their best loss falls by epoch \Record{2} of \Record{30} and
+rises after, where the controls improve to the last. Excluding them \emph{raises} the
 ratio to \ClaimSweepSpreadRatioTrained{} --- they depressed two of the four means, so part of
 the apparent capacity signal was the failures themselves.
 

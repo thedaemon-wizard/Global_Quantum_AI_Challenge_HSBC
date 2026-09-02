@@ -270,15 +270,34 @@ times the capacity signal. This settles [D-038](decisions.md) at every $\chi$ ra
 at one, and replication is what established it — an earlier draft read the single-seed
 ordering as though it meant something.
 
-**Two of sixteen fits never trained.** Both at seed 20260831, at $\chi = 8$ and $\chi = 32$,
-on the sequential contraction that [D-038](decisions.md) chose *because* the reduction
-tree destabilised training -- measured in
+**Two of sixteen fits diverged to the prior.** Both at seed 20260831, at $\chi = 8$ and
+$\chi = 32$, on the sequential contraction that [D-038](decisions.md) chose *because* the
+reduction tree destabilised training -- measured in
 [`mps_seed_spread.csv`](../results/tables/mps_seed_spread.csv), where two of four fits at
-contraction width 128 never left chance against none of four at width 1. A one-in-eight failure rate is a property of the ansatz on this
-data, not of the optimisation. The per-epoch AUC shows the shape: 0.6521 at epoch 1, falling
-to 0.4761 by epoch 30 — below chance (read from
-`results/runs/mps_seed_sweep_temporal-chi32_seed20260831.jsonl`, which is not committed). A loss-only log would have shown a flat curve and left
-open whether it was slow learning or none ([D-039](decisions.md), [D-040](decisions.md)).
+contraction width 128 collapsed against none of four at width 1. Happening on the stable path
+too, at one in eight, makes it a property of training this ansatz on this data rather than an
+artefact of the reduction tree.
+
+**They learned first, and a controlled re-run measured it.** Both cells were re-run against
+matched controls at the same bond dimensions and a seed that trained cleanly, with the loss
+trajectory captured ([D-121](decisions.md)):
+
+| $\chi$ | seed | ROC AUC | AP | initial loss | best loss | epoch of best | final loss |
+|---|---|---|---|---|---|---|---|
+| 8 | ...829 control | 0.798 | 0.209 | 0.456 | 0.302 | **30** | 0.302 |
+| 8 | ...831 diverged | 0.533 | 0.045 | 0.490 | 0.482 | **2** | 0.651 |
+| 32 | ...829 control | 0.801 | 0.228 | 0.480 | 0.321 | **30** | 0.321 |
+| 32 | ...831 diverged | 0.488 | 0.050 | 0.478 | 0.478 | **1** | 0.668 |
+
+All four average precisions reproduce the committed values to six decimals, so this is
+deterministic rather than flaky. Every run starts in the same place and the divergent pair is
+not the worse half of it; the controls then improve for all thirty epochs while the other two
+turn at epoch 1 and 2 and climb back to $\ln 2$. The per-epoch AUC shows the same shape:
+0.6521 at epoch 1, falling to 0.4761 by epoch 30 — below chance. A loss-only log would have
+shown a flat curve and left open whether it was slow learning or none
+([D-039](decisions.md), [D-040](decisions.md)).
+
+⚠ The re-run's `fit_seconds` are stamped `gpu_contended` and must not be quoted as timings.
 
 **And the fit time is flat across $\chi$**: the sixteen jobs took 2747 to 3145 seconds,
 against the sixty-four-fold spread a $\chi^2$ cost model predicts. A 431-site chain is bound

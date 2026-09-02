@@ -76,7 +76,15 @@ oversight.
 `results/tables/mps_seed_spread.csv` records eight full-scale tensor-network fits at bond
 dimension 16 -- four seeds at contraction width 1 and four at width 128 -- and is the measured
 evidence behind [D-038](decisions.md)'s choice of the sequential contraction: at width 128 two
-of four fits never left chance, at width 1 none did.
+of four fits ended well below the trained band, at ROC AUC 0.684 and 0.564 against 0.782--0.801
+for the six that trained; at width 1 none did.
+
+The wording here used to be "never left chance", which the table does not support -- 0.684 is
+not chance. It also claims a mechanism this file has no evidence for: only final values were
+recorded for these eight fits, so whether they failed to learn or learned and diverged is
+unknown. The two divergent fits in the *seed* sweep were re-run with their trajectories
+captured and did the second ([D-121](decisions.md)); nothing licenses carrying that finding
+across to these.
 
 The variant of `run_seed_sweep.py` that produced it is not in the repository, so `make reproduce`
 cannot regenerate it. It is retained rather than deleted because the results section asserts the

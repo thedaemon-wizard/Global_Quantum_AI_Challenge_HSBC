@@ -3368,9 +3368,14 @@ have been natural --- solo, since the CV does not say otherwise --- would have b
 
 Section 4 reported that seed noise is \ClaimSweepSpreadRatio-fold the capacity signal at full
 scale, computed over all sixteen fits. It separately reported that two of those sixteen never
-left chance. Both statements were true and the second undercut the first, because a run whose
-cross-entropy never fell below the entropy of the prior is not a draw from the seed
-distribution -- it is a run that did not happen.
+left chance. Both statements were true and the second undercut the first, because a run that
+ends at the entropy of the prior is not a draw from the seed distribution.
+
+⚠ **The justification given here was wrong, and [D-121](#d-121) corrects it.** This entry said
+"a run whose cross-entropy never fell below the entropy of the prior". It did fall: a controlled
+re-run shows both runs reaching a loss of 0.482 and 0.478, well under $\ln 2 = 0.693$, within
+two epochs. They learned and then collapsed. The exclusion itself stands -- it keys on the final
+ROC AUC, and the final state is degenerate either way -- but the mechanism was misdescribed.
 
 The expected correction was that excluding them would *shrink* the ratio. It does the opposite.
 
@@ -3635,3 +3640,50 @@ only. It is not: both addresses are registered to the same account and the API r
 address been unregistered, `.mailmap` would have satisfied the test here while the public page
 still showed two contributors, which is exactly the kind of gap this project keeps finding
 between a local check and what a reviewer actually sees.
+
+<a id="d-121"></a>
+### D-121 The degenerate fits did not fail to start; they learned and then collapsed
+
+The two degenerate cells were re-run against matched controls -- the same two bond dimensions
+at a seed that trained cleanly -- with the loss trajectory captured, which is what
+`run_seed_sweep.py` had been computing and discarding. Four jobs, about three and a half GPU
+hours.
+
+| $\chi$ | seed | ROC AUC | AP | initial loss | best loss | epoch of best | final loss |
+|---|---|---|---|---|---|---|---|
+| 8 | ...829 control | 0.798 | 0.209 | 0.456 | **0.302** | **30** | 0.302 |
+| 8 | ...831 degenerate | 0.533 | 0.045 | 0.490 | **0.482** | **2** | 0.651 |
+| 32 | ...829 control | 0.801 | 0.228 | 0.480 | **0.321** | **30** | 0.321 |
+| 32 | ...831 degenerate | 0.488 | 0.050 | 0.478 | **0.478** | **1** | 0.668 |
+
+Reproduce with
+`.venv/bin/python scripts/run_seed_sweep.py --bonds 8 32 --seeds 20260829 20260831`.
+
+**Three things this settles.**
+
+**The sweep is deterministic.** All four average precisions reproduce the committed values to
+six decimal places -- 0.209184, 0.045251, 0.227753, 0.049673. So the failures are a property of
+the (seed, bond dimension) pair, not flakiness, and any reader can obtain them.
+
+**The mechanism is divergence, not a bad start.** Every run begins in the same place: initial
+losses 0.456 to 0.490, and the degenerate pair is not the worse half of that. The controls then
+descend for the full thirty epochs, still improving at the last. The degenerate pair reaches its
+best loss at **epoch 2 and epoch 1**, and climbs from there to $\ln 2$. The per-epoch log shows
+the first one touching **ROC AUC 0.652 at epoch 1** -- genuinely above chance -- then decaying,
+with the median gradient norm halving at epoch 8 and never recovering.
+
+So "never left chance", which section 4 said and [D-112](#d-112) justified, is **wrong in a way
+that understates the finding**. A model that cannot start is uninteresting. A model that learns
+and then destroys what it learned, reproducibly, at a specific capacity and seed, is a
+characterisation of the ansatz -- and it is what the challenge statement's secondary objective
+4.2 asks for.
+
+**The exclusion rule survives untouched.** `STALLED_BELOW_AUC = 0.65` keys on the *final* ROC
+AUC, and the gap is 0.488 and 0.533 against 0.798 and 0.801. Nothing about the corrected
+mechanism moves it, which is the point of having chosen a threshold in a gap rather than at a
+tuned value.
+
+⚠ **The timings from this run are not quotable.** All four rows carry `gpu_contended=True`
+because a browser held a compositing context throughout, and `fit_seconds` came in at 3,060 to
+3,369 seconds against 2,747 to 3,145 for the uncontended committed run. That is the stamp doing
+its job: the numbers are visibly marked rather than silently wrong.

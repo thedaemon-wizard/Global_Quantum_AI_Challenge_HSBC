@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 120
+    value: 121
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -443,7 +443,7 @@ claims:
     reduce: {op: sum_values, column: n_stalled}
     tolerance: 0
     note: >
-      Fits that never left chance, out of sixteen.  Both at seed 20260831, at different bond
+      Fits that diverged to the prior, out of sixteen.  Both at seed 20260831, at different bond
       dimensions.  They are on the sequential fold, which is the stable contraction path, so
       this is a property of the ansatz rather than of the D-036 reduction tree.
 

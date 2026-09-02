@@ -328,7 +328,8 @@ cannot separate them — and it is **underpowered against its own pre-registered
 the power gate should have said in advance and did not. What survives is a non-superiority bound
 of about **+0.02 AP**, not evidence of equivalence. At full scale, sixteen fits over four bond
 dimensions and four seeds lose by a factor of two or more, seed noise is 2.8 times the capacity
-signal, and **two of sixteen never left chance**.
+signal, and **two of sixteen diverged to the prior** --- they learned first, reaching their
+best loss by epoch 2 of 30, and climbed back to $\ln 2$ from there ([D-121](docs/decisions.md)).
 [Both tables, the power defect, and the launch-bound cost model](docs/RESULTS.md#tensor-network-it-ran-and-it-lost)
 
 ---
