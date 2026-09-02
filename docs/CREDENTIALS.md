@@ -36,20 +36,25 @@ made the author's record look weaker than the evidence supports.
 
 ## 2. C4 — QIntern 2026 Project 12
 
-Source: `QIntern2026/qi26_12/qintern-project-12-team-A/` (not in this repository). The
-git history lives there; `qi26_12/` above it holds a pre-import drive copy, which has
-`week3/scripts/` and `week3/tests/` but no repository.
+Source: the Team A working repository, which is **private** and not this one. A reviewer
+cannot follow any locator into it, so the paragraphs below record what was checked and by whom
+rather than pointing at commits nobody outside the team can open. Commit identifiers and the
+local paths they were read from have been removed for that reason; the checks themselves were
+run and are described.
+
+Per the Phase I submission guidelines, no third party's information is reproduced here: the
+teammates who made the attributions below are identified by role, not by name or contact
+address.
 
 **What is the author's own.** The split-conformal calibration module and the results freeze.
-The freeze commit is `9b29505` (2026-07-30), which first commits
+The freeze commit (2026-07-30) first commits
 `week5/scripts/{disentanglement,table_a,figure2_coverage,freeze_results}.py` under his
 authorship; `freeze_results.py` computes the SHA-256 manifest rows.
 
 **The calibration module is independently attributed, and the earlier 要確認 was wrong.**
-`week3/scripts/conformal_calibrate.py` does arrive in a bulk "Initial commit" (`3d16810`), so
-per-file provenance is absent — but that commit was made by a **teammate**
-(`noekunn <mhowaiss7@gmail.com>`; the repository is hosted under his account), not by the
-author, and three days later the same teammate committed
+`week3/scripts/conformal_calibrate.py` does arrive in a bulk "Initial commit", so
+per-file provenance is absent — but that commit was made by a **teammate**, on whose account
+the repository is hosted, not by the author, and three days later the same teammate committed
 `week3/OWAIS_TASK16_17_HANDOFF.md`, which is third-party attribution of exactly this artefact:
 
 > "built on **AK's Day-15 CQ-ZDR module** and Iwo's Day-13/14 package. Also records the
@@ -70,14 +75,14 @@ three-person team — `week4/README.md` and `week5/README.md` state it as "Team 
 paper's **Proposition 3 (conformal coverage)**". (`week3/README.md` says "statistical-guarantee
 centrepiece"; an earlier version of this file cited it for the stronger wording.) The
 Beta-Binomial harness and the McNemar/Holm protocol are a teammate's Days 16–17 — git puts
-`week3/scripts/coverage_harness.py` and `stats_protocol.py` in commit `f2c2fb3` by another
+`week3/scripts/coverage_harness.py` and `stats_protocol.py` in a commit by another
 contributor. The proposal previously read as though both were the author's; §8 now attributes
 them to the team.
 
 **The 135 checks are exactly 135, at the freeze, and the count is the teammate's.** Counted at
-commit `9b29505`. The repository is at 183 today, so the proposal says "green at that freeze".
-The freeze itself is independently verified in `week5/OWAIS_TASK28_30_HANDOFF.md`, committed by
-`Mohammed Owais <owaisnoe@gmail.com>`: "**Every number verifies.** Full suite 135 passed + 8
+the freeze commit. The repository is at 183 today, so the proposal says "green at that freeze".
+The freeze itself is independently verified in a second teammate's handoff document,
+`week5/OWAIS_TASK28_30_HANDOFF.md`: "**Every number verifies.** Full suite 135 passed + 8
 subtests … `freeze_results.py --reproduce` returns all 39 scalars to 1e-9 … Reproduced on a
 *different* environment (Python 3.10, scikit-learn 1.7.2) with identical bytes", and
 "byte-identical to AK's v1.0 manifest".
@@ -142,8 +147,7 @@ matrix-product-state marginal attack named in the proposal is his, and an earlie
 called that attribution unsupported was wrong.
 
 **Certificate.** A Certificate of Completion naming Amon Koike, dated 2026, issued by Yale in
-collaboration with YQuantum, is held by the author (`cert-Amon Koike-merquery@proton.me.pdf`,
-not in this repository). It certifies completion; the placement is certified by the leaderboard
+collaboration with YQuantum, is held by the author and is not in this repository. It certifies completion; the placement is certified by the leaderboard
 above.
 
 **The bitstring discrepancy is closed: it is an endianness artefact, and it runs in the

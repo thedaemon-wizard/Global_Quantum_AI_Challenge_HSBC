@@ -2908,3 +2908,32 @@ RBF distinctness -- conditioning admitted 28. The distinctness gate is inclusive
 (`corr <= 0.60`) and the proposal stated it strictly. And `CREDENTIALS.md` said the IBM
 `ibm_fez` hardware run "now appears in the team section where it counts", which had stopped
 being true when the section was compressed; it is back, in a section carrying 10 % of the score.
+
+### D-094 Two teammates' personal email addresses were in a repository going public
+
+`docs/CREDENTIALS.md` identified the teammates who independently attributed the author's QIntern
+work by full name and personal Gmail address, and `docs/decisions.md` repeated one of them. This
+repository becomes public on 2026-09-15.
+
+The Phase I submission guidelines state that the proposal "must not contain confidential or
+proprietary information of any third party" and that supplementary materials must not either.
+Publishing a collaborator's contact address to support a credential is also simply not something
+to do without asking them, and nothing about the attribution needs it: "a teammate, on whose
+account the repository is hosted" carries the same evidential weight as a name and an address,
+because the point is that the attribution came from someone other than the author.
+
+Both are gone, from both files. The teammates are identified by role.
+
+**The private-repository locators went with them, for a different reason.** The Team A
+repository is private, so a filesystem path, a commit identifier or a branch name in it is a
+locator no reviewer can follow. Citing one reads as evidence while being uncheckable, and the
+path additionally exposed a directory layout. `CREDENTIALS.md` now says plainly that the
+repository is private and that the checks described there cannot be independently repeated by a
+reviewer -- which is the honest version of what those identifiers were standing in for.
+
+The credential itself stays. "QIntern 2026 Project 12 (QWorld), within Team A" names a public
+programme and a role in it, the way a competition placement does, and it is the evidence for
+10 % of the score. What was removed is the apparatus around it that pointed somewhere nobody can
+go. The one address remaining anywhere is the author's own, in the paragraph establishing that
+two git identities are the same person; it is already public in his own commits, and it is his
+to keep or remove.
