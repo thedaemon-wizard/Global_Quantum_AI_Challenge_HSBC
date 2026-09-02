@@ -3,9 +3,9 @@
 \label{sec:hybrid}
 
 \textbf{Classical on all traffic, quantum on the band, conformal on the decision.} A
-gradient-boosted scorer runs on every transaction --- deliberately the strongest available
-baseline at \ClaimGbdtFullAucMin--\ClaimGbdtFullAucMax{} ROC AUC over five seeds, because a
-hybrid whose classical half is weak proves nothing about its quantum half. The band is where a
+gradient-boosted scorer runs on every transaction at
+\ClaimGbdtFullAucMin--\ClaimGbdtFullAucMax{} ROC AUC over five seeds, because a hybrid whose
+classical half is weak proves nothing about its quantum half. The band is where a
 quantum model can go and the only place the arithmetic works: it holds thousands of rows rather
 than hundreds of thousands, and a kernel whose Gram matrix costs $O(n^2)$ circuit evaluations is
 affordable only on thousands. The certificate then wraps whatever scores the band, which is why

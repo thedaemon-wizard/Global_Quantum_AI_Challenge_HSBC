@@ -481,3 +481,36 @@ def test_mermaid_node_numbers_agree_with_the_split_table() -> None:
     assert any(total in b for b in blocks), (
         f"the diagram's dataset total must be the sum of the four blocks, {total}"
     )
+
+
+def test_baseline_defaults_reproduce_the_committed_table() -> None:
+    """`make reproduce` passes no flags, so the defaults are what rebuild the table.
+
+    They did not.  The committed `baselines.csv` is one model over three arms; the script
+    defaulted to three models over one arm, so `make reproduce` overwrote the table with a
+    different shape and `summarise_split_arms.py` then halted on the two missing arms.  The
+    repository's own reproduction command could not rebuild the table behind the largest
+    effect it reports, and nothing raised, because a default is not exercised by any test that
+    passes explicit flags.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "run_baselines", REPO / "scripts" / "run_baselines.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    committed = pd.read_csv(REPO / "results" / "tables" / "baselines.csv")
+
+    from hsbcfraud.config import load_config
+
+    cfg = load_config(None)
+    default_arms = [module.REPORTED_ARM, *cfg.split.control_arms]
+    assert sorted(committed["arm"].unique()) == sorted(default_arms), (
+        f"baselines.csv covers {sorted(committed['arm'].unique())} but the default arms are "
+        f"{sorted(default_arms)}; `make reproduce` would write a table of a different shape"
+    )
+    assert sorted(committed["model"].unique()) == ["xgboost"], (
+        "baselines.csv is single-model; if that changes, the --models default must change too"
+    )

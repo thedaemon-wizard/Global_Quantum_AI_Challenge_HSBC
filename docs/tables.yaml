@@ -24,7 +24,7 @@ tables:
   - key: mps
     source: results/tables/mps_h4.csv
     caption: >
-      H4 in the band: matrix-product-state against the tuned gradient-boosted baseline on
+      H4 in the band: matrix-product-state against the gradient-boosted baseline on
       identical rows and features.  Intervals are 95\,\% card-clustered bootstraps.  Every
       interval contains zero, and the comparison is underpowered against its pre-registered
       ceiling, so what is established is a non-superiority bound rather than a null.
@@ -99,11 +99,11 @@ tables:
     source: results/tables/baselines.csv
     caption: >
       The challenge statement's primary evaluation metrics, on the held-out temporal block at
-      the default decision threshold, for the tuned gradient-boosted baseline.  Reported
+      the default decision threshold, for the gradient-boosted baseline.  Reported
       because the statement names all of them and a certificate is not a substitute for any of
       them.  Recall is low because a forward holdout is a harder task than the
-      cross-validation the published leaderboard figures come from, not because the baseline
-      is untuned; the body measures that difference directly.
+      cross-validation the published leaderboard figures come from, and the body measures that
+      difference directly.
     label: tab:metrics
     align: rrrrrrrrr
     rows:

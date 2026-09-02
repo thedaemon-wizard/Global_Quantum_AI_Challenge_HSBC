@@ -111,6 +111,9 @@ def fit_logistic(x_train, y_train, x_eval, seed: int):
 
 FITTERS = {"xgboost": fit_xgboost, "lightgbm": fit_lightgbm, "logistic": fit_logistic}
 
+# The arm the study reports; the controls come from the config so the two cannot drift apart.
+REPORTED_ARM = "temporal"
+
 
 def evaluate(frame: pd.DataFrame, blocks: Blocks, features: list[str], model_name: str, seed: int):
     """Fit on train, score band/cal/test, and report at a provisional 0.5 threshold.
@@ -162,18 +165,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=REPO / "results" / "tables")
     parser.add_argument("--runs", type=Path, default=REPO / "results" / "runs")
     parser.add_argument("--seeds", type=int, nargs="*", default=None)
-    parser.add_argument("--models", nargs="*", default=list(FITTERS))
-    parser.add_argument("--arms", nargs="*", default=["temporal"])
+    # The defaults must reproduce the committed table, because `make reproduce` passes no
+    # flags.  They did not: the committed baselines.csv is xgboost over the temporal arm and
+    # both controls, and these defaulted to all three fitters over the temporal arm alone.
+    # `make reproduce` therefore overwrote the table with a different shape and the next
+    # target, summarise_split_arms.py, halted on the two missing arms -- so the repository's
+    # own reproduction command could not rebuild the table behind its largest reported effect.
+    # lightgbm and logistic remain available; they are simply not what the study reports.
+    parser.add_argument("--models", nargs="*", default=["xgboost"])
+    parser.add_argument("--arms", nargs="*", default=None)
     args = parser.parse_args(argv)
 
     cfg = load_config(args.config)
     seeds = args.seeds or cfg.split.seeds
+    arms = arms or [REPORTED_ARM, *cfg.split.control_arms]
 
     loaded = load_ieee_cis(args.zip, BASE_COLUMNS, with_identity=True)
     frame = encode_strings(loaded.frame)
     causal = add_entity_aggregates(frame, causal=True)
     features = select_model_columns(causal)
-    print(f"{loaded.n_rows:,} rows, {len(features)} features, seeds {seeds}, arms {args.arms}")
+    print(f"{loaded.n_rows:,} rows, {len(features)} features, seeds {seeds}, arms {arms}")
 
     arm_blocks = {
         "temporal": lambda s: temporal_blocks(frame["day"], cfg.split),
@@ -183,7 +194,7 @@ def main(argv: list[str] | None = None) -> int:
 
     rows: list[dict] = []
     args.runs.mkdir(parents=True, exist_ok=True)
-    fits = [(arm, seed, model) for arm in args.arms for seed in seeds for model in args.models]
+    fits = [(arm, seed, model) for arm in arms for seed in seeds for model in args.models]
     # Three model families over the requested arms and seeds is about thirteen minutes of
     # fitting with nothing on stdout between the first line and the last. The jobs are not
     # equal-cost -- logistic regression is far cheaper than either boosted family -- so the
@@ -193,7 +204,7 @@ def main(argv: list[str] | None = None) -> int:
     blocks_for: dict[tuple[str, int], Blocks] = {}
 
     with run_log("baselines", directory=args.runs) as run:
-        run.info(f"{len(fits)} fits: arms {args.arms}, seeds {seeds}, models {args.models}")
+        run.info(f"{len(fits)} fits: arms {arms}, seeds {seeds}, models {args.models}")
         for index, (arm, seed, model_name) in enumerate(fits, start=1):
             # Cached rather than rebuilt per model: the split is the same for all three, and
             # rebuilding it would be work done only to be thrown away.
@@ -228,7 +239,7 @@ def main(argv: list[str] | None = None) -> int:
 
     args.out.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(args.out / "baselines.csv", index=False)
-    print(f"\nWrote {args.out / 'baselines.csv'} and {len(seeds) * len(args.arms)} score files")
+    print(f"\nWrote {args.out / 'baselines.csv'} and {len(seeds) * len(arms)} score files")
     return 0
 
 

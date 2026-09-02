@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 112
+    value: 116
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -345,10 +345,10 @@ claims:
       volume to human analysts is not possible and a step-up is.
 
   - key: OperatingDeclineShare
-    value: 4.80
+    value: 3.93
     scale: 100
     source: results/tables/operating_point.csv
-    select: {decision: declined overall}
+    select: {decision: decline}
     column: share
     tolerance: 0.01
     note: >

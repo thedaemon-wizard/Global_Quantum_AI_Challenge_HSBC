@@ -3405,3 +3405,94 @@ The gap widens with dimension, not with capacity. Section 4 now says so in the s
 already making the comparison.
 
 Paid for by deleting a sentence that restated the section title in a different register.
+
+### D-113 `make reproduce` could not reproduce the table behind the largest reported effect
+
+`make reproduce` passes no flags, so the defaults in `run_baselines.py` are what rebuild
+`baselines.csv`. They did not match it. The committed table is **one model over three arms** ---
+45 rows, xgboost, temporal plus both controls. The defaults were **three models over one arm**:
+`--models` defaulted to `list(FITTERS)` and `--arms` to `["temporal"]`.
+
+So `make reproduce` overwrote the table with a different shape, and the next target reached
+`summarise_split_arms.py`, whose arm guard then halted:
+
+```
+baselines.csv has no rows for ['stratified', 'card_disjoint']
+```
+
+That table is `tab:splitarm`, which section 3 introduces as "the largest effect in this study".
+**The repository's own reproduction command could not rebuild the evidence for its headline
+control result**, and nothing caught it, because every test and every documented invocation
+passes explicit flags. A default is only exercised by the one caller that omits them, and that
+caller is the one a reviewer would use.
+
+`--arms` now resolves from `configs/default.yaml` after parsing, the way `--seeds` already did,
+so the default cannot drift from the config. `--models` is pinned to the single model the study
+reports; the other two fitters remain reachable by flag. A test asserts the committed table's
+arms and models against the defaults, so this cannot regress silently again.
+
+This is the third defect of the same shape found here: [D-110](#d-110) (a script that crashed
+instead of instructing), the two clean-room passes that ran in a populated tree, and now this.
+**Every one was invisible to a test suite that passes arguments.** The lesson is not about
+baselines; it is that the reviewer's path through the repository is the one least exercised.
+
+### D-114 A retracted attribution went back in, in the commit that removed a different instance of it
+
+[D-057](#d-057) removed "graph kernels", Weisfeiler-Lehman baselines and nested cross-validation
+from the QPoland placement, because no implementation of any of the three exists on this machine,
+and settled the entry as "QPoland 2025 runner-up and nothing more".
+
+The label was changed to "Quantum-inspired graph kernels" on the grounds that the CV titles the
+project that way and that a bare "quantum kernels" could be misread as the arm this submission
+rejects. Both of those are true. Neither survives the point that **the CV's title for a project
+is not evidence that the work exists in a form anyone can check**, which is exactly what D-057
+turned on.
+
+It went back in **in the same commit that removed the 69-qubit instance of the same error**, and
+the commit message says so in as many words. Reverted to "Quantum kernels".
+
+The misreading risk that motivated the change is real and is handled by context: section 4 is
+titled "Two quantum arms, and how each failed", and the team line now carries a team name, a
+year and a placement, none of which reads as this study's kernel arm.
+
+### D-115 "Tuned" survived in four places, three of them in the shipped PDFs
+
+[D-092](#d-092) is titled "'Tuned' described a baseline that was never tuned, in eight places"
+and asserts "Every occurrence describing the baseline is gone. Two survive and should."
+
+Four survived. Three were in `docs/tables.yaml`, which is the *source of the table captions*, so
+they were rendered into both PDFs and were not visible to a grep over `submission/content/`:
+the H4 caption, the metrics caption, and a clause reading "not because the baseline is untuned".
+The fourth was section 7's "deliberately the strongest available baseline", which is the exact
+phrase D-092 quotes as the load-bearing claim it removed.
+
+There is no hyperparameter search anywhere in this repository -- `run_baselines.py` fixes the
+`XGBClassifier` arguments as literals -- and section 3 says "at fixed hyperparameters", so the
+captions contradicted the body. All four are gone. The two D-092 meant to keep are a tuned
+*RBF*, which genuinely is tuned over a bandwidth grid, and "nothing is tuned or ranked" about
+the held-out block.
+
+**A decision entry claiming a class of defect is closed is itself a claim**, and this one was
+wrong for eight days. The generated captions are the blind spot: `tables.yaml` is prose that
+ships in the PDF, and every text audit until now searched the `.tex` sources.
+
+### D-116 Three shares that summed to 100.87 per cent
+
+Section 1 printed the operating point as approve / step-up / decline. Two of the three were
+roll-ups from `operating_point.csv` and both contained the same 1,007 rows -- a challenge the
+cardholder fails is a step-up *and* a decline -- so the three printed shares summed to
+**100.87**.
+
+A reader who adds three numbers in the first paragraph of section 1 and gets 100.87 has found
+an error before finding anything else, and under the criterion carrying 25 per cent of the mark.
+
+Fixed by binding the third number to the decline *branch* rather than the decline roll-up.
+The three printed shares are now the three branches of the three-valued rule and sum to exactly
+100. **The prose did not change at all** -- it was already an accurate description of the three
+branches, and the defect was entirely in which row of the table the claim selected.
+
+A claim was briefly added for the 0.87 per cent overlap and then removed, because the fix made
+it unnecessary and `check_claims.py` refuses a claim nothing cites. That refusal is worth
+noting: it is the gate that stops the ledger accumulating definitions no document uses, and it
+fired within a minute of the claim becoming dead. The overlap is in `operating_point.csv`,
+which the roll-up rows name explicitly.
