@@ -278,12 +278,27 @@ DMRG-Lanczos and gradient descent within 0.1 percentage point at fixed constrain
 
 **[QM-16]** Deloitte and AWS. "Digital Payments Fraud Detection Using Quantum Machine Learning
 and Amazon Braket". *AWS Machine Learning Blog*, 2024.
-Hybrid quantum neural network on three qubits, precision 0.87, with 1,296 parameters against a
-classical counterpart's 1,329 -- all as reported by the challenge statement, which is the only
-source consulted for it here. **要確認:** the underlying blog post has not been read, so nothing
-beyond the statement's own summary is asserted about it. Proposal section 4 accordingly says
-only that the precision is quoted with no recall and no base rate, and that no distinctness
-screen precedes it.
+Hybrid quantum neural network on three qubits, 1,296 parameters against a classical
+counterpart's 1,329. **The blog post was read on 2026-09-02**, and it carries three facts the
+challenge statement's summary omits, each of which matters for whether the number is comparable
+with anything here.
+
+*The dataset is ULB, not IEEE-CIS.* 284,807 transactions, 492 frauds, a **0.172 %** base rate --
+roughly twenty times below this study's 3.4990 %. Precision at a fixed threshold is not
+comparable across base rates that differ by that factor, which is the same confound
+[D-124](decisions.md) corrected internally.
+
+*0.87 is one point on a threshold sweep,* not a summary: the post reports 0.87, 0.89 and 0.92
+at thresholds 0.65, 0.70 and 0.75.
+
+*There is a classical arm, and the margin is small.* The same sweep gives 0.83, 0.84 and 0.86
+for a classical neural network, so the reported advantage is 0.04 to 0.06 precision at matched
+thresholds.
+
+Recall, F1, accuracy and AUC are **not** reported at any threshold, so the precision cannot be
+placed on a curve. An earlier version of this entry carried a 要確認 saying the post had not
+been read, and proposal section 4 said the precision came "with no recall or base rate" -- the
+base-rate half was wrong, and only reading the source showed it.
 Cited as: `Deloitte and AWS, 2024`
 
 **[QM-17]** El Alami, Innan, Shafique and Bennai. "Comparative Performance Analysis of Quantum

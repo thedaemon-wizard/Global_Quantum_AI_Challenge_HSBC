@@ -3929,3 +3929,78 @@ make the study checkable *only* by someone willing to trust them; what makes it 
 is that 50 artefacts are frozen by digest, every table has a producer, and 190 tests assert the
 relationships between them. **A checkpoint proves what a model did once. A producer proves what
 it does.**
+
+<a id="d-128"></a>
+### D-128 A verification target that invalidated the thing it verified
+
+`make check` reported "3 scientific artefacts differ from the manifest" immediately after a
+decision entry was added, and passed after a re-freeze. That looked like ordering noise. It was
+two defects.
+
+**A misclassification.** `results/tables/decision_log.csv` is a one-row projection of
+`docs/decisions.md` -- it holds `decision_entries` and `protocol_amendments`, and its producer's
+docstring says it counts documents "and not of any run". It contains no measurement. But it
+lands under `results/tables/`, which `SCIENTIFIC` sweeps with a glob, while the document it
+projects sits in `SPECIFICATION`, whose movement the freeze already declares legitimate. **The
+same fact was classified two ways in the same manifest**, so adding a decision entry raised a
+*scientific* alarm -- the message reserved for a corrupted measurement.
+
+Compounding it: `check` depends on `claims`, which depends on `derived`, which *regenerates*
+that file. So the command invalidated the manifest it then checked, and the only way to make
+the message stop was to re-freeze -- which is precisely the habit a freeze exists to prevent.
+
+Now excluded from the scientific glob and frozen with `docs/decisions.md`. The exemption is an
+explicit path list rather than a pattern, because it weakens a gate and should be impossible to
+widen by accident.
+
+**A misdiagnosis.** With the classification fixed, two artefacts still moved: both PDFs. That is
+correct and unavoidable -- they print `\ClaimDecisionEntries`, so a decision entry genuinely
+changes their bytes, and `check` rebuilds them before comparing. What was wrong is what the
+failure *said*: "Either a measurement genuinely changed ... or the run is not reproducible."
+Neither is true here, and telling someone their run may be irreproducible when they added a
+paragraph is how a gate loses its authority.
+
+`freeze.py` now recognises the case -- **only built documents moved, and a specification file
+they quote moved too** -- and says so: re-freeze, no measurement is implicated. It still exits
+non-zero. The gate did not weaken; it learned to name the third cause.
+
+Two tests pin both halves, and one of them guards the guard: it asserts a scientific pattern
+still covers `results/tables/`, so the classification test cannot quietly become vacuous if the
+globs are ever rewritten.
+
+**What generalises.** A verification step that regenerates its inputs cannot distinguish "this
+changed" from "I just changed this", and will always produce a failure whose remedy is to
+suppress it. That is worth checking for wherever a `check` target has build dependencies.
+
+<a id="d-129"></a>
+### D-129 The comparator was dismissed on a ground that reading it refuted
+
+`REFERENCES.md` carried a 要確認 on QM-16: the Deloitte/AWS blog post had never been read, and
+everything asserted about it came from the challenge statement's one-line summary. Section 4
+dismissed it as "a precision with no recall or base rate".
+
+**The base rate is reported.** The post names its dataset -- ULB, 284,807 transactions, 492
+frauds, a **0.172 %** fraud rate. So half the objection was simply false, and it was false in
+the direction that let the submission move past a comparator the statement explicitly asks it
+to engage.
+
+Reading it also produced two facts the statement's summary omits and that make the comparison
+sharper than the original objection did:
+
+* **0.87 is one point on a threshold sweep**, not a summary. The post reports 0.87, 0.89 and
+  0.92 at thresholds 0.65, 0.70 and 0.75.
+* **There is a classical arm**, and the margin is narrow: 0.83, 0.84 and 0.86 at the same three
+  thresholds, so the claimed advantage is 0.04 to 0.06 precision.
+
+Recall, F1, accuracy and AUC are genuinely absent, so the precision still cannot be placed on a
+curve. Section 4 now says the accurate thing: it is a thresholded precision on a base rate
+**twenty times below this task's**, which is not a comparable quantity -- the same confound
+[D-124](#d-124) had just corrected *internally*, appearing again in a cited comparator. That
+symmetry is worth having in the document: the submission applies the same standard to others
+that it was forced to apply to itself.
+
+**The lesson is about the shape of the 要確認, not the source.** The marker said "not read, so
+nothing beyond the summary is asserted" -- and then the proposal asserted something beyond the
+summary anyway, in the sentence that dismissed it. A 要確認 that scopes a *document* does not
+constrain what a *different* document says about the same object. Cheaper to read the source: it
+took one fetch.

@@ -617,3 +617,41 @@ def test_the_history_reads_as_one_author() -> None:
         f"`git shortlog -sne` reports {len(authors)} authors: {authors}. Add the new commit "
         f"identity to .mailmap; do not rewrite history to fix this."
     )
+
+
+def test_the_derived_decision_log_is_not_a_scientific_artefact() -> None:
+    """It projects `docs/decisions.md`, so it must be classified with the document it projects.
+
+    It lands under `results/tables/`, which the scientific glob sweeps, so every added decision
+    entry used to be reported as a *scientific* artefact changing -- the same message a
+    corrupted measurement produces. `make check` also regenerates it before verifying, because
+    `check` depends on `claims` depends on `derived`, so the command invalidated the manifest
+    it then checked. Its own producer's docstring says it counts documents and "not of any
+    run".
+    """
+    sys.path.insert(0, str(REPO / "scripts"))
+    from freeze import SCIENTIFIC, SPECIFICATION, SPECIFICATION_UNDER_RESULTS
+
+    log = "results/tables/decision_log.csv"
+    assert log in SPECIFICATION, "the derived log must be frozen with the document it projects"
+    assert log in SPECIFICATION_UNDER_RESULTS, "it must also be excluded from the scientific glob"
+    assert any(pattern.startswith("results/tables/") for pattern in SCIENTIFIC), (
+        "this test is only meaningful while a scientific pattern still covers results/tables"
+    )
+
+
+def test_the_built_documents_are_named_so_a_rebuild_is_diagnosed_correctly() -> None:
+    """`make check` rebuilds the PDFs before verifying them, and must say so when they move.
+
+    A specification change alone moves their bytes -- adding a decision entry changes
+    `ClaimDecisionEntries` and therefore both PDFs. Reporting that as "the run is not
+    reproducible" teaches whoever hits it to re-freeze until the message stops, which is the
+    one habit a freeze exists to prevent.
+    """
+    sys.path.insert(0, str(REPO / "scripts"))
+    from freeze import BUILT_DOCUMENTS, SCIENTIFIC
+
+    assert set(BUILT_DOCUMENTS) <= set(SCIENTIFIC), (
+        "every built document must also be a frozen scientific artefact, or the special-case "
+        "message would describe files the check never compares"
+    )

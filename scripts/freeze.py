@@ -54,7 +54,31 @@ SPECIFICATION = (
     "docs/tables.yaml",
     "docs/REFERENCES.md",
     "configs/*.yaml",
+    # Derived from `docs/decisions.md` rather than from any run.  It lands under
+    # `results/tables/`, so the scientific glob above swept it up and every added decision
+    # entry was reported as a *scientific* artefact changing -- the same message a corrupted
+    # measurement produces, from a file whose own docstring says it counts documents and "not
+    # of any run".
+    #
+    # Worse, `make check` regenerates it before verifying: `check` depends on `claims`, which
+    # depends on `derived`, which runs `summarise_decisions.py`.  So adding a decision made
+    # `make check` fail against a manifest the same command had just invalidated, and the fix
+    # looked like "re-freeze until it passes" -- which is exactly the habit a freeze exists to
+    # prevent.  Classifying it with the document it projects makes the movement legitimate,
+    # which it always was.  See D-128.
+    "results/tables/decision_log.csv",
 )
+
+# Members of a SCIENTIFIC pattern that are bookkeeping rather than measurement.  Listed
+# explicitly rather than pattern-matched: this exemption weakens a gate, so it should be
+# impossible to widen by accident.
+SPECIFICATION_UNDER_RESULTS = ("results/tables/decision_log.csv",)
+
+# The two scientific artefacts that `make check` rebuilds before verifying them, because
+# `check` depends on `pdf`.  They quote bound claims, so a specification change alone is enough
+# to move their bytes -- adding a decision entry changes `\ClaimDecisionEntries` and therefore
+# both PDFs.  That is expected, and it is not what "the run is not reproducible" means.
+BUILT_DOCUMENTS = ("submission/proposal.pdf", "submission/appendix.pdf")
 
 
 def digest(path: Path) -> str:
@@ -66,12 +90,14 @@ def digest(path: Path) -> str:
     return h.hexdigest()
 
 
-def collect(patterns: tuple[str, ...]) -> dict[str, str]:
+def collect(patterns: tuple[str, ...], *, exclude: tuple[str, ...] = ()) -> dict[str, str]:
+    excluded = set(exclude)
     found: dict[str, str] = {}
     for pattern in patterns:
         for path in sorted(REPO.glob(pattern)):
-            if path.is_file():
-                found[path.relative_to(REPO).as_posix()] = digest(path)
+            relative = path.relative_to(REPO).as_posix()
+            if path.is_file() and relative not in excluded:
+                found[relative] = digest(path)
     return found
 
 
@@ -97,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     current = {
-        "scientific": collect(SCIENTIFIC),
+        "scientific": collect(SCIENTIFIC, exclude=SPECIFICATION_UNDER_RESULTS),
         "specification": collect(SPECIFICATION),
     }
     counts = {k: len(v) for k, v in current.items()}
@@ -134,11 +160,26 @@ def main(argv: list[str] | None = None) -> int:
         )
         for line in scientific:
             print(f"  {line}", file=sys.stderr)
-        print(
-            "\nEither a measurement genuinely changed -- in which case re-freeze and say why "
-            "in docs/decisions.md -- or the run is not reproducible.",
-            file=sys.stderr,
-        )
+        moved = {line.split(": ", 1)[1].split(" ", 1)[0] for line in scientific}
+        rebuilt_only = moved <= set(BUILT_DOCUMENTS)
+        if rebuilt_only and specification:
+            # `check` depends on `pdf`, so it rebuilds these before comparing them.  Telling a
+            # user their run may not be reproducible, when all that happened is that they added
+            # a decision entry and this command recompiled the document quoting it, teaches
+            # them to re-freeze until the message goes away -- which is the one habit a freeze
+            # exists to prevent.
+            print(
+                "\nOnly the built documents moved, and a specification file they quote moved "
+                "too, so this is the expected case: `make check` rebuilds the PDFs before "
+                "verifying them.\nRe-freeze with `make freeze`. No measurement is implicated.",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                "\nEither a measurement genuinely changed -- in which case re-freeze and say "
+                "why in docs/decisions.md -- or the run is not reproducible.",
+                file=sys.stderr,
+            )
         return 1
 
     print(f"All {counts['scientific']} scientific artefacts match the manifest.")
