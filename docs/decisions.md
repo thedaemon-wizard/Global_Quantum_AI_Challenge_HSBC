@@ -3837,3 +3837,48 @@ commit is worse than one that states only the shape**.
 them mine from today. It sits in Unicode's emoji data with `Emoji=Yes`, and the project forbids
 emoji in tracked files. `Emoji_Presentation=No` makes it arguable, and an arguable case in a
 repository that goes public against an explicit instruction is not worth keeping.
+
+<a id="d-126"></a>
+### D-126 A circuit figure, and why it is not a portal deliverable
+
+Asked whether the submission should attach a quantum circuit diagram, the statement was checked
+rather than guessed at. **§5.2 Reporting Considerations requires** *"Description of quantum
+approach, encoding strategy, and circuit design choices"*, and the Good-to-Have Metrics list
+carries *"Qubit count and circuit depth (useful for assessing near-term hardware feasibility)"*.
+
+Both are **descriptions**, and both were already met: §4 names the three feature maps and the
+two entanglement patterns, §7 gives the transpiled depth and two-qubit counts, and
+`circuits.csv` holds all twenty configurations. **The words "diagram" and "figure" do not occur
+anywhere in the statement.**
+
+**So no portal slot changes.** All five are full, and the arm a circuit drawing depicts was
+rejected by its own screens *before it ran*. Trading the figure that shows the certificate --
+the study's actual deliverable -- for a drawing of a method that produced no result would be
+the wrong way round. The tensor-network arm, which did run at full scale, is not a circuit at
+all.
+
+What was genuinely missing is that **the repository had no picture of a circuit anywhere**, and
+a table of depths is not a circuit design. `scripts/plot_circuits.py` draws the three encodings
+at their smallest screened width and plots depth and two-qubit count across the grid. It costs
+no upload slot and no page budget, and the proposal links the repository.
+
+Four things were decided while building it, each because the obvious choice was wrong:
+
+* **The widest configuration is not drawn.** Its text rendering is 526 columns; a reader learns
+  less from it than from the numbers already in §7, and the scaling panel carries the same
+  information legibly.
+* **Qiskit's text drawer, not the matplotlib one.** The latter needs `pylatexenc`, and a new
+  dependency for a documentation figure is a poor trade against the clean-room reproduction
+  this project maintains.
+* **The font size is computed from the widest drawing** rather than fixed, so the panel cannot
+  silently clip when the grid gains a wider configuration.
+* **Two series were merged.** `z, none` and `zz, none` are not close, they are *identical* --
+  depth 7 and no two-qubit gates at every width -- so plotting both drew one invisibly beneath
+  the other and left the legend naming a line the reader could not find. Neither dashing nor
+  hollow markers fixes equal data. They are now one line labelled with both names, and the
+  caption says why: with its entangling layer removed, `zz` **is** `z`, which is exactly what
+  makes it the control the screens compare against.
+
+That last one is worth keeping in mind. The first two attempts at it were cosmetic -- change the
+dash, hollow the marker -- and both left a legend entry pointing at nothing. **A figure that
+claims a line it does not draw is a false statement in the same way a wrong number is.**

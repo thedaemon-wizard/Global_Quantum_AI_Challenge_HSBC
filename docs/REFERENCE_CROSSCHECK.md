@@ -64,8 +64,8 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **RG-4** | effective challenge | `docs/REGULATORY_SOURCES.md`, `docs/decisions.md` |
 | **RG-5** | fraud | `docs/FACTCHECK_LOG.md`, `docs/REGULATORY_SOURCES.md`, `docs/decisions.md` |
 | **RG-6** | Financial Conduct Authority | `docs/REGULATORY_SOURCES.md`, `docs/decisions.md` |
-| **SW-1** | Qiskit 2.5.2 | `docs/FACTCHECK_LOG.md`, `Makefile`, `NOTICE`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/CREDENTIALS.md` and 13 more |
-| **SW-2** | Qiskit Machine Learning 0.9.1 | `Makefile`, `NOTICE`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/CREDENTIALS.md`, `docs/ENVIRONMENT.md` and 13 more |
+| **SW-1** | Qiskit 2.5.2 | `docs/FACTCHECK_LOG.md`, `Makefile`, `NOTICE`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/CREDENTIALS.md` and 14 more |
+| **SW-2** | Qiskit Machine Learning 0.9.1 | `Makefile`, `NOTICE`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/CREDENTIALS.md`, `docs/ENVIRONMENT.md` and 14 more |
 | **SW-3** | Amazon Braket SDK 1.126.0 and amazon-braket-default-simulator 1.40.1 | `NOTICE`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/FACTCHECK_LOG.md`, `docs/VERIFICATION_CHECKLIST.md`, `docs/decisions.md`, `pyproject.toml` and 3 more |
 | **SW-4** | MAPIE 1.5.0 | `NOTICE`, `pyproject.toml`, `scripts/smoke.py` |
 | **SW-5** | crepes 0.9.1 | `docs/decisions.md`, `NOTICE`, `pyproject.toml`, `scripts/smoke.py` |

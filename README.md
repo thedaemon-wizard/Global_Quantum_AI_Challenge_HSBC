@@ -319,6 +319,18 @@ The closest any configuration came was $\rho_{\mathrm{RBF}} = 0.6291$. The arm w
 never run on the decision task — which is what pre-registering a screen is for.
 [Screen definitions and the full 120](docs/RESULTS.md#quantum-kernel-rejected-by-the-screens-before-it-ran)
 
+![The three screened encodings, drawn gate by gate, and their transpiled depth and two-qubit
+count against qubit count](results/figures/circuits.png)
+
+The statement asks for the encoding strategy and circuit design choices, and for qubit count and
+circuit depth as feasibility metrics. Above are the three feature maps at their smallest
+screened width, and the cost of the whole grid after transpilation to a portable
+`rz, sx, x, cx` basis: **20 configurations, 1–8 qubits, at most depth 35 and 28 two-qubit
+gates**. Every one is within near-term reach, which is the point — **the arm was rejected by its
+own screens, not by circuit size.** The two unentangled series coincide exactly because, with
+its entangling layer removed, `zz` *is* `z`; that is what makes it the control.
+[`circuits.csv`](results/tables/circuits.csv) carries all 20 rows.
+
 ### 5.5 Tensor network: it ran, and it lost
 
 ![Average-precision difference, MPS minus GBDT, with intervals, by bond dimension](results/figures/mps_h4.png)

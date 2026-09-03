@@ -139,6 +139,7 @@ summaries:
 
 figures:
 	$(PY) scripts/make_figures.py
+	$(PY) scripts/plot_circuits.py
 
 # A reviewer's trace of the certificate against the committed tables.  Reads and asserts; it
 # refits nothing, so it costs a second and no GPU.  It is a repository artefact -- the portal
