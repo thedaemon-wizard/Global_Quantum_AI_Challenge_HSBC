@@ -182,7 +182,7 @@ separate findings ([D-104](decisions.md)).
 
 | | Requirement | Status |
 |---|---|---|
-| E1 | IEEE-CIS: competition licence, not redistributed | met; `scripts/` load from a local copy and the file is not in the repository |
+| E1 | IEEE-CIS: competition licence, not redistributed | met | `scripts/` load from a local copy and the file is not in the repository; `.gitignore` carries an anchored `/datasets/` pattern. Competition rules §7.B forbid redistribution, so the archive is **never** attached to a submission or committed. **Its SHA-256 is**, per member, verified on every load — a digest redistributes nothing and is the strongest identity statement the licence permits ([D-127](decisions.md)) |
 | E2 | ULB: database under **ODbL**, contents under **DbCL v1.0** | met; `NOTICE` always stated both, and `README.md`, `PROVENANCE.md`, `A3-reproduction.tex` and `SUBMISSION_CHECKLIST.md` now do too |
 | E3 | Third-party software licences recorded | met; `NOTICE` |
 | E4 | cuQuantum proprietary surface disclosed and scoped | met; installed only by the optional `make venv-gpu`, used only by E11's parity cross-check, no scientific figure depends on it — [D-050](decisions.md) |

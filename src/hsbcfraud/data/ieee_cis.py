@@ -34,7 +34,9 @@ not hold: the fraud rate shows no terminal decay.
 
 from __future__ import annotations
 
+import hashlib
 import zipfile
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -46,6 +48,7 @@ __all__ = [
     "IeeeCisFrame",
     "load_ieee_cis",
     "read_ieee_cis_columns",
+    "verify_member_digests",
 ]
 
 SECONDS_PER_DAY = 86_400
@@ -60,6 +63,29 @@ _IDENTITY_MEMBER = "train_identity.csv"
 EXPECTED_ROWS = 590_540
 EXPECTED_FRAUDS = 20_663
 EXPECTED_COLUMNS = 394
+
+# SHA-256 of the two archive members this study reads, computed 2026-09-02 from the file every
+# committed number was produced on.
+#
+# The competition licence forbids redistributing the data, so this is the strongest identity
+# statement that *can* ship: a digest is not the data, and it lets anyone with legitimate
+# Kaggle access prove they hold the same bytes before comparing a single result.
+#
+# The counts above are structural and catch a re-release, a truncated download or the test
+# split by mistake.  They cannot catch a file of the same shape with different contents --
+# re-encoded floats, reordered rows within a timestamp, a repaired encoding -- and each of
+# those changes the numbers while passing every other check in this module.
+#
+# Members, not the archive: Kaggle serves re-zipped copies whose container bytes differ while
+# the CSVs inside are identical, so hashing the zip would reject correct data.  `test_*.csv`
+# and `sample_submission.csv` are deliberately unhashed -- nothing here reads them, and
+# demanding they match would fail a reader who downloaded only what this study needs.
+EXPECTED_MEMBER_DIGESTS = {
+    _TRANSACTION_MEMBER: "3a5c83ab6b3cc13dcabe5ffa9f522307fd5f7f7b6e6f6a60c32284ca6283d642",
+    _IDENTITY_MEMBER: "b63c725d8377be90a995268d97f347c17d456b95db45807adcf9f59cd603c37c",
+}
+
+_DIGEST_CHUNK_BYTES = 1 << 20
 
 
 class DatasetError(RuntimeError):
@@ -109,6 +135,46 @@ def read_ieee_cis_columns(
             return pd.read_csv(handle, usecols=columns)
 
 
+def verify_member_digests(zip_path: Path, members: Iterable[str] | None = None) -> dict[str, str]:
+    """Check that the archive members this study reads are byte-for-byte the calibrated ones.
+
+    Returns the digests it computed, so a caller can record what it verified rather than
+    merely that it passed.
+
+    Raised as a ``DatasetError`` rather than warned about: every committed number in this
+    repository is conditional on this file, and a study that continues on data it cannot
+    identify produces results nobody can interpret -- including its own author later.
+    """
+    wanted = list(EXPECTED_MEMBER_DIGESTS if members is None else members)
+    computed: dict[str, str] = {}
+    with zipfile.ZipFile(zip_path) as archive:
+        available = set(archive.namelist())
+        missing = [member for member in wanted if member not in available]
+        if missing:
+            raise DatasetError(
+                f"{zip_path.name} does not contain {', '.join(missing)}; "
+                f"it holds {', '.join(sorted(available))}"
+            )
+        for member in wanted:
+            digest = hashlib.sha256()
+            with archive.open(member) as handle:
+                for chunk in iter(lambda: handle.read(_DIGEST_CHUNK_BYTES), b""):
+                    digest.update(chunk)
+            computed[member] = digest.hexdigest()
+
+    for member, actual in computed.items():
+        expected = EXPECTED_MEMBER_DIGESTS.get(member)
+        if expected is not None and actual != expected:
+            raise DatasetError(
+                f"{member} in {zip_path.name} is not the file this study was calibrated "
+                f"against.\n  expected sha256 {expected}\n  found    sha256 {actual}\n"
+                f"Re-download from kaggle.com/c/ieee-fraud-detection. Every committed number "
+                f"is conditional on the calibrated file, so results from this one would not "
+                f"be comparable."
+            )
+    return computed
+
+
 def load_ieee_cis(
     zip_path: Path, columns: list[str] | None = None, *, with_identity: bool = False
 ) -> IeeeCisFrame:
@@ -125,6 +191,13 @@ def load_ieee_cis(
     # not arrive as a DatasetError naming what was wrong.
     required = {"TransactionDT", "isFraud"} | ({"TransactionID"} if with_identity else set())
     needed = None if columns is None else sorted(required | set(columns))
+
+    # Identity is verified only when it is about to be read.  A reader who downloaded just the
+    # transaction table has everything this call needs, and failing them over a member nothing
+    # here opens would be a gate that punishes the wrong thing.
+    members = [_TRANSACTION_MEMBER] + ([_IDENTITY_MEMBER] if with_identity else [])
+    verify_member_digests(zip_path, members)
+
     frame = read_ieee_cis_columns(zip_path, needed)
 
     n_rows = len(frame)

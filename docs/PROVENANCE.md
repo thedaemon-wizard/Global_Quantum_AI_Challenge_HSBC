@@ -40,6 +40,35 @@ the data does not.
 Practical consequence for a reviewer: every number in this submission is reproducible by anyone
 who accepts the same competition rules, and none of it may be carried into a deployed system.
 
+**The data cannot ship, so its fingerprint does.** Section 7.B forbids redistribution, which
+makes the input the one part of this study a reader must fetch themselves -- and therefore the
+one place where two people can silently be comparing different things. A digest is not the
+data: it redistributes nothing, and it lets anyone with legitimate Kaggle access prove they
+hold the same bytes *before* comparing a single result.
+
+| Member | SHA-256 |
+|---|---|
+| `train_transaction.csv` | `3a5c83ab6b3cc13dcabe5ffa9f522307fd5f7f7b6e6f6a60c32284ca6283d642` |
+| `train_identity.csv` | `b63c725d8377be90a995268d97f347c17d456b95db45807adcf9f59cd603c37c` |
+
+Computed 2026-09-02 from the archive every committed number was produced on, and asserted on
+every load by `src/hsbcfraud/data/ieee_cis.py`.
+
+Three choices in that check are deliberate. **Members, not the archive**: Kaggle serves re-zipped
+copies whose container bytes differ while the CSVs inside are identical, so hashing the zip
+would reject correct data. **Only the members actually read**: `test_*.csv` and
+`sample_submission.csv` are unhashed, because nothing here opens them and a reader who
+downloaded only what this study needs should not be failed for it; identity is verified only
+when a caller asks for it. **A hard error, not a warning**: every committed number is
+conditional on this file, and a study that continues on data it cannot identify produces
+results nobody can interpret, including its own author later.
+
+This is strictly stronger than the row and fraud counts already asserted. Those catch a
+re-release, a truncated download or the test split by mistake; they cannot catch a file of the
+same shape with different contents -- re-encoded floats, repaired text encoding, rows reordered
+within a timestamp -- and each of those moves the numbers while passing every other check
+([D-127](decisions.md)).
+
 **The label is not what its name suggests.** `isFraud` is set on a reported chargeback and
 then propagated to subsequent transactions sharing a user account, email address or billing
 address; a transaction is labelled 0 only if nothing is reported within 120 days (competition

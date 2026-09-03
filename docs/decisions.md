@@ -3882,3 +3882,50 @@ Four things were decided while building it, each because the obvious choice was 
 That last one is worth keeping in mind. The first two attempts at it were cosmetic -- change the
 dash, hollow the marker -- and both left a legend entry pointing at nothing. **A figure that
 claims a line it does not draw is a false statement in the same way a wrong number is.**
+
+<a id="d-127"></a>
+### D-127 The training data cannot ship, so its fingerprint does
+
+Asked whether the training data and trained models should be attached for reproducibility, the
+statement and the licence were checked rather than assumed.
+
+**The data must not be attached.** The statement's own §6.1 table lists IEEE-CIS as
+*"Competition license"* and *"Kaggle (requires account)"*, and the competition rules §7.B are
+explicit: *"You agree not to transmit, duplicate, publish, redistribute or otherwise provide or
+make available the Competition Data to any party not participating in the Competition."*
+Attaching it would breach the licence and the Terms' third-party-content warranty at once.
+
+**Nothing asks for it either.** §5.2 Expected Outputs names three things -- fraud probability,
+binary prediction, feature attribution. No checkpoint, no training set, no model artefact. The
+per-transaction output is already staged as `HSBC-predictions.csv`.
+
+**But the question exposed a real gap.** Everything in this study is reproducible from the
+repository except its input, which a reader must fetch themselves -- and that is precisely
+where two people can silently be comparing different things. The loader asserted 590,540 rows,
+20,663 frauds and 394 columns, which catches a re-release, a truncated download or the test
+split by mistake. It could not catch **a file of the same shape holding different bytes**:
+re-encoded floats, a repaired text encoding, rows reordered within a shared timestamp. Each of
+those changes every number while passing every check in the module.
+
+So the digests now ship. `train_transaction.csv` and `train_identity.csv` are pinned by SHA-256
+in `ieee_cis.py`, recorded in [`PROVENANCE.md`](PROVENANCE.md), and verified on every load in
+1.9 seconds. **A digest is not the data** -- it redistributes nothing, and it is the strongest
+identity statement the licence permits.
+
+Three choices inside it, each because the obvious one is wrong:
+
+* **Members, not the archive.** Kaggle serves re-zipped copies whose container bytes differ
+  while the CSVs inside are identical. Hashing the zip would reject correct data, which is the
+  failure mode that teaches a reader to delete the check.
+* **Only the members actually read.** `test_*.csv` and `sample_submission.csv` are unhashed
+  because nothing here opens them, and identity is verified only when a caller asks for it. A
+  gate that fails someone for not downloading a file it never uses is punishing the wrong
+  thing.
+* **A hard error, not a warning.** Every committed number is conditional on this file.
+
+**On model artefacts, the answer is no, and for a reason worth stating.** `results/runs/` is
+100 MB of scores and telemetry and is deliberately untracked. Shipping fitted weights would
+make the study checkable *only* by someone willing to trust them; what makes it checkable now
+is that 50 artefacts are frozen by digest, every table has a producer, and 190 tests assert the
+relationships between them. **A checkpoint proves what a model did once. A producer proves what
+it does.**
