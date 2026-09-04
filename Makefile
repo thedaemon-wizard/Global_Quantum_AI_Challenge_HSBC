@@ -210,6 +210,12 @@ pdf: tex submission/proposal.pdf submission/appendix.pdf
 	    --paper a4 --min-font 10 $(PDF_GUARD)
 	$(PY) scripts/check_pdf.py submission/appendix.pdf --max-pages $(APPENDIX_PAGES) \
 	    --paper a4 --min-font 10 $(PDF_GUARD)
+	@# check_pdf asserts the page count and the type size; a document satisfies both while
+	@# printing a table's number on one page and its rows on the next.  That defect shipped in
+	@# the sibling Airbus submission on 2026-09-04; this document uses real table floats and
+	@# has never had it, and the check is here so that it stays that way.
+	$(PY) scripts/check_layout.py submission/proposal.pdf submission/proposal.tex
+	$(PY) scripts/check_layout.py submission/appendix.pdf submission/appendix.tex
 
 # The fitting loop: build and report, never fail.  An over-length PDF must still be
 # produced, because deciding what to cut requires looking at it.
