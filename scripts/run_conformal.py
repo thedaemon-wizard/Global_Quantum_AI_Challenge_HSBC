@@ -42,6 +42,12 @@ from hsbcfraud.paths import display_path, require_run_artefact
 
 REPO = Path(__file__).resolve().parents[1]
 
+# Which admissible grid point is carried into the single test-fold read.  Every admissible
+# point satisfies the PAC statement, so this does not enter the guarantee; it decides which
+# lambda is *reported*.  `max_recall` takes the lowest admissible threshold, which flags the
+# most among points that already certify.
+REPORTED_SELECTION_RULE = "max_recall"
+
 
 def band_edges(
     scores: np.ndarray, decline_budget: float, band_budget: float
@@ -191,8 +197,22 @@ def main(argv: list[str] | None = None) -> int:
                     missed_fraud_rate(y_cal, s_cal, in_band, operating_threshold),
                 ),
             ]
+            # `select` is named here rather than left to the library default, because it
+            # decides which admissible lambda is reported and the two implemented rules
+            # disagree: where more than one point is admissible, realised risk on the test
+            # fold is 0.172 under `max_recall` against 0.086 under `min_abstention`.  A value
+            # that moves a reported number should not be invisible at the call site.
+            #
+            # It is deliberately NOT a config field.  The campaign digest below is taken over
+            # the whole config, so adding one would have changed the configuration identity
+            # the single-evaluation guard keys on -- invalidating the committed
+            # `test_access.json` and breaking `make reproduce` for every reviewer.  See D-132.
             result = learn_then_test(
-                grid, risks, delta=cfg.risk.delta, fwer_method=cfg.risk.fwer_method
+                grid,
+                risks,
+                delta=cfg.risk.delta,
+                fwer_method=cfg.risk.fwer_method,
+                select=REPORTED_SELECTION_RULE,
             )
             risk_rows.append(
                 {

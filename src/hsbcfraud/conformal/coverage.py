@@ -168,6 +168,20 @@ def verify(
     band_level: float = 0.99,
 ) -> CoverageVerdict:
     """Check an observed error count against the exact predictive law."""
+    if n_test <= 0:
+        # Fail-open, and in the one verdict that is supposed to catch a broken split.  With
+        # `n_test == 0` the Beta-Binomial pmf is `[1.0]`, so the band collapses to `(0, 0)`,
+        # the tail probability is exactly 1.0, and `finite_sample_ok` evaluates `0 <= 0 <= 0`
+        # and returns **True** -- a passing finite-sample verdict for a check that never ran.
+        # The only trace was a `nan` rate in a column nothing asserts on.
+        #
+        # A mis-tagged `block`, a collapsed arm split or a truncated parquet would have been
+        # reported as clean coverage at every level.  See D-132.
+        raise ValueError(
+            f"n_test={n_test}: an empty test block has no error distribution, so there is no "
+            f"coverage claim to check. This usually means the block filter matched nothing -- "
+            f"verify the `block` column of the scores file being read."
+        )
     # One call, not two.  Taking [0] and [1] from separate calls evaluated the Beta-Binomial
     # pmf twice for one band, and at the sizes this study uses that pmf is the whole cost of
     # the function -- measured at 49.5 ms for `verify` against 21.2 ms for one pmf.
@@ -177,7 +191,7 @@ def verify(
         order_index=order_index,
         n_test=n_test,
         observed_errors=observed_errors,
-        empirical_rate=observed_errors / n_test if n_test else float("nan"),
+        empirical_rate=observed_errors / n_test,
         nominal_rate=alpha,
         band_low=band_low,
         band_high=band_high,

@@ -4070,3 +4070,59 @@ forbids without naming it.
 parent that is not a git repository, so a clone cannot sweep them in. What remains is a person
 pasting a path or a quotation, and that is what this catches -- not a claim that the content is
 unreachable by other means.
+
+<a id="d-132"></a>
+### D-132 Two hardcoding defects, and one case where config was the wrong answer
+
+A ten-agent audit of every module and script asked one question: which literals are *choices*
+that belong in configuration, which are *properties* that must never be configurable, and where
+does a fallback hide an error. Two findings survived adversarial verification, and I reproduced
+both before acting.
+
+**A fail-open in the verdict that validates the guarantee.** `coverage.verify()` returned
+`finite_sample_ok=True` for `n_test == 0`. The mechanism is arithmetic: with an empty test block
+the Beta-Binomial pmf is `[1.0]`, so the band collapses to `(0, 0)`, the tail probability is
+exactly 1.0, and the check evaluates `0 <= 0 <= 0`. **A passing finite-sample verdict for a
+check that never ran**, whose only trace was a `nan` in a column nothing asserts on. A
+mis-tagged `block`, a collapsed arm split or a truncated parquet would have been reported as
+clean coverage at every level. It now raises, naming the likely cause.
+
+**A reporting rule that decided a headline number and appeared nowhere.** `learn_then_test` takes
+`select="max_recall"` as a library default; `run_conformal.py` never named it. Two rules are
+implemented and they disagree, at the two configurations where more than one grid point is
+admissible: realised risk on the test fold is **0.172** under `max_recall` against **0.086**
+under `min_abstention`. That value reaches `riskcontrol.csv`, `h5_validation.csv`, and the
+`in_band_threshold` column of the shipped `predictions.csv`.
+
+**The interesting part is that config was the wrong home, and the repository proved it.**
+
+The obvious fix -- add `select` to `RiskControlConfig` -- was applied, and then rejected on
+evidence. `run_conformal.py` computes a campaign digest over the *whole* configuration and
+passes it to the single-evaluation guard. Adding one field changed that digest from
+`e9fc0d4cf189` to `05747761273e`, and the guard immediately refused the run: the committed
+`test_access.json` records one evaluation under the old identity. **A reviewer cloning HEAD and
+running `make reproduce` would have hit that error** -- the change would have broken
+reproduction in the name of improving it.
+
+Exempting `select` from the digest would restore it exactly, and would be worse. The rule
+changes a reported number, so it *is* campaign-identifying: exempting it would let someone try
+both rules against the held-out fold and keep the better one, which is the precise behaviour the
+guard exists to prevent.
+
+The remaining route -- update the recorded digest -- was tested and declined. Under the new
+configuration all five tables reproduce **byte-identically**, so the computation is
+demonstrably the same; but the run incremented the guard's counter to **2**, and appendix §1
+tells the reviewer this "happens once". Committing that would contradict the shipped PDF to
+document a default.
+
+So the rule is named at the call site as `REPORTED_SELECTION_RULE`, with the disagreement and
+both numbers in the comment. The defect was that a value moving a reported number was invisible
+where it was used; it is now the most visible thing in that function. The campaign digest and
+the evaluation count are restored exactly.
+
+**What generalises.** "Move it to config" is the right instinct and it has a boundary: in a
+study with a single-evaluation rule, the configuration *is* the campaign's identity. Adding a
+field to it is not a free act of tidiness -- it re-labels the experiment. The audit's own
+verifier judged `select` not guarantee-bearing and was right about the guarantee, and still
+reached the wrong conclusion about where to put it, because that judgement did not reach the
+guard.
