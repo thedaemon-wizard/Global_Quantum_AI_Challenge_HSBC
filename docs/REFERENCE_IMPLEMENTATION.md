@@ -75,6 +75,6 @@ the named function together and read the formula in both. That is how the three 
 repository: every one of those numbers agreed with its table, and the table agreed with the code.
 The formula printed beside the number was what disagreed.
 
-**要確認.** Section 2 is checked for attribution — that the entry is cited where it is
+**Needs confirmation.** Section 2 is checked for attribution — that the entry is cited where it is
 implemented — and not line by line against each paper. A reader who needs that assurance for a
 specific entry should treat it as unverified here.

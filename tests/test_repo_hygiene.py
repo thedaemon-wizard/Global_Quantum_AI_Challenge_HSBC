@@ -655,3 +655,65 @@ def test_the_built_documents_are_named_so_a_rebuild_is_diagnosed_correctly() -> 
         "every built document must also be a frozen scientific artefact, or the special-case "
         "message would describe files the check never compares"
     )
+
+
+# Ranges that must not appear in a tracked text file.  Deliberately narrow: this repository
+# legitimately carries em dashes, section signs, Greek letters, ceilings and comparison
+# operators, and a surname regex whose class runs to U+017F.  Banning non-ASCII wholesale would
+# reject all of that and the gate would be deleted within a day.
+FORBIDDEN_RANGES = (
+    (0x3000, 0x303F, "CJK punctuation"),
+    (0x3040, 0x30FF, "kana"),
+    (0x4E00, 0x9FFF, "CJK ideographs"),
+    (0xFF00, 0xFFEF, "fullwidth forms"),
+    (0x2600, 0x27BF, "miscellaneous symbols and dingbats"),
+    (0x2B00, 0x2BFF, "miscellaneous symbols and arrows"),
+    (0xFE0F, 0xFE0F, "emoji variation selector"),
+    (0x1F000, 0x1FAFF, "emoji"),
+)
+
+TEXT_SUFFIXES = {".md", ".tex", ".yaml", ".py", ".toml", ".json", ".txt", ".cfg"}
+
+
+def _forbidden_character(text: str) -> tuple[int, str, str] | None:
+    for index, character in enumerate(text):
+        point = ord(character)
+        for low, high, label in FORBIDDEN_RANGES:
+            if low <= point <= high:
+                return index, f"U+{point:04X}", label
+    return None
+
+
+def test_no_japanese_or_emoji_survives_in_a_tracked_text_file() -> None:
+    """The repository goes public, and two conventions here were enforced only by hand.
+
+    `COMPLIANCE_CHECKLIST.md` P6 forbids emoji and its evidence column said "scanned" -- a
+    statement about one afternoon, not a property of the tree. The status marker was written
+    in Japanese throughout for the same reason: nothing checked. Both were fixed by sweeping
+    28 occurrences of one string and ten of one glyph, and a sweep with no gate behind it comes
+    back.
+
+    The ranges are narrow on purpose. Em dashes, section signs, Greek letters, ceilings and
+    accented surnames are all legitimate and all non-ASCII; a gate that rejected them would be
+    removed rather than obeyed.
+    """
+    tracked = subprocess.run(
+        ["git", "ls-files"], cwd=REPO, capture_output=True, text=True, check=True
+    ).stdout.split()
+
+    offences = []
+    for name in tracked:
+        path = REPO / name
+        if path.suffix not in TEXT_SUFFIXES or not path.is_file():
+            continue
+        found = _forbidden_character(path.read_text(encoding="utf-8", errors="ignore"))
+        if found is not None:
+            index, code, label = found
+            offences.append(f"{name}: {code} ({label})")
+
+    assert not offences, (
+        "tracked text files carry characters the project forbids: "
+        + "; ".join(offences)
+        + ". Use an English status marker such as 'Needs confirmation', and a word such as "
+        "'Note:' in place of a warning glyph."
+    )

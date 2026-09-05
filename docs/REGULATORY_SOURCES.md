@@ -147,5 +147,5 @@ Regulatory text resists automated summarising, and one attempt during this check
 *credit transfers* column of the RG-1 Annex and reported it as the card-based rates — which
 would have made the repository look wrong when it is right. Locators here were confirmed by
 extracting the table structure from the source markup rather than by asking a summariser what
-it said. Where a claim could not be confirmed at the issuing authority, it is marked 要確認
+it said. Where a claim could not be confirmed at the issuing authority, it is marked Needs confirmation
 above rather than repeated.

@@ -71,7 +71,7 @@ again.
 section D went from 5 rows to 22, at least one per clause and one per lettered sub-clause of §4,
 and three of the five originals were restated because their reasoning did not reach the clause
 they ticked. The first attempt at that pass wrote 19 rows and described them as "one per
-clause" while still omitting §1, §4.5 and §13. Two rows are **要確認 and belong
+clause" while still omitting §1, §4.5 and §13. Two rows are **Needs confirmation and belong
 to the author, not to this repository**: whether any current engagement makes him a "Contractor
 of ... Challenge enterprise sponsors" under §2, and whether to register a trading name, since
 §4.2 permits Resonance to publicise the entry by team name and withholds personal names.
@@ -101,7 +101,7 @@ this repository and are recorded here because the submission points at them.
 | Yale method reach | "9/10 peaked-circuit challenges **up to 69 qubits**" | "matrix-product-state runs are exact to **60** qubits and degrade above it" | **Both, about different things.** Nine of ten were solved and the largest was 69 qubits; separately, the *saved tensor-network* runs are exact to 60. [D-059](decisions.md) established that no artefact attributes the 69-qubit answer to a tensor network, which is why §8 makes the narrower claim. Not a contradiction, but a reviewer reading them together may not see that |
 | QPoland title | "Quantum Graph Kernels for Molecular Classification" | "Quantum kernels" | **Neither is wrong; the submission is deliberately narrower.** [D-114](decisions.md) reverted a "graph kernels" label because [D-057](decisions.md) removed that attribution for want of any checkable implementation. The CV uses a third form, "Quantum-Inspired Graph Kernels" |
 
-**要確認, outside this repository.** The portfolio describes the graph-kernel work as
+**Needs confirmation, outside this repository.** The portfolio describes the graph-kernel work as
 "10-fold stratified cross-validation" and the CV as "nested 5-fold". One of the two is wrong, or
 both were run and neither says so. The submission cites neither figure, so nothing here depends
 on it.

@@ -296,7 +296,7 @@ for a classical neural network, so the reported advantage is 0.04 to 0.06 precis
 thresholds.
 
 Recall, F1, accuracy and AUC are **not** reported at any threshold, so the precision cannot be
-placed on a curve. An earlier version of this entry carried a 要確認 saying the post had not
+placed on a curve. An earlier version of this entry carried a Needs confirmation saying the post had not
 been read, and proposal section 4 said the precision came "with no recall or base rate" -- the
 base-rate half was wrong, and only reading the source showed it.
 Cited as: `Deloitte and AWS, 2024`

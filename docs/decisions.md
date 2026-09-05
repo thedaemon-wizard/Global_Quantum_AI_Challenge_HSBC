@@ -1536,7 +1536,7 @@ both open-banking measures. No figure moves -- neither touches the Annex rates o
 18/19 structure -- but the citation pointed a reader at a document that does not contain what
 the entry claimed for it. Both are now cited with their roles distinguished.
 
-*Two claims could not be confirmed and are marked 要確認 rather than repeated.* RG-1 lists
+*Two claims could not be confirmed and are marked Needs confirmation rather than repeated.* RG-1 lists
 Article 21 (monitoring) among the provisions relied on, and nothing in this repository cites
 it. RG-5 states that the PRA "confirmed" SS1/23 applies to fraud models, and that confirmation
 was not located at the issuing authority.
@@ -1933,13 +1933,13 @@ different answers to the same circuit cannot both be right; the likeliest explan
 different circuit instances behind the same problem names -- the third-party repository does
 carry separate `MIT_iQuHACK_2026` and `Yale_Quantum_2026` sets with identical names -- or a
 different working set. The author's answers match neither published set beyond problem 2.
-**要確認.** Nothing in the proposal depends on it: the rank, the count and the qubit ceiling are
+**Needs confirmation.** Nothing in the proposal depends on it: the rank, the count and the qubit ceiling are
 all corroborated externally, and the sentence attributes only the *saved tensor-network runs*
 to 60 qubits, which is what this project's own verifier reproduces.
 
 **The team name also differs** -- MerQury on the leaderboard, PeakQubit in the author's
 repository. The proposal names no team, so nothing turns on it, but a reviewer who follows the
-credential will meet the discrepancy. **要確認.**
+credential will meet the discrepancy. **Needs confirmation.**
 
 **The Qiskit Advocate credential is confirmed, and is not publicly verifiable yet.** The author
 holds the acceptance email; the programme is at Tier 0 and the badge has not been issued. It
@@ -1998,7 +1998,7 @@ It does not record a placement; the leaderboard does. Both are cited for what ea
 records different peak bitstrings for problems 3 to 9 than the published set. The organiser's
 score of 450 is itself the record of nine correct submissions, so this reads as a personal
 working copy diverging from what was submitted rather than a problem with the credential.
-Still **要確認**, and nothing in the proposal rests on it.
+Still **Needs confirmation**, and nothing in the proposal rests on it.
 
 **The lesson, stated once for all three errors.** D-059: softening a claim is not checking it.
 D-060: removing a claim is not checking it either. This entry adds the rule that would have
@@ -2211,14 +2211,14 @@ a library default, here it was **processes I had started myself and left running
 attributing slowness to code, look at what else is on the machine — and when an instrument you
 have just added disagrees with the sentence you wrote beside it, the sentence is what is wrong.
 
-### D-067 Two of the three open 要確認 were errors in my own auditing, both against the author
+### D-067 Two of the three open Needs confirmation were errors in my own auditing, both against the author
 
 The three items this repository carried as unresolved were closed by going to the artefact. Two
 of them turned out not to be facts about the credential at all, but mistakes in the audit that
 raised them — and both made the record look weaker than the evidence supports.
 
 **The Yale bitstrings: one answer set in two bit orders, and it took me two wrong explanations
-to get there.** The 要確認 said the author's working repository recorded different peak
+to get there.** The Needs confirmation said the author's working repository recorded different peak
 bitstrings for problems 3 to 9 than the third-party repository. Compared programmatically, the
 two records are the same nine answers reversed: P3 to P9 are **exact string reversals**,
 character for character; P1 is identical because `1001` is a palindrome; P2 is identical because
@@ -2238,7 +2238,7 @@ wrong explanations for one item, both produced by checking a part of the artefac
 the artefact.
 
 **The QIntern calibration module: the independent attribution existed and had not been read.**
-The 要確認 said authorship rested only on a self-authored handoff, because the file arrives in a
+The Needs confirmation said authorship rested only on a self-authored handoff, because the file arrives in a
 bulk "Initial commit" with no per-file provenance. Both halves were wrong. That commit was made
 by a **teammate** — the repository is hosted under his account — and three days later the same
 teammate committed a handoff calling it "AK's Day-15 CQ-ZDR module", recording that he re-ran it
@@ -2255,7 +2255,7 @@ says "Jul 2026" and is the document that needs correcting, outside this reposito
 checking it, and D-060 that removing one is not either. Both were about being too generous.
 These two are the opposite failure: an audit that manufactured doubt from a comparison it had
 not validated, and then carried that doubt in a shipped document for three rounds. **An
-unresolved 要確認 is a claim too** — it asserts that something could not be settled, and that
+unresolved Needs confirmation is a claim too** — it asserts that something could not be settled, and that
 assertion needs the same evidence as any other. Neither survived contact with the actual
 artefact, and the Yale one did not survive my first two attempts at explaining it either: read
 the whole artefact (D-062), and when a cheap check is available, run it before writing the
@@ -3024,7 +3024,7 @@ a submission whose entire pitch is that every claim resolves to something.
 Both corrected. The proposal now says what is checkable: the 984-row balanced undersample at
 seven principal components with no classical arm, which is neither this task's base rate nor a
 comparison; and for the other, a precision quoted with no recall and no base rate, which is all
-the statement's own text supports. The Deloitte entry carries a 要確認 saying the underlying
+the statement's own text supports. The Deloitte entry carries a Needs confirmation saying the underlying
 post has not been read. The duplicate section 7 record is gone, because one paper in two
 sections under two attributions is how the miscitation propagated.
 
@@ -3361,7 +3361,7 @@ alone. It now reads "Sole author of this submission", which is the true and narr
 --- it is about this entry, not about a competition history in which both placements were
 teams'.
 
-Note that this was carried as an open 要確認 rather than guessed at, and the guess that would
+Note that this was carried as an open Needs confirmation rather than guessed at, and the guess that would
 have been natural --- solo, since the CV does not say otherwise --- would have been wrong.
 
 ### D-112 The two degenerate fits were inflating the capacity signal, not the seed noise
@@ -3537,7 +3537,7 @@ calibration scores are seen.
 
 ### D-118 Three open questions closed by the only party who could close them
 
-All three had been carried as 要確認 rather than guessed at, and one of the guesses that would
+All three had been carried as Needs confirmation rather than guessed at, and one of the guesses that would
 have been natural was wrong.
 
 **The sponsor-contractor bar (Terms §2).** Confirmed by the author on 2026-09-02: no current
@@ -3566,7 +3566,7 @@ hidden inputs, a file picker and three buttons. The organisation name is an *acc
 field set at registration -- `reg_company_type` and `reg_company_name`, placeholder "Company
 Ltd" -- which is what §4.2's "organizational affiliations ... company, or institution" reaches.
 So the document was the only surface under our control, and it now states the name. Note: Whether
-the registration field already holds it is **要確認** and can only be read while signed in.
+the registration field already holds it is **Needs confirmation** and can only be read while signed in.
 
 ### D-119 The remaining audit findings, and the three that only closed across group boundaries
 
@@ -3602,7 +3602,7 @@ see it.
 two in `.gitignore`, where the ignore rule moved to `.git/info/exclude` so the path stays
 ignored without being published, and two of prose here. P8 claimed "two human authors ... 32
 commits"; the real figures are 58 commits and **three author strings, all the same person**,
-one carrying a typo. No `Co-authored-by` trailer anywhere. Note: Left as 要確認 because a reviewer
+one carrying a typo. No `Co-authored-by` trailer anywhere. Note: Left as Needs confirmation because a reviewer
 reading the history of a sole-author submission sees three contributors.
 
 **And a measurement was off by an order of magnitude.** `measure_latency.py` and
@@ -3822,7 +3822,7 @@ matrix-product-state runs are exact to 60 qubits". The *method* is his own contr
 checkable: PR #1 into the public repository `roman-bagdasarian/Peaked-Circuits`, merged
 2026-04-10 from branch `marginal_attack_by_amon`, +150 lines. **Verified against the GitHub API
 before citing** -- the repository is public and the pull request is visible, which the audit
-had marked 要確認 because it could not open it. The attribution had been removed alongside the
+had marked Needs confirmation because it could not open it. The attribution had been removed alongside the
 69-qubit overreach in [D-105](#d-105); only the overreach needed to go. In a submission whose
 section 4 is a matrix-product-state study, presenting the MPS credential as a team rank plus a
 limitation sells it short.
@@ -3975,7 +3975,7 @@ suppress it. That is worth checking for wherever a `check` target has build depe
 <a id="d-129"></a>
 ### D-129 The comparator was dismissed on a ground that reading it refuted
 
-`REFERENCES.md` carried a 要確認 on QM-16: the Deloitte/AWS blog post had never been read, and
+`REFERENCES.md` carried a Needs confirmation on QM-16: the Deloitte/AWS blog post had never been read, and
 everything asserted about it came from the challenge statement's one-line summary. Section 4
 dismissed it as "a precision with no recall or base rate".
 
@@ -3999,8 +3999,37 @@ curve. Section 4 now says the accurate thing: it is a thresholded precision on a
 symmetry is worth having in the document: the submission applies the same standard to others
 that it was forced to apply to itself.
 
-**The lesson is about the shape of the 要確認, not the source.** The marker said "not read, so
+**The lesson is about the shape of the Needs confirmation, not the source.** The marker said "not read, so
 nothing beyond the summary is asserted" -- and then the proposal asserted something beyond the
-summary anyway, in the sentence that dismissed it. A 要確認 that scopes a *document* does not
+summary anyway, in the sentence that dismissed it. A Needs confirmation that scopes a *document* does not
 constrain what a *different* document says about the same object. Cheaper to read the source: it
 took one fetch.
+
+<a id="d-130"></a>
+### D-130 Two conventions enforced by hand, and therefore not enforced
+
+The status marker in every checklist and log was written in Japanese, and the warning glyph
+U+26A0 appeared ten times. Both were swept by hand -- 28 occurrences of the marker, replaced by
+"Needs confirmation" -- and neither convention had anything behind it.
+
+`COMPLIANCE_CHECKLIST.md` P6 forbids emoji and its evidence column read **"scanned across
+`*.md`, `*.tex`, `*.py`, `*.yaml`, `Makefile`"**. That is a statement about one afternoon, not
+a property of the tree, and the tree had drifted since: every one of those ten glyphs was added
+after the row was ticked. **A checklist row whose evidence is a past action decays silently**,
+which is the same failure as D3 ticking a clause on dataset reasoning and going blind to
+teammates' names.
+
+`tests/test_repo_hygiene.py` now fails on CJK punctuation, kana, ideographs, fullwidth forms,
+dingbats, the emoji variation selector and the emoji planes, across every tracked text file.
+
+**The ranges are narrow on purpose, and that is the whole design.** This repository legitimately
+carries 323 em dashes, 285 section signs, Greek letters in the mathematics, ceiling brackets,
+comparison operators, accented surnames, and a surname regex whose character class runs to
+U+017F. A gate that banned non-ASCII wholesale would reject all of it and be deleted within a
+day -- so it would have been worse than no gate, because the row would then claim enforcement
+that had been removed.
+
+One character was checked and deliberately kept: `ſ` (U+017F, LATIN SMALL LETTER LONG S) in
+`make_crosscheck.py`. It reads as mojibake and is not -- it is the upper bound of the range
+`[A-Za-z'À-ſ-]` that matches accented surnames like Candès. Worth recording, because the next
+sweep will find it again.

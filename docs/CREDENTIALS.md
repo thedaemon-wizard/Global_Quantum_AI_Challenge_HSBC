@@ -7,8 +7,8 @@ from this study — and therefore **exempts it from every numeric gate in this r
 exemption is correct. It also meant nothing checked them until 2026-08-30, and when they were
 checked, six needed changing.
 
-Verified 2026-08-30. Where a claim cannot be settled from an artefact it is marked **要確認**
-rather than asserted or quietly dropped — and **no 要確認 remains open in this file**. The three
+Verified 2026-08-30. Where a claim cannot be settled from an artefact it is marked **Needs confirmation**
+rather than asserted or quietly dropped — and **no Needs confirmation remains open in this file**. The three
 that were carried here were all closed on 2026-08-30 by going to the artefact:
 
 | Item | Outcome |
@@ -63,7 +63,7 @@ The freeze commit (2026-07-30) first introduces four Week-5 scripts under his au
 disentanglement, the results table, the coverage figure and the freeze itself --- and it is the
 last of these that computes the SHA-256 manifest rows.
 
-**The calibration module is independently attributed, and the earlier 要確認 was wrong.**
+**The calibration module is independently attributed, and the earlier Needs confirmation was wrong.**
 the calibration module does arrive in a bulk "Initial commit", so
 per-file provenance is absent — but that commit was made by a **teammate**, on whose account
 the repository is hosted, not by the author, and three days later the same teammate committed
@@ -170,7 +170,7 @@ collaboration with YQuantum, is held by the author and is not in this repository
 above.
 
 **The bitstring discrepancy is closed: it is an endianness artefact, and it runs in the
-author's favour.** An earlier version of this file carried a 要確認 saying the author's working
+author's favour.** An earlier version of this file carried a Needs confirmation saying the author's working
 repository recorded different peak bitstrings for problems 3 to 9 than the third-party
 repository. The two records are the **same nine answers in opposite bit order**:
 
@@ -195,7 +195,7 @@ by construction.
 
 The author's copy is the **submitted** orientation: his `solve_all.py` marks big-endian,
 $q_{n-1}$-first, as correct, and it records that an endianness error cost six failed P5
-submissions before it was fixed. So the earlier 要確認 had the direction backwards — his
+submissions before it was fixed. So the earlier Needs confirmation had the direction backwards — his
 repository is the correctly oriented one, and the coincidence that P1 is a palindrome while P2
 happens to be transcribed the other way is exactly what made a raw comparison look like
 "agrees on 1 and 2, differs on 3 to 9".
