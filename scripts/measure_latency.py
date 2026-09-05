@@ -62,6 +62,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import os
 import sys
 import time
 from pathlib import Path
@@ -197,6 +198,40 @@ def summarise(
     }
 
 
+# A latency benchmark measures the machine as much as the model.  A clean-room run on
+# 2026-09-05 produced numbers 2 to 4 times the committed ones -- scorer tail 0.32 ms to 1.27,
+# kernel tail 129 ms to 302 -- purely because the host was busy, and `make check` then failed
+# on six claims with nothing to connect the failure to its cause.  The worst of it was that the
+# kernel's share of the authorisation budget went from 75.9 % to 177.8 %: the claim note says
+# "under one, so it fits", and under load the conclusion inverts.
+#
+# Expressed per core so it means the same on a laptop and on this 20-thread workstation.  0.25
+# is deliberately strict: at that level roughly three quarters of the machine is idle, which is
+# what a per-request tail measurement needs to mean anything.  See D-133.
+MAX_LOAD_PER_CORE = 0.25
+
+
+def refuse_if_contended(*, allow: bool) -> None:
+    """Stop before measuring if the host is busy enough to change the answer."""
+    cores = os.cpu_count() or 1
+    one_minute = os.getloadavg()[0]
+    per_core = one_minute / cores
+    if per_core <= MAX_LOAD_PER_CORE:
+        return
+    message = (
+        f"load average {one_minute:.1f} over {cores} cores is {per_core:.2f} per core, above "
+        f"the {MAX_LOAD_PER_CORE} this measurement needs. Timings taken now would be a "
+        f"property of the machine's other work, not of the model."
+    )
+    if not allow:
+        raise SystemExit(
+            f"{message}\n  Wait for the host to go quiet and re-run, or pass "
+            f"--allow-contended if you understand the numbers will not be comparable with "
+            f"results/tables/latency.csv."
+        )
+    print(f"WARNING: {message}\n", flush=True)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--config", type=Path, default=None)
@@ -207,7 +242,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--band-features", type=int, default=8)
     parser.add_argument("--repetitions", type=int, default=REPETITIONS)
+    parser.add_argument(
+        "--allow-contended",
+        action="store_true",
+        help="measure anyway on a loaded machine; the numbers will not be comparable",
+    )
     args = parser.parse_args(argv)
+
+    refuse_if_contended(allow=args.allow_contended)
 
     cfg = load_config(args.config)
     seed = args.seed or cfg.split.seeds[0]

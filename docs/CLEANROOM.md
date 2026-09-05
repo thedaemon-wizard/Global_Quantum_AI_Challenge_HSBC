@@ -22,11 +22,29 @@ git clone <repository> hsbcfraud && cd hsbcfraud
 mkdir -p datasets && cp /path/to/ieee-fraud-detection.zip datasets/
 
 make venv         # python3.12, torch cu130 first, then the project and its dev extras
+make venv-gpu     # OPTIONAL, and see below: without it two parity claims cannot hold
 make smoke        # S0-S8 environment assertions; any failure stops the build
 make walkthrough  # trace the certificate against the committed tables (seconds, no GPU)
 make reproduce    # refit everything except the 13-GPU-hour sweep, then write the manifest
 make check        # rebuild both PDFs, then the claim, citation, protocol and manifest gates
 ```
+
+**Two conditions this procedure did not state, both found by running it (2026-09-05).**
+
+**Run it on an otherwise idle machine.** `make reproduce` measures inference latency, and a
+latency benchmark measures the host as much as the model. The third clean-room pass was run on
+a busy workstation and produced timings two to four times the committed ones, failing `make
+check` on six claims with nothing to connect the failure to its cause. `measure_latency.py` now
+refuses above 0.25 load per core rather than producing numbers that are not comparable.
+
+**`make venv` alone cannot reproduce the parity claims.** `qiskit-aer` and its GPU wheel live in
+the optional `gpu-crosscheck` extra, so a default environment cross-checks the fidelity kernel
+against Braket only: **4 comparisons, not the committed 12**. `check_parity.py` says so plainly
+--- *"aer\_cpu needs the gpu-crosscheck extra"* --- but `make check` then fails on
+`ParityComparisons` and `ParityWorstDifference` without pointing back at it. The extra is
+optional by choice: it pulls `cuquantum-cu11` under NVIDIA's proprietary licence
+([NOTICE](../NOTICE) section 4), and no scientific figure depends on it. Install it to reproduce
+those two claims; skip it and expect exactly those two to differ.
 
 `make venv` is the step with a real cost: torch from the CUDA 13.0 index is a large download.
 Everything after it is fast except `make reproduce`.
@@ -155,3 +173,41 @@ Two things are **not** bit-reproducible across machines and are not claimed to b
 floating-point reductions in XGBoost and PyTorch depend on the device and driver, and the
 latency table in [ENVIRONMENT.md](ENVIRONMENT.md) §5 is a wall-clock measurement of this
 workstation. Both are stated with the hardware they were measured on.
+
+## 2c. Third run, 2026-09-05: what a clean room is actually for
+
+The record above described a tree that no longer existed. Roughly twenty scripts and several
+modules had changed since 2026-08-31 -- three new producers, a rewritten data loader, a
+reclassified manifest -- so the second pass was asserting reproduction of code nobody was
+shipping. That alone justified a third run.
+
+It reproduced the study and **found two defects that no gate in this repository could have
+caught**, because both are properties of the environment rather than of the tree.
+
+**Everything scientific reproduced.** All 15 baseline fits match `baselines.csv` to within
+5e-5, read out of `results/runs/baselines.log` rather than taken on trust. The conformal stage
+reproduced its coverage verdicts exactly -- 1,667 errors on 111,592 test points, rate 0.014938,
+tail p below 1e-17, outside the 99 % band at the two loosest levels. The screens rejected the
+same 120 configurations for the same reasons. `make walkthrough` passed every assertion.
+
+**Defect one: a latency benchmark measures the host.** Six timing claims failed. The scorer
+tail moved from 0.32 ms to 1.27, the kernel tail from 129 ms to 302, and
+`LatencyKernelBudgetShare` from **75.9 % to 177.8 %** -- past the point where the claim's own
+note, "under one, so it fits", inverts into "does not fit". Nothing was wrong with the code.
+The host was busy, at a load average of 33 across 20 cores, **and the busiest thing on it was
+the work of auditing this submission**. `measure_latency.py` now refuses above 0.25 load per
+core, because a number that silently changes by a factor of four is worse than a run that
+stops.
+
+**Defect two: the documented procedure could not reproduce two of the claims it verifies.**
+`qiskit-aer` sits in the optional `gpu-crosscheck` extra, so `make venv` cross-checks the
+fidelity kernel against Braket alone -- 4 comparisons where the committed table has 12.
+`check_parity.py` reports this precisely and by name; `make check` then fails on
+`ParityComparisons` and `ParityWorstDifference` with nothing linking the two. The tooling was
+honest and the instructions were not. Section 1 now states both conditions.
+
+**What this run establishes about the previous two.** They passed. They were also run on a quiet
+machine by someone who had just built the tree, which is the one reader a reproduction check
+does not need to satisfy. Running it under adversarial conditions -- stale code, contended
+host, default environment -- is what turned up anything, and both findings are things a
+reviewer would have hit first.

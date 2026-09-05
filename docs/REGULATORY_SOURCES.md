@@ -92,6 +92,18 @@ SR 21-8.
 | Issuer | Federal Reserve, OCC, FDIC |
 | Locator | <https://www.federalreserve.gov/supervisionreg/srletters/sr2602.htm> |
 
+Verified at the issuer on 2026-09-05: the number, the title, the 17 April 2026 date, all three
+agencies, and both superseded letters -- SR 11-7 (4 April 2011) and SR 21-8 (9 April 2021) --
+match the Federal Reserve's own page.
+
+**Scope, which the letter states and this entry did not.** It applies primarily to banking
+organizations above **30 billion dollars in assets**, and describes "a risk-based approach to
+model risk management that is tailored to a banking organization's model risk profile". The
+sponsor is far above that threshold, so applicability is not in question -- but the entry
+asserted relevance without recording the test, and a reviewer checking the source finds the
+threshold before finding anything else. Recorded because an applicability claim that omits the
+applicability criterion is the shape of [D-129](decisions.md)'s error.
+
 Relied on for the structure of what a model-risk function asks: validation, ongoing monitoring,
 outcome analysis, and benchmarking against other models. That structure is why the submission
 reports a certificate and a held-out validation rather than a leaderboard score, and why the

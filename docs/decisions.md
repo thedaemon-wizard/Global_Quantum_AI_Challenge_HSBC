@@ -4126,3 +4126,44 @@ field to it is not a free act of tidiness -- it re-labels the experiment. The au
 verifier judged `select` not guarantee-bearing and was right about the guarantee, and still
 reached the wrong conclusion about where to put it, because that judgement did not reach the
 guard.
+
+<a id="d-133"></a>
+### D-133 The clean room found what only a clean room could
+
+The reproduction record was stale: about twenty scripts and several modules had changed since
+the second pass, so it asserted reproduction of code that was no longer shipping. A third run
+from an empty directory found two defects, and neither was catchable by any gate here, because
+both are properties of the environment rather than of the tree.
+
+**A latency benchmark measures the host.** Six timing claims failed. Scorer tail 0.32 ms to
+1.27; kernel tail 129 ms to 302; and `LatencyKernelBudgetShare` from **75.9 % to 177.8 %**. That
+last one matters beyond the number: the claim's note reads "under one, so it fits", and past 100
+% the conclusion inverts. Section 5 argues feasibility partly on that share.
+
+Nothing was wrong with the code. The host was at load 33 across 20 cores, **and the busiest
+thing on it was the work of auditing this submission** -- the test suites and the parallel audits
+run while the clean room was measuring. So this project corrupted its own reproduction check,
+which is a fair description of how the defect would reach a reviewer too: they will run
+`make reproduce` on a machine doing other things.
+
+`measure_latency.py` now refuses above 0.25 load per core, expressed per core so it means the
+same on a laptop as on this workstation, with `--allow-contended` for someone who wants the
+numbers anyway and is told they will not be comparable. **A number that silently changes by a
+factor of four is worse than a run that stops.**
+
+**The documented procedure could not reproduce two of the claims it verifies.** `qiskit-aer` is
+in the optional `gpu-crosscheck` extra, so `make venv` cross-checks the fidelity kernel against
+Braket alone: 4 comparisons against the committed 12. `check_parity.py` handles this exactly
+right -- its docstring says availability is "reported, not worked around", and it printed
+*"aer_cpu needs the gpu-crosscheck extra"* -- but `make check` then fails on `ParityComparisons`
+and `ParityWorstDifference` with nothing connecting the failure to that line 300 lines earlier.
+**The tooling was honest and the instructions were not.** `CLEANROOM.md` §1 now states both
+conditions and why the extra is optional: it pulls `cuquantum-cu11` under NVIDIA's proprietary
+licence, and no scientific figure depends on it.
+
+**What it says about passes one and two.** They passed, and they were run on a quiet machine by
+someone who had just built the tree -- the one reader a reproduction check does not need to
+convince. Everything scientific reproduced this time too: 15 baseline fits to within 5e-5 read
+out of the run log, the conformal verdicts exactly, the same 120 screen rejections. What broke
+was everything conditional on the environment, and running it under adversarial conditions is
+the only reason either defect is now known.
