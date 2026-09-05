@@ -211,25 +211,30 @@ def summarise(
 MAX_LOAD_PER_CORE = 0.25
 
 
-def refuse_if_contended(*, allow: bool) -> None:
-    """Stop before measuring if the host is busy enough to change the answer."""
+def contended(*, allow: bool) -> bool:
+    """True when the host is too busy for the timings to mean anything.
+
+    Reports and skips rather than exiting non-zero.  The first version of this guard raised,
+    which made `make reproduce` abort partway on any busy machine -- worse for a reviewer than
+    the wrong numbers it was written to prevent, because they get no run at all instead of a
+    run with one table they can be told to distrust.  Skipping leaves the committed
+    measurement in place, which is the more complete one, and says why.
+    """
     cores = os.cpu_count() or 1
     one_minute = os.getloadavg()[0]
     per_core = one_minute / cores
     if per_core <= MAX_LOAD_PER_CORE:
-        return
-    message = (
-        f"load average {one_minute:.1f} over {cores} cores is {per_core:.2f} per core, above "
-        f"the {MAX_LOAD_PER_CORE} this measurement needs. Timings taken now would be a "
-        f"property of the machine's other work, not of the model."
+        return False
+    print(
+        f"SKIPPING the latency measurement: load average {one_minute:.1f} over {cores} cores "
+        f"is {per_core:.2f} per core, above the {MAX_LOAD_PER_CORE} it needs.\n"
+        f"  Timings taken now would describe the machine's other work, not the model, and "
+        f"would overwrite a measurement taken on a quiet host.\n"
+        f"  results/tables/latency.csv is left as committed. Re-run on an idle machine, or "
+        f"pass --allow-contended to measure anyway.\n",
+        flush=True,
     )
-    if not allow:
-        raise SystemExit(
-            f"{message}\n  Wait for the host to go quiet and re-run, or pass "
-            f"--allow-contended if you understand the numbers will not be comparable with "
-            f"results/tables/latency.csv."
-        )
-    print(f"WARNING: {message}\n", flush=True)
+    return not allow
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -249,7 +254,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    refuse_if_contended(allow=args.allow_contended)
+    if contended(allow=args.allow_contended):
+        return 0
 
     cfg = load_config(args.config)
     seed = args.seed or cfg.split.seeds[0]

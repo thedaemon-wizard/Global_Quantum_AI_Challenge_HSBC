@@ -47,17 +47,17 @@
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
     "results/tables/test_access.json": "e83c79936cc9c734e823cc30f9dc44462c089466c255a59dc4a109ed30a5a448",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "9d4b756629a5fde154a4f9bb37de00ce92740c33c42881b5820a6aca1b43f306",
-    "submission/proposal.pdf": "31d0572c49f8bec6761d4c4079d56ade1b8dbfde1fcee788a3ddf0d51a163066"
+    "submission/appendix.pdf": "9091d51723fad3df664d59d34355accdaa84efde26e8d583edd26c786d839e95",
+    "submission/proposal.pdf": "2d1e77b4d66be37e4bb3de33810314a371930be0a890491bf2ecc6721eb44b30"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
     "docs/REFERENCES.md": "c6eb4c5a89079939efadaa4a9d8af4c12cbd370e7ce9998f68eeb2a8134b43ee",
-    "docs/claims.yaml": "aaed93b1ccdfb8ad2c8ba3101bf281916528dc51a22410271aa11e368221fc18",
-    "docs/decisions.md": "c0a36e974328f85db6d22327b201571800e9986532cba73059d84235a45b2747",
+    "docs/claims.yaml": "d6a1e0fa8eb1643425428f6afc5357b4c16dc4ce9e0ba0875f8df6b5606c6a39",
+    "docs/decisions.md": "d3022f6383a6d4b992274dd72056db7152984d2ea71fdd29b1c6a3090d7ae79b",
     "docs/protocol.lock.json": "c45826a1140aeb8089a0849ef5fea933fa974b29cbf75c40c080ad3618c1c212",
     "docs/protocol.md": "dda52983844921225cdce2425acc3e2992f972ac91c8efd17101733e599361fd",
     "docs/tables.yaml": "733fc794c24427f54e68901b97de12461deb806cf4acadcf6d1a26bf39a4c8b7",
-    "results/tables/decision_log.csv": "d7b7effd560787165023308ef03265e9f4bc21d5198182c8c311d834ab7aa1c7"
+    "results/tables/decision_log.csv": "6f6bd7065b6662be1d3708ef395a2d035c6f5dcdeb2cc5dfe1bf969593de428e"
   }
 }

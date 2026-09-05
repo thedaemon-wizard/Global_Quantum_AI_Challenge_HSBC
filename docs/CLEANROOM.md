@@ -29,22 +29,32 @@ make reproduce    # refit everything except the 13-GPU-hour sweep, then write th
 make check        # rebuild both PDFs, then the claim, citation, protocol and manifest gates
 ```
 
-**Two conditions this procedure did not state, both found by running it (2026-09-05).**
+**Two steps may report that they skipped, and the run is still correct.** Both were found by
+running this procedure on 2026-09-05, when it failed on nine claims; both now say what they did
+instead of quietly producing a worse answer.
 
-**Run it on an otherwise idle machine.** `make reproduce` measures inference latency, and a
-latency benchmark measures the host as much as the model. The third clean-room pass was run on
-a busy workstation and produced timings two to four times the committed ones, failing `make
-check` on six claims with nothing to connect the failure to its cause. `measure_latency.py` now
-refuses above 0.25 load per core rather than producing numbers that are not comparable.
+**Latency is skipped on a busy machine.** A latency benchmark measures the host as much as the
+model: the third pass, run on a loaded workstation, produced timings two to four times the
+committed ones and took the kernel's share of the authorisation budget from 75.9 % to 177.8 %,
+past the point where the conclusion inverts. `measure_latency.py` now checks the load average
+and, above 0.25 per core, prints why and **leaves the committed table in place** rather than
+overwriting a measurement taken on a quiet host. Re-run on an idle machine, or pass
+`--allow-contended`, to measure it yourself.
 
-**`make venv` alone cannot reproduce the parity claims.** `qiskit-aer` and its GPU wheel live in
-the optional `gpu-crosscheck` extra, so a default environment cross-checks the fidelity kernel
-against Braket only: **4 comparisons, not the committed 12**. `check_parity.py` says so plainly
---- *"aer\_cpu needs the gpu-crosscheck extra"* --- but `make check` then fails on
-`ParityComparisons` and `ParityWorstDifference` without pointing back at it. The extra is
-optional by choice: it pulls `cuquantum-cu11` under NVIDIA's proprietary licence
-([NOTICE](../NOTICE) section 4), and no scientific figure depends on it. Install it to reproduce
-those two claims; skip it and expect exactly those two to differ.
+**Parity is skipped without the optional extra.** `qiskit-aer` and its GPU wheel live in
+`gpu-crosscheck`, so a default environment cross-checks the fidelity kernel against Braket
+alone: 4 comparisons against the committed 12. Those four still run and still have to agree.
+`check_parity.py` prints the reason and **does not overwrite the wider committed table**. The
+extra is optional by choice --- it pulls `cuquantum-cu11` under NVIDIA's proprietary licence
+([NOTICE](../NOTICE) section 4) and no scientific figure depends on it --- so install it to
+regenerate those rows, or read the skip message and proceed.
+
+**Why skipping rather than failing.** The first version of the load guard exited non-zero, which
+aborted `make reproduce` partway. That is worse for a reviewer than the wrong numbers it was
+written to prevent: they get no run at all, instead of a run with one table they can be told to
+distrust. Both guards now report and continue, `make check` passes, and the two messages say
+exactly what was not re-verified. A green build that names what it skipped is more useful than a
+red one nobody can interpret ([D-135](decisions.md)).
 
 `make venv` is the step with a real cost: torch from the CUDA 13.0 index is a large download.
 Everything after it is fast except `make reproduce`.

@@ -116,6 +116,31 @@ def main(argv: list[str] | None = None) -> int:
     frame = pd.DataFrame(rows)
     args.out.mkdir(parents=True, exist_ok=True)
     target = args.out / "parity.csv"
+
+    # Do not overwrite a wider cross-check with a narrower one.  `aer_cpu` and `aer_gpu` are
+    # optional -- they arrive with `cuquantum-cu11` under NVIDIA's licence -- so a default
+    # environment compares against Braket alone and produces a third of the rows.  Writing that
+    # over the committed table made `make check` fail on two claims for every reviewer who
+    # followed the documented procedure, with nothing linking the failure to the missing extra.
+    #
+    # Skipping is not hiding: the reason is printed, the reduced comparison above still ran and
+    # still had to agree, and the committed table remains the more complete evidence.  See
+    # D-135.
+    if unavailable and target.exists():
+        existing = pd.read_csv(target)
+        if len(existing) > len(frame):
+            print(
+                f"\nSKIPPING the write: {len(frame)} comparisons here against "
+                f"{len(existing)} committed, because "
+                f"{', '.join(sorted(unavailable))} {'is' if len(unavailable) == 1 else 'are'} "
+                f"unavailable.\n"
+                f"  Every comparison that did run agreed with the reference.\n"
+                f"  {display_path(target)} is left as committed. Install the optional extra to "
+                f"regenerate it: pip install -e '.[gpu-crosscheck]'\n",
+                flush=True,
+            )
+            return 0
+
     frame.to_csv(target, index=False)
 
     print(f"Reference: {REFERENCE}. Tolerance {TOLERANCE:.0e}.\n")

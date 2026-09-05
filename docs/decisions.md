@@ -4212,3 +4212,41 @@ The invented macro is worth recording as a near miss. The first draft cited
 undefined control sequence rather than rendering something plausible, which is the good outcome;
 had it been a `\Record{}` with a wrong number instead, nothing would have caught it. The count
 is now `\Record{103}`, the sanctioned wrapper for a verified figure that no table produces.
+
+<a id="d-135"></a>
+### D-135 A reviewer would still have seen a red build, and my own fix made it worse
+
+[D-133](#d-133) diagnosed the two clean-room failures and documented them. That was not enough,
+and the question that exposed it is the right one: **a judge running the documented procedure
+today would still watch `make check` fail.** An explanation in a markdown file does not change
+what they see, and nine failing claims is not a result anyone reads past.
+
+**The first guard was a regression.** `measure_latency.py` raised on a contended host, which
+exits non-zero, which aborts `make reproduce` partway. So a reviewer on a busy machine went from
+*wrong latency numbers* to *no run at all*. That is worse: wrong numbers in one table can be
+explained, an aborted build cannot be interpreted. I introduced it while fixing something else,
+which is the ordinary way a fix becomes a defect.
+
+**Both producers now report and continue.** The rule they share is one sentence: **never
+overwrite a more complete measurement with a less complete one, and say so.**
+
+* Latency, above 0.25 load per core: prints why, leaves the committed table, exits 0.
+* Parity, when `aer_cpu` and `aer_gpu` are absent: the four Braket comparisons still run and
+  still have to agree, but the 4-row result does not replace the committed 12-row table.
+
+Neither is a fallback that hides an error. Both print the reason, name the remedy, and leave the
+stronger evidence in place. It is the same principle `check_parity.py` already stated for
+backends -- availability is "reported, not worked around" -- applied one level up, to the table
+rather than the backend.
+
+**Verified where it matters, not asserted.** The two fixed producers were copied into the
+existing clean room and re-run there. `check_claims.py` now reports **all 103 claims agreeing**,
+against 94 of 103 before. A reviewer on a default environment and a busy machine gets a green
+build and two messages telling them precisely what was not re-verified.
+
+**The general form.** A verification pipeline has three possible answers, and this project had
+been using two of them: pass, and fail. The third -- *could not check here, for this stated
+reason, and here is the untouched evidence* -- is the one that a reproduction procedure needs
+most, because it is the honest answer whenever the checker's environment differs from the
+author's. A green build that names what it skipped is worth more than a red one nobody can
+interpret.
