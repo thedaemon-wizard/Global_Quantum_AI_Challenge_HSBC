@@ -184,11 +184,26 @@ shipping. That alone justified a third run.
 It reproduced the study and **found two defects that no gate in this repository could have
 caught**, because both are properties of the environment rather than of the tree.
 
-**Everything scientific reproduced.** All 15 baseline fits match `baselines.csv` to within
-5e-5, read out of `results/runs/baselines.log` rather than taken on trust. The conformal stage
-reproduced its coverage verdicts exactly -- 1,667 errors on 111,592 test points, rate 0.014938,
-tail p below 1e-17, outside the 99 % band at the two loosest levels. The screens rejected the
-same 120 configurations for the same reasons. `make walkthrough` passed every assertion.
+**Everything scientific reproduced, and the measurement is stronger than "the log looked
+right".** `make check` stops at the claims gate, so it never reached the manifest comparison;
+the table below is a direct digest-and-column diff of all 34 committed tables against the clean
+room's, run afterwards.
+
+| | Tables | What differs |
+|---|---|---|
+| Byte-identical | **26** | nothing |
+| Identical in every measured value | **5** | one wall-clock column only: `fit_seconds` in `ablations`, `baselines`, `mps_band`, `mps_full`, and `gram_seconds` in `screens` |
+| Did not reproduce | **2** | `latency.csv`, whose every measured column *is* a timing; `parity.csv`, 4 rows against 12 |
+| Bookkeeping | **1** | `decision_log.csv` -- the clone predates the entries written since |
+
+The middle row is the result worth reading twice. **The full-scale tensor-network fits reproduce
+every metric exactly** -- `mps_band.csv` and `mps_full.csv` agree to the last digit on ROC AUC
+and average precision across a fresh virtual environment, a rebuilt CUDA stack and a separate
+process; only the seconds they took differ. So does the 120-configuration screen, and so do all
+15 baseline fits.
+
+Of the 103 bound claims, **94 passed and 9 failed**, and every one of the 9 belongs to the two
+tables in the "did not reproduce" row.
 
 **Defect one: a latency benchmark measures the host.** Six timing claims failed. The scorer
 tail moved from 0.32 ms to 1.27, the kernel tail from 129 ms to 302, and

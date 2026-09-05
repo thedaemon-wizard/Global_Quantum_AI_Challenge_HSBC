@@ -4161,9 +4161,19 @@ and `ParityWorstDifference` with nothing connecting the failure to that line 300
 conditions and why the extra is optional: it pulls `cuquantum-cu11` under NVIDIA's proprietary
 licence, and no scientific figure depends on it.
 
+**The reproduction itself is stronger than either defect is bad, and was measured rather than
+inferred.** `make check` halts at the claims gate, so it never reached the manifest comparison;
+a direct diff of all 34 committed tables against the clean room's was run afterwards. **26 are
+byte-identical.** Five more agree in every measured value and differ only in a wall-clock column
+-- `fit_seconds`, or `gram_seconds` in the screens. Two did not reproduce, and they are exactly
+the two the defects above describe. One is bookkeeping.
+
+The part worth stating plainly: **the full-scale tensor-network fits reproduce every metric
+exactly.** `mps_band.csv` and `mps_full.csv` agree to the last digit on ROC AUC and average
+precision across a fresh virtual environment, a rebuilt CUDA stack and a separate process. Of
+103 bound claims, 94 passed; all 9 failures sit in the two environment-dependent tables.
+
 **What it says about passes one and two.** They passed, and they were run on a quiet machine by
 someone who had just built the tree -- the one reader a reproduction check does not need to
-convince. Everything scientific reproduced this time too: 15 baseline fits to within 5e-5 read
-out of the run log, the conformal verdicts exactly, the same 120 screen rejections. What broke
-was everything conditional on the environment, and running it under adversarial conditions is
-the only reason either defect is now known.
+convince. What broke this time was everything conditional on the environment, and running it
+under adversarial conditions is the only reason either defect is known.
