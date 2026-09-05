@@ -4033,3 +4033,40 @@ One character was checked and deliberately kept: `ſ` (U+017F, LATIN SMALL LETTE
 `make_crosscheck.py`. It reads as mojibake and is not -- it is the upper bound of the range
 `[A-Za-z'À-ſ-]` that matches accented surnames like Candès. Worth recording, because the next
 sweep will find it again.
+
+<a id="d-131"></a>
+### D-131 The confidentiality row had the same defect as the emoji row, and its own fix caused half of it
+
+Generalising [D-130](#d-130): every row in the compliance checklist was classified by what its
+evidence column actually rests on. Of 90 rows, three are ticked on a past action with no
+standing check named. Two are irreducibly manual -- the portal upload, and "a source was read".
+The third was not.
+
+**P10** asserts that no content, filename or citation from the private planning directory
+appears in this repository, which becomes public on 2026-09-15. Its evidence read "scanned
+across every tracked file" and named a protective rule in `.gitignore`.
+
+**That second half had gone stale, and this project broke it.** [D-125](#d-125) moved the rule
+to `.git/info/exclude` -- correctly, so the path would stop appearing in a published file and
+P7's scan could pass -- and P10 went on citing the old location. One fix quietly invalidated
+another row's evidence, which is precisely the failure a checklist exists to prevent and
+precisely the failure a checklist cannot catch on its own.
+
+Now gated. `tests/test_repo_hygiene.py` fails on any tracked file referencing the directory.
+
+**Two design points, both forced by the subject matter.**
+
+It checks the *path*, not the note filenames. Naming those would write the strings the rule
+protects into a public repository -- **the gate would leak exactly what it guards**. The path is
+a standard tooling directory name and discloses nothing.
+
+And the needle is assembled from fragments rather than written as a literal, because the gate
+scans every tracked file *including itself*. Written plainly it failed on its own source on the
+first run. A self-referential rule that fires on itself gets deleted rather than obeyed, and the
+same tension is why P7's row is exempt by necessity: a requirement cannot always state what it
+forbids without naming it.
+
+**The scope is honest about what it cannot do.** The notes sit outside this working tree, in a
+parent that is not a git repository, so a clone cannot sweep them in. What remains is a person
+pasting a path or a quotation, and that is what this catches -- not a claim that the content is
+unreachable by other means.

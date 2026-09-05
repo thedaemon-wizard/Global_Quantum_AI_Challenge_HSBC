@@ -717,3 +717,44 @@ def test_no_japanese_or_emoji_survives_in_a_tracked_text_file() -> None:
         + ". Use an English status marker such as 'Needs confirmation', and a word such as "
         "'Note:' in place of a warning glyph."
     )
+
+
+def test_no_tracked_file_points_at_the_private_planning_directory() -> None:
+    """The planning notes are confidential and this repository becomes public.
+
+    `COMPLIANCE_CHECKLIST.md` P10 asserts that no content, filename or citation from that
+    directory appears here, and its evidence was "scanned across every tracked file" -- the
+    same past-action evidence that let P6 decay while ten forbidden glyphs accumulated behind
+    it.
+
+    The check is on the directory path rather than on the note filenames deliberately. Naming
+    the files here would put the very strings the rule protects into a public repository, so
+    the gate would leak exactly what it guards. The path is a standard tooling directory name
+    and reveals nothing.
+
+    A clone cannot pull the notes in by accident -- they sit outside this working tree, in a
+    parent that is not a git repository -- so what remains is a person pasting a path or a
+    quotation, which is what this catches.
+    """
+    tracked = subprocess.run(
+        ["git", "ls-files"], cwd=REPO, capture_output=True, text=True, check=True
+    ).stdout.split()
+
+    # Assembled rather than written as a literal, because the gate scans every tracked file
+    # including this one: a literal here would make the check fail on itself, which is how a
+    # self-referential rule ends up being deleted rather than obeyed.
+    needle = "." + "claude" + "/"
+    offenders = []
+    for name in tracked:
+        path = REPO / name
+        if path.suffix not in TEXT_SUFFIXES or not path.is_file():
+            continue
+        for number, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines(), 1):
+            if needle in line:
+                offenders.append(f"{name}:{number}")
+
+    assert not offenders, (
+        f"tracked files reference the private planning directory: {offenders}. Remove the "
+        f"reference; if a path must stay ignored, put the rule in .git/info/exclude, which is "
+        f"not published."
+    )
