@@ -156,3 +156,18 @@ load. A reviewer wanting to check the certificate rather than the tensor-network
 
 `make check` — the gates, not the science — runs in seconds and is what verifies that every
 number in the documents still resolves to the table it came from.
+
+
+## Measuring the simulator's memory needed a witness outside the process
+
+Displaced here from appendix §3 on 2026-09-05, to make room for the clean-room reproduction
+result. It is an engineering finding rather than a result, and a reviewer who wants it can
+reach it from the repository the proposal links.
+
+An in-process sampler under-reported peak GPU memory, because Aer holds the GIL and the
+sampling thread got **two scheduling ticks across the whole run**. The measurement now streams
+from an `nvidia-smi` subprocess and is cross-checked against Aer's own result metadata.
+
+The general form is worth keeping: a sampler that shares an interpreter with the thing it
+measures will under-report whenever that thing holds the lock, and the failure is silent --
+it returns a number, just the wrong one.

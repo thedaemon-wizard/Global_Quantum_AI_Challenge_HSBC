@@ -4177,3 +4177,38 @@ precision across a fresh virtual environment, a rebuilt CUDA stack and a separat
 someone who had just built the tree -- the one reader a reproduction check does not need to
 convince. What broke this time was everything conditional on the environment, and running it
 under adversarial conditions is the only reason either defect is known.
+
+<a id="d-134"></a>
+### D-134 The appendix omitted the strongest evidence it had, and printed a procedure that fails
+
+With the third clean-room result measured, appendix §3 was read against it and had two faults
+in opposite directions.
+
+**It understated.** The section explained *how* to reproduce and never said what reproducing
+produced. The strongest reproducibility evidence this project has -- **26 of 34 committed
+tables byte-identical from an empty directory, and the full-scale tensor-network fits exact to
+the last digit on both metrics across a rebuilt CUDA stack** -- appeared nowhere in either
+document. A submission scored partly on validation was keeping its best result in a
+documentation file.
+
+**And it printed a procedure that fails.** The listed commands omit `make venv-gpu`, without
+which `qiskit-aer` is absent and two parity claims cannot hold, so a reviewer following the
+appendix literally reaches `make check` and watches it fail. The Licensing paragraph mentioned
+`venv-gpu` in a different context, several paragraphs later, which is not the same as warning
+them.
+
+Both fixed. The result is now four lines of the appendix, with the two tables that did not
+reproduce named and the reason given for each -- a reproduction claim that admits its
+exceptions is worth more than one that does not.
+
+**Paid for by compression, not by shrinking anything.** The appendix was 3/3 and may not grow.
+The GIL-and-sampler paragraph moved to `ENVIRONMENT.md`: it is an engineering finding rather
+than a result, and a reviewer who wants it can reach it from the linked repository. The
+environment-traps paragraph went from eight lines to six saying the same two things. Nothing was
+dropped; one paragraph was relocated and one was tightened.
+
+The invented macro is worth recording as a near miss. The first draft cited
+`\ClaimBoundValues{}` for the claim count -- a macro that does not exist. LaTeX failed on an
+undefined control sequence rather than rendering something plausible, which is the good outcome;
+had it been a `\Record{}` with a wrong number instead, nothing would have caught it. The count
+is now `\Record{103}`, the sanctioned wrapper for a verified figure that no table produces.
