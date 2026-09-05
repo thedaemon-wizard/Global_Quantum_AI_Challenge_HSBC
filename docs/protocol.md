@@ -687,7 +687,7 @@ split-integrity work.
 ## Amendment A8 — 2026-08-30, the single-evaluation rule described more than the code enforces
 
 **What changed:** section 2.2 stated that "every sweep, ladder and ablation runs on held-out
-slices of `D_band` or `D_cal`". Six scripts read the test block, and four of them do not go
+slices of `D_band` or `D_cal`". Ten scripts read the test block, and eight of them do not go
 through `TestFoldGuard`:
 
 | Script | What it reads from `D_test` | Guard |
@@ -698,6 +698,19 @@ through `TestFoldGuard`:
 | `run_ablations.py` | 4 leakage-ablation variants x 3 seeds | none |
 | `run_seed_sweep.py` | the 16-job full-scale arm | none |
 | `run_mps.py` | the in-band comparison | none |
+| `run_coverage_arms.py` | by-arm split-conformal coverage, 3 arms x 5 seeds | none |
+| `export_predictions.py` | the per-transaction decisions staged for the portal | none |
+| `run_rolling_origin.py` | five rolling windows; four read test-block rows and two *calibrate* inside it | none |
+| `make_splits.py` | the `card1` overlap and the cal-against-test two-sample AUC | none |
+
+**This count was six and four until 2026-09-05, and the correction is the same defect the
+amendment records.** Four of the ten were missed: two are older than the amendment, and two
+were added *after* it -- `export_predictions.py` and `run_coverage_arms.py`, both written during
+this study to close other gaps. An amendment whose purpose is to record that the protocol
+described more than the code enforces had itself drifted from the code. Nothing about the
+guarantee moves: `run_rolling_origin.py` is the only one that calibrates inside `D_test`, it is
+a *diagnostic* of how the deviation depends on where the window falls, and no threshold or
+selection anywhere derives from it. See [D-136](decisions.md).
 
 **Why the guarantee is unaffected, and why this is still a defect.** The rule that protects a
 finite-sample guarantee is that nothing may be *selected* on the test fold. Nothing was:

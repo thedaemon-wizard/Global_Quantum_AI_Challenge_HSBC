@@ -388,7 +388,60 @@ def test_the_disclosure_names_the_right_number_of_unguarded_scripts() -> None:
     assert f"{_WORDS[len(unguarded)]} do so without the guard" in appendix
 
 
-_WORDS = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight"}
+def test_the_disclosure_table_names_every_script_that_reads_the_held_out_block() -> None:
+    """The table must be complete, not merely internally consistent.
+
+    The count in that paragraph has now drifted three times, and each time the checks above
+    passed: they verify the table against the sources it *names* and the sentence against the
+    table, so a script missing from the table is invisible to both. Twice the missing scripts
+    were added by this study after the amendment was written.
+
+    A regex cannot decide "reads the test block for a result", which is why the exemption list
+    is explicit rather than a pattern. What it can decide is that a script touching raw
+    held-out rows appears somewhere in the disclosure, which is the property that kept failing.
+    """
+    protocol = (REPO / "docs" / "protocol.md").read_text(encoding="utf-8")
+    listed = {name for name, _ in GUARD_ROW.findall(protocol)}
+
+    missing = []
+    for path in sorted((REPO / "scripts").glob("*.py")):
+        if path.name in READS_A_COMMITTED_TABLE_NOT_THE_BLOCK or path.name in listed:
+            continue
+        source = path.read_text(encoding="utf-8")
+        if RAW_TEST_READ.search(source):
+            missing.append(path.name)
+
+    assert not missing, (
+        f"these scripts read the held-out block and are absent from amendment A8's table in "
+        f"docs/protocol.md: {missing}. Add a row for each, correct the two counts in the "
+        f"sentence above the table and in A1-protocol.tex, and say in A8 that the count moved."
+    )
+
+
+_WORDS = {
+    2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
+    7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven", 12: "twelve",
+}
+
+# Scripts that filter on a `block` column of a *committed table* rather than reading held-out
+# rows. They belong in no disclosure: reading `baselines.csv` is reading a published result.
+# Listed explicitly because the exemption weakens the completeness check below, and a pattern
+# would quietly absorb a real reader that happened to match it.
+READS_A_COMMITTED_TABLE_NOT_THE_BLOCK = frozenset(
+    {"summarise_split_arms.py", "summarise_mps_lift.py", "make_figures.py", "smoke.py",
+     "check_protocol.py", "run_power.py"}
+)
+
+# How a raw read of the held-out rows looks, as opposed to a filter on a published table.
+RAW_TEST_READ = re.compile(
+    "|".join(
+        [
+            r'blocks\["test"\]',
+            r'block"\]\s*==\s*"test"',
+            r'REPORTED_BLOCK\s*=\s*"test"',
+        ]
+    )
+)
 
 
 # Committed tables whose producer is deliberately not in the tree, with the reason. Anything

@@ -4250,3 +4250,40 @@ reason, and here is the untouched evidence* -- is the one that a reproduction pr
 most, because it is the honest answer whenever the checker's environment differs from the
 author's. A green build that names what it skipped is worth more than a red one nobody can
 interpret.
+
+<a id="d-136"></a>
+### D-136 A withdrawn claim survived in its own paragraph heading, and an amendment drifted from the code it describes
+
+A five-dimension fact-check over the post-change tree returned about forty confirmed findings.
+Two were HIGH, and both are failures of *this session's own work*.
+
+**The heading still asserted what [D-124](#d-124) withdrew.** Section 4 read
+*"At full scale it loses by a wider margin, with replication behind it"* -- four lines above its
+own body concluding *"the deficit does not move with dimension"*. `git log -L` settles the
+authorship: the heading was last touched by `050c31c`, which **predates** the withdrawal commit.
+When I rewrote that paragraph I fixed the sentences and left the heading, so the retracted claim
+stayed on page 4 of the shipped PDF -- **in the first four words a reviewer scanning section 4
+reads**. D-124 called the widening reading "the worst kind of error this project has made"; it
+then survived the correction. Now *"At full scale it loses again"*, which is claim-free and true
+under both unconfounded normalisations.
+
+**Amendment A8 had drifted from the code it exists to describe.** A8 records that "the
+single-evaluation rule described more than the code enforces", and counted six scripts reading
+`D_test` with four unguarded. Re-derived: **ten and eight**. Four were missing, and the
+composition is the point -- two predate the amendment, and **two were added after it, by this
+study**: `export_predictions.py` and `run_coverage_arms.py`, both written to close other gaps.
+Each new producer that touched the held-out block made the amendment less true, and nothing
+checked.
+
+The guarantee does not move. `run_rolling_origin.py` is the only one that *calibrates* inside
+`D_test`, and it is a diagnostic of how the coverage deviation depends on where the window
+falls; no threshold or selection anywhere derives from it. But the appendix stated a precise
+number about protocol discipline, and the number was wrong in the flattering direction -- six of
+four sounds more controlled than ten of eight. Both documents now carry the true count, and the
+appendix says the count was itself wrong until re-derived.
+
+**What generalises.** An amendment is a claim about the code at a moment, and it decays exactly
+like a checklist row whose evidence is a past action ([D-130](#d-130), [D-131](#d-131)). This is
+the third instance today of the same shape: P6's "scanned", P10's `.gitignore` citation, and now
+A8's script census. **A record of a past verification is not a verification**, and the fix is
+always the same -- derive it, or gate it.
