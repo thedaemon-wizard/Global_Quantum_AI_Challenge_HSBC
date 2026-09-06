@@ -4320,3 +4320,44 @@ results, and they are the ones the guarantee rests on. Latency is not portable a
 pretending otherwise by re-measuring it inside a reproduction turned a scoped, honest
 measurement into a failing check. **A number that only means something on one machine should be
 recorded once, on that machine, and left alone.**
+
+<a id="d-138"></a>
+### D-138 The method figure, and a category error the clean room caught within minutes
+
+Section 2 opened with a figure of the four-block split under the sentence "Figure 1 is the
+whole method". It now shows the method: IEEE-CIS, the temporal split, the scorer, the
+abstention band, Learn-then-Test, the certificate, the decision, with both quantum arms drawn
+as dashed dead ends into the band. Shaded stages carry the guarantee, the convention
+`draw_split_row` already used, so a reader seeing both figures reads the colour the same way.
+
+Built as a **new** builder rather than by editing `architecture_figure`, because
+`draw_split_row` is shared with `overview_figure` and editing it would have silently redrawn
+the README's overview. `architecture.png` keeps its home in `RESULTS.md`, where its caption
+still describes it.
+
+**Height was the whole engineering problem.** Page 2 has no spare line and the old figure was
+1.264 in. The first draft rendered at 1.400 and pushed the proposal to seven pages. One-line
+dead-end boxes and a y-range scaled with the figure bring it to **1.256** -- marginally shorter
+than what it replaces -- with every box still holding its text at 8.8 and 7.2 pt.
+
+**Then the clean room caught a category error, from a log line, within minutes of starting.**
+The input box read "431 features". That is the tensor network's *site* count; the baseline uses
+**439**, which is what `run_baselines.py` printed on the line above in the clean-room log. So
+the box describing the *dataset* was labelled with one downstream arm's number, and neither
+number is a property of the file. It now reads rows and day span, both from `splits.csv`.
+
+Two smaller things worth keeping:
+
+* Numbers are substituted through `<name>` tokens, not `str.format` -- the labels carry LaTeX
+  like `$D_{\mathrm{band}}$`, whose braces `format` reads as field names and rejects. And not
+  by replacing a literal either: a literal fallback is a silent no-op the day the number moves.
+  `substitute()` raises on an unreplaced token.
+* `\le` is not valid matplotlib mathtext; `\leq` is. It failed loudly at draw time rather than
+  rendering something wrong, which is the good failure.
+
+**This is the first test in the project that asserts anything about a figure at all** -- that it
+is generated, that it is in the builder tuple so `make figures` cannot leave a stale file, that
+both documents reference it, and that the band is still shaded so the dashed arrows point at
+something meaningful. Nothing checked any of that before, which is how the README came to embed
+`overview.png` while the figure the proposal actually shipped was reachable from one
+documentation file.

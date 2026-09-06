@@ -51,7 +51,7 @@ NEUTRAL = "#dfe6ee"
 # lines: a 3-inch figure would push text off the page, and the argument in that text is what the
 # certificate rests on.
 METHOD_STAGES = (
-    ("IEEE-CIS", "<rows> rows\n<features> features", NEUTRAL),
+    ("IEEE-CIS", "<rows> rows\ndays <first>-<last>", NEUTRAL),
     ("temporal split", "4 blocks\nnever shuffled", NEUTRAL),
     ("scorer $f$", "gradient-boosted\non all traffic", NEUTRAL),
     ("band $B$", "edges frozen\non $D_{\\mathrm{band}}$", INSIDE),
@@ -92,6 +92,11 @@ def method_figure(tables: Path) -> tuple[Figure, str]:
     Row and feature counts come from ``splits.csv`` rather than being typed, so this cannot
     drift from the table it summarises.
     """
+    # The input box carries only properties of the file: how many rows and how many days. An
+    # earlier version put "431 features" here, which is the tensor network's *site* count -- the
+    # baseline uses 439 -- so the box describing the dataset was labelled with one arm's
+    # downstream number. The clean room surfaced it by logging 439 on the line above.
+    #
     # Substituted rather than typed, and through angle-bracket tokens rather than `str.format`:
     # the detail strings carry LaTeX like `$D_{\mathrm{band}}$`, whose braces `format` reads as
     # field names and rejects.  A literal-replace fallback was the first attempt and is worse
@@ -101,7 +106,8 @@ def method_figure(tables: Path) -> tuple[Figure, str]:
     temporal = frame[frame["arm"] == "temporal"]
     numbers = {
         "rows": f"{int(temporal['n_rows'].sum()):,}",
-        "features": f"{int(pd.read_csv(tables / 'mps_lift.csv')['n_features'].max()):,}",
+        "first": str(int(temporal["day_first"].min())),
+        "last": str(int(temporal["day_last"].max())),
     }
 
     # 1.25 in, not the 1.52 the first draft used.  The old split figure was 1.24 and proposal
