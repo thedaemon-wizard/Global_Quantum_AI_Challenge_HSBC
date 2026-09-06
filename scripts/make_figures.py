@@ -41,6 +41,126 @@ TEXT_WIDTH_IN = (210.0 - 2 * 18.0) / 25.4
 NEUTRAL = "#dfe6ee"
 
 
+# The method as a flow, for the reader who has not yet read the method.  Deliberately separate
+# from `draw_split_row`: that helper draws the four blocks and is shared with `overview_figure`,
+# and this figure is about what happens *to* the data rather than how it is cut.  Reusing it
+# here would couple two pictures that answer different questions, and changing it would silently
+# redraw the README's overview.
+#
+# Laid out in one flat band rather than a tall graph because the proposal's page 2 has no spare
+# lines: a 3-inch figure would push text off the page, and the argument in that text is what the
+# certificate rests on.
+METHOD_STAGES = (
+    ("IEEE-CIS", "<rows> rows\n<features> features", NEUTRAL),
+    ("temporal split", "4 blocks\nnever shuffled", NEUTRAL),
+    ("scorer $f$", "gradient-boosted\non all traffic", NEUTRAL),
+    ("band $B$", "edges frozen\non $D_{\\mathrm{band}}$", INSIDE),
+    ("Learn-then-\nTest", "2 risks, 11 $\\lambda$\nHolm-corrected", INSIDE),
+    ("certificate", "$R(\\lambda) \\leq \\alpha$ w.p.\n$1-\\delta$ on $D_{\\mathrm{cal}}$", INSIDE),
+    ("decisions", "approve / step-up\n/ decline", NEUTRAL),
+)
+
+# Both quantum arms enter at the band and neither reached the decision.  Drawn beneath it with
+# dashed arrows, because a solid arrow would claim a contribution that the results section
+# spends a page retracting.
+METHOD_DEAD_ENDS = (
+    "quantum kernel: 0 of 120 passed",
+    "tensor network: no improvement",
+)
+
+
+def substitute(text: str, numbers: dict[str, str]) -> str:
+    """Replace `<name>` tokens, and refuse silently leaving one behind."""
+    for name, value in numbers.items():
+        text = text.replace(f"<{name}>", value)
+    if "<" in text and ">" in text:
+        raise ValueError(f"unsubstituted token in figure label: {text!r}")
+    return text
+
+
+def method_figure(tables: Path) -> tuple[Figure, str]:
+    """The method end to end: what enters, what is frozen where, what comes out.
+
+    Section 2 tells the reader that the geometry of the split is what licenses the guarantee.
+    That is a claim about *order* -- edges before certification, certification before the single
+    test read -- and order is the one thing prose conveys worst and a flow conveys immediately.
+
+    Shaded stages are the ones that carry the guarantee, matching the convention
+    `draw_split_row` already uses, so a reader who sees both figures reads the same colour the
+    same way.
+
+    Row and feature counts come from ``splits.csv`` rather than being typed, so this cannot
+    drift from the table it summarises.
+    """
+    # Substituted rather than typed, and through angle-bracket tokens rather than `str.format`:
+    # the detail strings carry LaTeX like `$D_{\mathrm{band}}$`, whose braces `format` reads as
+    # field names and rejects.  A literal-replace fallback was the first attempt and is worse
+    # still -- it is a silent no-op the day the number moves, which is how a figure comes to
+    # disagree with the table beneath it.
+    frame = pd.read_csv(tables / "splits.csv")
+    temporal = frame[frame["arm"] == "temporal"]
+    numbers = {
+        "rows": f"{int(temporal['n_rows'].sum()):,}",
+        "features": f"{int(pd.read_csv(tables / 'mps_lift.csv')['n_features'].max()):,}",
+    }
+
+    # 1.25 in, not the 1.52 the first draft used.  The old split figure was 1.24 and proposal
+    # page 2 has no spare line, so a taller figure pushes text off the page -- and the text in
+    # section 2 is the argument the certificate rests on.  The y-range shrinks with the figure
+    # so every box keeps its height in inches and the point sizes still fit inside it.
+    figure = plt.figure(figsize=(TEXT_WIDTH_IN, 1.10))
+    axis = figure.add_axes([0.004, 0.02, 0.992, 0.96])
+    axis.set_xlim(0, 100)
+    axis.set_ylim(0, 29)
+    axis.axis("off")
+
+    # Seven stages across the text width leaves 0.90 in per box.  The two-line titles and the
+    # 8.8 pt face are what keep "Learn-then-Test" and "certificate" inside their rectangles at
+    # that width; the first attempt at 9.6 pt on one line overflowed both.
+    width, gap = 13.2, 1.2
+    top, height = 12.0, 16.0
+    for index, (name, detail, fill) in enumerate(METHOD_STAGES):
+        x = index * (width + gap)
+        carries = fill == INSIDE
+        axis.add_patch(
+            plt.Rectangle((x, top), width, height, facecolor=fill,
+                          edgecolor=REFERENCE, linewidth=0.9)
+        )
+        ink = "white" if carries else "black"
+        axis.text(x + width / 2, top + height * 0.72, name,
+                  ha="center", va="center", fontsize=8.8, color=ink, fontweight="bold",
+                  linespacing=1.15)
+        axis.text(x + width / 2, top + height * 0.28,
+                  substitute(detail, numbers), ha="center", va="center",
+                  fontsize=7.2, color=ink, linespacing=1.3)
+        if index < len(METHOD_STAGES) - 1:
+            axis.annotate("", xy=(x + width + gap, top + height / 2),
+                          xytext=(x + width, top + height / 2),
+                          arrowprops={"arrowstyle": "-|>", "color": REFERENCE,
+                                      "linewidth": 1.1, "shrinkA": 0, "shrinkB": 0})
+
+    band_centre = 3 * (width + gap) + width / 2
+    # One line each, not two.  Both arms are a single fact -- what was tried and that it did not
+    # arrive -- and the second line cost 0.27 in of figure height that page 2 does not have.
+    dead_width, dead_gap = 27.0, 3.0
+    span = 2 * dead_width + dead_gap
+    for index, label in enumerate(METHOD_DEAD_ENDS):
+        x = band_centre - span / 2 + index * (dead_width + dead_gap)
+        axis.add_patch(
+            plt.Rectangle((x, 1.0), dead_width, 6.2, facecolor="#f6ecec",
+                          edgecolor=BREACH, linewidth=0.9, linestyle="--")
+        )
+        axis.text(x + dead_width / 2, 4.1, label, ha="center", va="center",
+                  fontsize=7.0, color=BREACH, fontweight="bold")
+        axis.annotate("", xy=(band_centre, top - 0.3), xytext=(x + dead_width / 2, 7.4),
+                      arrowprops={"arrowstyle": "-|>", "color": BREACH, "linewidth": 0.9,
+                                  "linestyle": "--", "shrinkA": 1, "shrinkB": 1})
+
+    axis.text(100, 9.4, "where a quantum model would enter; neither did",
+              ha="right", va="center", fontsize=7.4, color=BREACH, style="italic")
+    return figure, "method"
+
+
 def architecture_figure(tables: Path) -> tuple[Figure, str]:
     """The four-block temporal split, and which block may touch which parameter.
 
@@ -328,8 +448,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     args.out.mkdir(parents=True, exist_ok=True)
-    for builder in (architecture_figure, overview_figure, coverage_figure, mps_figure,
-                    tradeoff_figure):
+    for builder in (method_figure, architecture_figure, overview_figure,
+                    coverage_figure, mps_figure, tradeoff_figure):
         figure, stem = builder(args.tables)
         for suffix, options in FORMATS:
             target = args.out / f"{stem}{suffix}"

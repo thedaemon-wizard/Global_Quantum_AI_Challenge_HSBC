@@ -99,6 +99,18 @@ and the two environment traps that cost real time.
 
 ### 2.1 The pipeline, end to end
 
+![The method end to end: IEEE-CIS, the temporal split, the gradient-boosted scorer, the
+abstention band, Learn-then-Test, the certificate and the three-valued decision, with both
+quantum arms as dead ends into the band](results/figures/method.png)
+
+The same figure opens section 2 of the proposal. Shaded stages carry the guarantee: the band
+edges are frozen on $D_{\mathrm{band}}$, $\lambda$ is certified on $D_{\mathrm{cal}}$, and
+$D_{\mathrm{test}}$ is read once with nothing selected on it. The two dashed boxes are the
+quantum arms, drawn where they would have entered and dashed because neither arrived.
+
+The Mermaid diagram below carries the same pipeline with every row count in it, and is checked
+against [`splits.csv`](results/tables/splits.csv) on every test run.
+
 Row counts and the dataset total are asserted against
 [`splits.csv`](results/tables/splits.csv) by `tests/test_repo_hygiene.py`; the configuration
 counts come from [`claims.yaml`](docs/claims.yaml). The day ranges and the feature count are

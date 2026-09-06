@@ -811,3 +811,59 @@ def test_no_tracked_file_points_at_the_private_planning_directory() -> None:
         f"reference; if a path must stay ignored, put the rule in .git/info/exclude, which is "
         f"not published."
     )
+
+
+def test_the_method_figure_is_generated_and_reachable() -> None:
+    """The opening figure must be produced by the build and referenced where it is claimed.
+
+    No test asserted anything about a figure before this one, which is how the README came to
+    embed `overview.png` while `architecture.png` -- the figure the proposal actually shipped --
+    was referenced from a single documentation file and from nowhere a reviewer would look.
+
+    Numbers inside it are substituted from `splits.csv` and `mps_lift.csv` at draw time and
+    `substitute()` raises on an unreplaced token, so this checks reachability rather than
+    re-deriving values a gate already owns.
+    """
+    sys.path.insert(0, str(REPO / "scripts"))
+    from make_figures import METHOD_STAGES, method_figure
+
+    for suffix in ("png", "pdf"):
+        assert (REPO / "results" / "figures" / f"method.{suffix}").is_file(), (
+            f"method.{suffix} is missing; run `make figures`"
+        )
+
+    assert method_figure in _figure_builders(), (
+        "method_figure is not in make_figures.main's builder tuple, so `make figures` would "
+        "leave a stale file on disk"
+    )
+
+    readme = (REPO / "README.md").read_text(encoding="utf-8")
+    assert "results/figures/method.png" in readme, "the README no longer embeds the method figure"
+    proposal = (REPO / "submission" / "content" / "02-method.tex").read_text(encoding="utf-8")
+    assert "method.pdf" in proposal, "the proposal no longer includes the method figure"
+
+    # The band is where the quantum arms enter, so it must be one of the shaded stages or the
+    # figure's dashed arrows would point at an unshaded box and say nothing.
+    shaded = [name for name, _detail, fill in METHOD_STAGES if fill != "#dfe6ee"]
+    assert any("band" in name for name in shaded), (
+        f"the band is no longer drawn as guarantee-carrying; shaded stages are {shaded}"
+    )
+
+
+def _figure_builders() -> tuple:
+    """The builders `make_figures.main` actually iterates, read from its source.
+
+    Read rather than imported because `main` runs them; importing the tuple would mean
+    executing the figure build inside the test suite.
+    """
+    sys.path.insert(0, str(REPO / "scripts"))
+    import make_figures
+
+    source = (REPO / "scripts" / "make_figures.py").read_text(encoding="utf-8")
+    listed = re.search(r"for builder in \(([^)]+)\):", source, re.S)
+    assert listed, "make_figures.main no longer iterates a builder tuple"
+    return tuple(
+        getattr(make_figures, name.strip())
+        for name in listed.group(1).replace("\n", " ").split(",")
+        if name.strip()
+    )
