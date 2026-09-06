@@ -33,13 +33,18 @@ make check        # rebuild both PDFs, then the claim, citation, protocol and ma
 running this procedure on 2026-09-05, when it failed on nine claims; both now say what they did
 instead of quietly producing a worse answer.
 
-**Latency is skipped on a busy machine.** A latency benchmark measures the host as much as the
-model: the third pass, run on a loaded workstation, produced timings two to four times the
-committed ones and took the kernel's share of the authorisation budget from 75.9 % to 177.8 %,
-past the point where the conclusion inverts. `measure_latency.py` now checks the load average
-and, above 0.25 per core, prints why and **leaves the committed table in place** rather than
-overwriting a measurement taken on a quiet host. Re-run on an idle machine, or pass
-`--allow-contended`, to measure it yourself.
+**Latency is not re-measured unless you ask.** `latency.csv` is a record of *one machine*, and
+six bound claims quote it. Any other CPU produces different numbers, so re-measuring during a
+reproduction would fail those six for every reviewer -- which is exactly what happened to the
+third pass, where a loaded host produced timings two to four times the committed ones and took
+the kernel's share of the authorisation budget from 75.9 % to 177.8 %, past the point where the
+conclusion inverts.
+
+`measure_latency.py` therefore preserves the committed table by default and says so. Pass
+`--measure` to take your own reading; it will still refuse above 0.25 load per core, because a
+timing taken while the machine is busy describes the other work rather than the model. Section 5
+of the proposal names the workstation the committed figures belong to, so they are a scoped
+measurement rather than a portable one.
 
 **Parity is skipped without the optional extra.** `qiskit-aer` and its GPU wheel live in
 `gpu-crosscheck`, so a default environment cross-checks the fidelity kernel against Braket

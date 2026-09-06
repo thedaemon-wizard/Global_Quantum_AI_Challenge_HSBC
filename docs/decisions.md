@@ -4287,3 +4287,36 @@ like a checklist row whose evidence is a past action ([D-130](#d-130), [D-131](#
 the third instance today of the same shape: P6's "scanned", P10's `.gitignore` citation, and now
 A8's script census. **A record of a past verification is not a verification**, and the fix is
 always the same -- derive it, or gate it.
+
+<a id="d-137"></a>
+### D-137 The contention guard fixed the wrong half of the problem
+
+[D-135](#d-135) stopped `measure_latency.py` overwriting the committed table on a *busy* host.
+That was necessary and it was not sufficient, and the question that exposed the gap was whether
+a judge would actually reproduce this.
+
+**They would not, and load has nothing to do with it.** `latency.csv` records wall-clock timings
+of one CPU. Six bound claims quote it, and section 5 prints five of them. Any reviewer on
+different hardware -- which is every reviewer -- gets different numbers, so `make reproduce`
+overwrites the table and `make check` fails on six claims. A quiet machine does not help. The
+contention guard only ever addressed the case where *this* machine was busy, which is the rare
+one.
+
+So re-measurement is now **opt-in**. The default path preserves the committed record and says
+what it is: a measurement of a named machine, quoted by six claims, which re-measuring
+elsewhere would invalidate for everyone. `--measure` takes your own reading and still refuses
+above 0.25 load per core, since that guard is right once you have decided to measure.
+
+**This completes a pattern rather than adding to it.** Three producers now share one rule --
+never overwrite a more complete or more specific record with a weaker one, and print the reason:
+
+* `check_parity.py`: 4 Braket-only comparisons do not replace the committed 12.
+* `measure_latency.py`: another machine's timings do not replace this machine's.
+* both, plus `run_conformal.py`'s test-fold guard, exit 0 and let the run continue.
+
+**What a reproduction can and cannot establish, stated plainly.** The clean room showed 26 of 34
+tables byte-identical and the tensor-network fits exact to the last digit -- those are portable
+results, and they are the ones the guarantee rests on. Latency is not portable and never was;
+pretending otherwise by re-measuring it inside a reproduction turned a scoped, honest
+measurement into a failing check. **A number that only means something on one machine should be
+recorded once, on that machine, and left alone.**

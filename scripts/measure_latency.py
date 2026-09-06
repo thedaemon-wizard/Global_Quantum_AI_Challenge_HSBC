@@ -210,6 +210,10 @@ def summarise(
 # what a per-request tail measurement needs to mean anything.  See D-133.
 MAX_LOAD_PER_CORE = 0.25
 
+# Named in the refusal above so the reader knows what the committed numbers describe.  It is
+# the machine docs/ENVIRONMENT.md records, and the timings are a property of it.
+HOST_DESCRIPTION = "Intel i5-13600K, 20 threads"
+
 
 def contended(*, allow: bool) -> bool:
     """True when the host is too busy for the timings to mean anything.
@@ -248,11 +252,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--band-features", type=int, default=8)
     parser.add_argument("--repetitions", type=int, default=REPETITIONS)
     parser.add_argument(
+        "--measure",
+        action="store_true",
+        help="re-measure on this machine, overwriting the committed record",
+    )
+    parser.add_argument(
         "--allow-contended",
         action="store_true",
         help="measure anyway on a loaded machine; the numbers will not be comparable",
     )
     args = parser.parse_args(argv)
+
+    if not args.measure:
+        print(
+            "NOT re-measuring latency. results/tables/latency.csv is a record of one machine\n"
+            f"  ({HOST_DESCRIPTION}), and six bound claims quote it. Any other CPU produces\n"
+            "  different numbers, so re-measuring here would fail those six for everyone --\n"
+            "  which is what happened to a clean-room run before this became opt-in.\n"
+            "  Pass --measure to take your own reading; the committed one stays otherwise.\n",
+            flush=True,
+        )
+        return 0
 
     if contended(allow=args.allow_contended):
         return 0
