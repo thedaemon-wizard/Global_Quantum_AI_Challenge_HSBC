@@ -157,13 +157,35 @@ def main(argv: list[str] | None = None) -> int:
         target = args.out / "baseline_tuning.csv"
         frame_out.to_csv(target, index=False)
 
-        shipped = frame_out[frame_out["is_shipped"]].iloc[0]
-        best = frame_out.iloc[0]
-        rank = int(frame_out.index[frame_out["is_shipped"]][0]) + 1
+        # Ranked on both metrics the statement names first. AUPRC is the one it recommends for
+        # imbalanced data and ROC AUC the one it lists first, and they need not agree -- if they
+        # disagree about the winner, that is itself evidence the ordering is noise.
+        #
+        # F1, precision and recall are deliberately not ranked on: each needs a threshold, and
+        # choosing one here would make the comparison depend on that choice rather than on the
+        # hyperparameters. The certificate picks the operating point downstream and does so on
+        # blocks this search never reads.
+        summary = frame_out.copy()
+        for metric in ("average_precision", "roc_auc"):
+            summary[f"{metric}_rank"] = summary[metric].rank(ascending=False).astype(int)
+        shipped = summary[summary["is_shipped"]].iloc[0]
+        n = len(summary)
+        for metric, label in (("average_precision", "AP"), ("roc_auc", "AUC")):
+            best = summary[metric].max()
+            run.info(
+                f"{label}: shipped ranks {int(shipped[f'{metric}_rank'])} of {n} at "
+                f"{shipped[metric]:.4f}, best {best:.4f} "
+                f"(headroom {best - shipped[metric]:+.4f}, "
+                f"spread {summary[metric].max() - summary[metric].min():.4f})"
+            )
+        by_ap = summary.loc[summary["average_precision"].idxmax()]
+        by_auc = summary.loc[summary["roc_auc"].idxmax()]
+        agree = by_ap.equals(by_auc)
         run.info(
-            f"shipped configuration ranks {rank} of {len(frame_out)}; "
-            f"AP {shipped['average_precision']:.4f} against best {best['average_precision']:.4f} "
-            f"(delta {best['average_precision'] - shipped['average_precision']:+.4f})"
+            f"the two metrics {'agree on' if agree else 'disagree about'} the winner"
+            + ("" if agree else
+               f": AP picks max_depth {int(by_ap['max_depth'])} / lr {by_ap['learning_rate']}, "
+               f"AUC picks max_depth {int(by_auc['max_depth'])} / lr {by_auc['learning_rate']}")
         )
         print(f"\nWrote {display_path(target)}")
     return 0

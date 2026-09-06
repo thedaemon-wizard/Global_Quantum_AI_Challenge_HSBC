@@ -42,12 +42,13 @@ fixture with cluster-level risk the clustered interval came out \emph{narrower} 
 row-level one. The row-level interval is invalid under this
 dependence, but the sign of its error is statistic-dependent, and we no longer claim otherwise.
 
-\paragraph{Four source files were absent from every pushed commit.} A \texttt{.gitignore}
-pattern without a leading slash matches at any depth, so \texttt{data/} excluded
-\texttt{src/hsbcfraud/data/} --- the loader, the split, the test-fold guard and the label
-audit. \texttt{git add} does not warn when it skips an ignored path and \texttt{git status}
-does not list it, so the omission was invisible locally and total for anyone cloning. A
-hygiene test now compares the files on disk against \texttt{git ls-files}.
+\paragraph{An answer to a named objective, confounded by the base rate.} Section~4 reported the
+tensor network at \ClaimMpsShareBand\,\% of the baseline in the band against
+\ClaimMpsShareFull\,\% at full scale, and concluded the deficit grew with dimension. It does
+not: average precision floors at the base rate, and the band is \ClaimBandFraudRate\,\%
+positive against \ClaimTestFraudRate\,\%, so the two ratios start from different floors. As
+lift over each floor they agree --- \ClaimMpsLiftShareBand\,\% and \ClaimMpsLiftShareFull\,\%.
+Written as the answer to \Cited{secondary objective 4.2}, and withdrawn.
 
 \paragraph{Two silent bugs in the tensor network.} The initialisation placed the identity on
 both physical channels, making the contraction input-independent; logits were bit-identical

@@ -128,15 +128,28 @@ rows, ranked on the 67,927 that follow. `D_band`, `D_cal` and `D_test` are never
 selecting on any of them would spend the block that sets the band edges, certifies lambda, or
 carries the single-evaluation rule.
 
-| | Average precision |
-|---|---|
-| Best of twelve (`max_depth` 12) | 0.5520 |
-| **Shipped configuration** | **0.5463** |
-| Worst of twelve (`max_depth` 6) | 0.5301 |
-| **Spread across all twelve** | **0.0219** |
+Ranked on both metrics the statement names first -- ROC AUC, which it lists first, and AUPRC,
+which it recommends for imbalanced data:
 
-The shipped configuration ranks eighth of twelve, which sounds worse than it is. What matters is
-the scale of the whole tunable range against the effect being measured:
+| | AUPRC | ROC AUC |
+|---|---|---|
+| Best of twelve | 0.5520 (`max_depth` 12) | 0.8984 (`learning_rate` 0.03) |
+| **Shipped configuration** | **0.5463** (rank 8) | **0.8932** (rank 9) |
+| Worst of twelve | 0.5301 | 0.8888 |
+| **Headroom above shipped** | **0.0057** | **0.0052** |
+| **Spread across all twelve** | **0.0219** | **0.0096** |
+
+**The two metrics pick different winners.** AUPRC prefers `max_depth` 12; ROC AUC prefers the
+lower learning rate, which ranks fourth on AUPRC. When two reasonable criteria disagree about
+which of twelve configurations is best, the ordering is not measuring a real difference between
+them -- which is the same conclusion the magnitudes give, arrived at independently.
+
+F1, precision and recall are deliberately not ranked on. Each needs a threshold, and choosing
+one here would make the comparison depend on that choice rather than on the hyperparameters;
+the certificate selects the operating point downstream, on blocks this search never reads.
+
+The shipped configuration ranks eighth and ninth of twelve, which sounds worse than it is. What
+matters is the scale of the whole tunable range against the effect being measured:
 
 | Quantity | Average precision |
 |---|---|

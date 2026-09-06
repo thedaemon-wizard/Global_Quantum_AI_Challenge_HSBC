@@ -4513,3 +4513,33 @@ What can now be said is stronger and checkable: the classical comparator sits wi
 the best of twelve configurations, and the entire tunable range is an order of magnitude below
 the quantum arm's own seed noise. A reviewer asking "was the classical arm given a fair chance?"
 has a table rather than an assurance.
+
+<a id="d-143"></a>
+### D-143 The retractions appendix omitted the retraction the log calls the worst
+
+`A2-retractions.tex` carried seven paragraphs and [D-124](#d-124) was not among them -- the
+base-rate confound that made "the gap widens with dimension" an artefact, written as the answer
+to a *named* secondary objective and shipped on page 4 until 2026-09-06. The decision log calls
+it "the worst kind of error this project has made", and the appendix whose subject is retracted
+claims did not mention it.
+
+The appendix has 0.71 of a spare line, so it went in by **swap**. What came out was the
+`.gitignore` paragraph: four source files absent from every pushed commit because a pattern
+without a leading slash matched at any depth. That is a real defect and it is recorded in
+`decisions.md` with a hygiene test behind it -- but it is a *tooling* lapse, not a retracted
+claim, and it was the one paragraph in the section that was not about a result the study had
+stated and taken back.
+
+**The gate caught the fix.** The first version wrote "secondary objective 4.2" and
+`check_pdf.py` refused it: a bare `4.2` is a numeric literal, and the gate cannot tell a section
+reference from a measurement. Wrapped in `\Cited{}`, which is what `A4-metrics.tex` already
+does for "Section 4.1". A gate that fires on a section number is not a false positive worth
+loosening -- the alternative is a gate that lets a typed measurement through.
+
+**Also in this round**, from the same fact-check: the largest per-configuration seed spread is
+no longer presented as what seed noise *is* (the claim is `reduce: {op: max}` and its own note
+says "Largest"; the four values are 0.107, 0.164, 0.072 and 0.178, a median of 0.135); the
+appendix now says every **certified** threshold comes from the band and calibration blocks,
+because `run_rolling_origin.py` calibrates on windows containing test-block rows; and label
+censoring is **not detected** rather than "ruled out", which is `label_audit.py`'s own verdict
+string and what eight buckets at p = 0.399 support.

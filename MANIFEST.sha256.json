@@ -50,17 +50,17 @@
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
     "results/tables/test_access.json": "e83c79936cc9c734e823cc30f9dc44462c089466c255a59dc4a109ed30a5a448",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "55835bba150ec439d46d1e63c902eb958c2b3600c1d5c162f58c06617124b5d8",
-    "submission/proposal.pdf": "2a816214b389f9dbe91d95ee482bcfb9baaeaed42c4b7b7ef45b51dff83038d4"
+    "submission/appendix.pdf": "f7e8ab20cbf6a2129f0ee939c5660ba26a360d1a6adf54e33aab472e61a722bb",
+    "submission/proposal.pdf": "060b753a4c1326c46f739a835f7981d09d0363ae7b84b333a53020143d7b640b"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
     "docs/REFERENCES.md": "1f06a6edb3dc4585aeaed878b67241dbd3a907a23d5001c0f127e470c184ceed",
-    "docs/claims.yaml": "36a3a8950db4055e1cbe95e0a3fc5155924386d6896a0f2b99877ba8762c98c8",
-    "docs/decisions.md": "865e32edb208f3d2c9e3a2c848f5384ad82f8296d58c0c894bb13236c56285ca",
+    "docs/claims.yaml": "7a1f44bdda2204cc1e3f6440d68471a46f03f8bb5aab901f4e70b61935dac5d7",
+    "docs/decisions.md": "063beb452e50aa53b4c98afa538cd7432ac26c883734eea2ce755e590641f00a",
     "docs/protocol.lock.json": "c45826a1140aeb8089a0849ef5fea933fa974b29cbf75c40c080ad3618c1c212",
     "docs/protocol.md": "f3ec1668d887d043adb6b96165f6856f787b3d51add26ec823d62aff0771e471",
     "docs/tables.yaml": "733fc794c24427f54e68901b97de12461deb806cf4acadcf6d1a26bf39a4c8b7",
-    "results/tables/decision_log.csv": "6366956e3c55134f2700d8c500444234c90a68b297ce87277913cb182a566fbb"
+    "results/tables/decision_log.csv": "eaabe8f69cabb71f1f7ec2db4a8dc88ccc461d56d5cd5241a8990e5793b2a6dc"
   }
 }
