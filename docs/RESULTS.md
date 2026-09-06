@@ -214,7 +214,7 @@ with bond dimension $\chi$ swept rather than tuned.
 ![Average-precision difference, MPS minus GBDT, with intervals, by bond dimension](../results/figures/mps_h4.png)
 
 Every interval contains zero. In-band, on identical rows and features,
-against a tuned GBDT — see [`mps_band.csv`](../results/tables/mps_band.csv) and
+against the gradient-boosted baseline — see [`mps_band.csv`](../results/tables/mps_band.csv) and
 [`mps_h4.csv`](../results/tables/mps_h4.csv).
 
 | $\chi$ | AP (MPS) | AP (GBDT) | $\Delta\mathrm{AP}$ | 95 % clustered CI | $p$ | Holm |
@@ -256,7 +256,7 @@ Four bond dimensions at four seeds each, all 431 features, scored once on $D_{\m
 | 8 | 0.7301 | 0.1493 | 0.0453–0.2092 | 1 of 4 |
 | 16 | 0.7922 | 0.1985 | 0.1740–0.2464 | 0 of 4 |
 | 32 | 0.7103 | 0.1368 | 0.0497–0.2278 | 1 of 4 |
-| **tuned GBDT** | **0.8851** | **0.5090** | 0.5055–0.5114 | 0 of 5 |
+| **GBDT baseline** | **0.8851** | **0.5090** | 0.5055–0.5114 | 0 of 5 |
 
 Three things to read.
 

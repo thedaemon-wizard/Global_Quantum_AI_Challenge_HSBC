@@ -4,7 +4,7 @@ Phase I submission, Global Quantum + AI Challenge 2026, HSBC track — *Quantum-
 Card Fraud Detection for Digital Payment Ecosystems*.
 
 The contribution is a **distribution-free certificate on a decision an issuer actually
-makes**, and an honest measurement of where two quantum approaches sit relative to a tuned
+makes**, and an honest measurement of where two quantum approaches sit relative to a strong
 classical baseline. Neither quantum arm produced a usable result, and they failed differently:
 the kernel was rejected by its own a-priori screens, while the tensor network ran and yielded a
 non-superiority bound from an underpowered comparison. Both are reported in the body, with the
@@ -259,7 +259,7 @@ E \;\sim\; \mathrm{BetaBinomial}\bigl(m,\; n + 1 - k,\; k\bigr), \qquad k = \lce
 
 Checking $\hat{r} \le \alpha$ instead is a **one-sided test against the wrong null**: on a
 correctly calibrated system with $n = 5{,}000$, $\alpha = 0.01$ and $m = 20{,}000$ it passes
-51.15 % of the time ([D-012](docs/decisions.md)); the exact figure moves with $n$, $m$ and
+52.55 % of the time ([D-012](docs/decisions.md)); the exact figure moves with $n$, $m$ and
 $\alpha$. Every coverage row in
 [`coverage_by_arm.csv`](results/tables/coverage_by_arm.csv) is judged against the
 Beta-Binomial interval, not against $\alpha$.

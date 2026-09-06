@@ -310,7 +310,7 @@ Stated in advance, in the direction that makes them refutable.
 | H1 | The quantum kernel does not improve band-conditional average precision over the bandwidth-matched RBF control | paired card-level block bootstrap on AP, two-sided | reject at p < 0.05 after Holm correction across the kernel family |
 | H2 | The quantum kernel's decisions do not differ from the RBF control's at the certified operating point | exact McNemar on paired decisions | reject at p < 0.05 after Holm |
 | H3 | Removing entanglement from the feature map does not change band-conditional AP | paired block bootstrap | reject at p < 0.05 |
-| H4 | The tensor-network classifier does not improve band-conditional AP over the tuned GBDT | paired block bootstrap | reject at p < 0.05 |
+| H4 | The tensor-network classifier does not improve band-conditional AP over the GBDT | paired block bootstrap | reject at p < 0.05 |
 | H5 | Realised risk on `D_test` does not exceed the certified `alpha` | exact Beta-Binomial tail probability | reject at p < 0.01 |
 
 **H1–H4 are expected to survive.** The 2026 literature is consistent on this point, and the

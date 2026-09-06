@@ -15,10 +15,13 @@ from __future__ import annotations
 
 import math
 from itertools import pairwise
+from pathlib import Path
 
 import numpy as np
 import pytest
 from scipy import stats
+
+REPO = Path(__file__).resolve().parents[1]
 
 from hsbcfraud.conformal.coverage import (
     beta_binomial_pmf,
@@ -272,3 +275,40 @@ def test_degeneracy_is_strict_at_the_floor(alpha: float) -> None:
         thin = mondrian_thresholds(np.arange(below, dtype=float),
                                    np.zeros(below, dtype=int), alpha)[0]
         assert thin.degenerate and thin.headroom < 0
+
+
+# The worked example in README section 4.3 and in D-012, with the parameters those documents
+# state. Neither file is scanned by any gate: `check_claims.py` binds figures that appear in
+# the PDFs and `check_pdf.py` reads only `submission/`, so a recomputable number in the README
+# is checked by nothing -- and the proposal's first page sends reviewers to exactly that file.
+# Both percentages were wrong by more than a point and survived every round until 2026-09-06.
+WORKED_EXAMPLE = {"n": 5000, "alpha": 0.01, "m": 20000, "naive_pass": 52.55, "band_mass": 99.05}
+
+
+def test_the_readme_worked_example_recomputes() -> None:
+    """The illustration must come out of the module it illustrates.
+
+    It exists to show that `rate <= alpha` passes about half the time on a sound system, which
+    is the argument for using the exact law instead. A wrong percentage there does not change
+    the conclusion, and that is exactly why nothing caught it.
+    """
+    n, alpha, m = WORKED_EXAMPLE["n"], WORKED_EXAMPLE["alpha"], WORKED_EXAMPLE["m"]
+    order_index = int(np.ceil((1 - alpha) * (n + 1)))
+    pmf = beta_binomial_pmf(m, n + 1 - order_index, order_index)
+    low, high = coverage_band(n, order_index, m, 0.99)
+
+    naive = 100 * pmf[: int(alpha * m) + 1].sum()
+    mass = 100 * pmf[low : high + 1].sum()
+    assert round(naive, 2) == WORKED_EXAMPLE["naive_pass"], (
+        f"the naive pass rate is {naive:.2f} %, and README section 4.3 and D-012 say "
+        f"{WORKED_EXAMPLE['naive_pass']} %"
+    )
+    assert round(mass, 2) == WORKED_EXAMPLE["band_mass"], (
+        f"the 99 % band holds {mass:.2f} % of draws, and D-012 says "
+        f"{WORKED_EXAMPLE['band_mass']} %"
+    )
+
+    readme = (REPO / "README.md").read_text(encoding="utf-8")
+    assert f"{WORKED_EXAMPLE['naive_pass']} % of the time" in readme, (
+        "README section 4.3 no longer quotes the figure this test pins"
+    )

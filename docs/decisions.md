@@ -172,8 +172,11 @@ therefore wrong in both directions: it fails on sound systems, and passing it me
 
 Quantified on this host rather than argued: with n = 5,000 calibration points, alpha = 0.01
 and m = 20,000 test points, the exact predictive law is BetaBinomial(m, n+1-k, k), and a
-naive `rate <= alpha` assertion passes **51.15 %** of the time on a system that is behaving
-exactly as designed. The exact 99 % central band [127, 289] contains 99.15 % of draws.
+naive `rate <= alpha` assertion passes **52.55 %** of the time on a system that is behaving
+exactly as designed. The exact 99 % central band [127, 289] contains 99.05 % of draws.
+
+*Corrected 2026-09-06 ([D-141](#d-141)): both percentages were 51.15 and 99.15 and neither
+recomputes. The band is right, which is what shows the parameters were never in doubt.*
 
 `hsbcfraud.conformal.coverage` therefore reports three separate verdicts —
 `expectation_ok`, `finite_sample_ok`, `conservative` — because collapsing them hides the
@@ -4395,3 +4398,75 @@ their table, so a reviewer never regenerates them. That is a latent instance of 
 recorded here rather than fixed: the §5 sentence carrying them names the workstation in the same
 breath, and removing the only cost figure for the expensive arm would weaken the feasibility
 argument more than the latency exposure justifies.
+
+<a id="d-140"></a>
+### D-140 A word that overstated the classical arm, and a regulation cited from last year's version
+
+**"Tuned" was doing work the code does not support.** Twelve sites described the classical
+baseline as "tuned" -- README, six claim notes, `protocol.md`, `RESULTS.md`, the compliance and
+submission checklists, and three `run_mps.py` docstrings. In machine learning that word means
+hyperparameters chosen by a search. **There is no search in this repository**: a grep for
+`GridSearch`, `RandomizedSearch`, `optuna`, `hyperopt`, `param_grid` and `BayesSearch` across
+`scripts/` and `src/` returns nothing, and `XGBClassifier` takes seven hardcoded literals.
+
+The direction matters. The whole comparison rests on the classical arm being *at least* as well
+served as the quantum one, and the quantum arm's bandwidth genuinely is swept over six values.
+Overstating the classical effort is the direction that flatters the quantum result. All twelve
+now say "gradient-boosted baseline", and `run_baselines.py` records what was actually done: the
+settings are the values the IEEE-CIS public solutions converged on, and what was compared is the
+*feature set*, measured in the comment immediately below it.
+
+Two classes of "tuned" were deliberately left alone, because both are true: **"a tuned RBF"**
+-- the classical kernel's bandwidth is swept and the best taken, which is what makes it a fair
+distinctness screen -- and **"swept rather than tuned"**, which asserts the opposite of the
+defect. No shipped PDF said "tuned GBDT"; the two occurrences in the `.tex` sources are one of
+each of those legitimate forms.
+
+**SS1/23 was cited from a superseded version.** RG-5 recorded "Published 17 May 2023, effective
+17 May 2024" and dated that verification 2026-08-30. Re-checked at the Bank of England on
+2026-09-06: the page serves an **April 2026 edition as current** -- "Published 23 April 2026.
+Effective from 23 April 2026", following **LIAF01/26** -- and lists May 2023 as *past*. The
+amendment had been live for four months when the entry was verified.
+
+The lesson is narrower than "the citation was stale". **Verifying a date on the issuer's page
+is not the same as checking which version that page is serving.** The original check confirmed
+"Published on 17 May 2023" and stopped, which is exactly what the page says about the past
+edition.
+
+Both files now carry the current version alongside the original. No claim is made about what
+LIAF01/26 altered in paragraphs 1.2 to 1.4, because the amendment has not been read line by
+line -- that is marked Needs confirmation rather than asserted, which is the whole reason an
+earlier draft of this fix was rejected for saying the amendment "adds" a paragraph that already
+existed.
+
+**And the paragraph number was wrong too.** The scope argument spans paragraphs 1.3 *and* 1.4,
+not 1.3 alone, in both the 2023 and 2026 texts -- so this one is not rescued by the version
+correction and was simply a misread.
+
+<a id="d-141"></a>
+### D-141 A worked example that did not recompute, in the file the proposal sends reviewers to
+
+README section 4.3 and [D-012](#d-012) both stated that a naive `rate <= alpha` assertion
+passes **51.15 %** of the time on a sound system, and that the exact 99 % band holds **99.15 %**
+of draws. Recomputed from `hsbcfraud.conformal.coverage` with the parameters those documents
+themselves state -- n = 5,000, alpha = 0.01, m = 20,000 -- the figures are **52.55 %** and
+**99.05 %**.
+
+**The band is right.** [127, 289] reproduces exactly, which is what shows the parameters were
+never in doubt and only the two probabilities drifted.
+
+The conclusion does not move: about half the time is still about half the time, and the argument
+for using the exact law instead of `rate <= alpha` is unaffected. That is precisely why it
+survived. **A number that carries an argument rather than a result is the kind nobody
+re-derives.**
+
+**The gate gap is the real finding.** `check_claims.py` binds figures that appear in the PDFs;
+`check_pdf.py` scans only `submission/`. So `README.md` and `docs/decisions.md` carry
+recomputable numbers that *no gate touches* -- and the proposal's title block sends every
+reviewer to exactly that repository. Two of this round's confirmed findings live in that blind
+spot.
+
+`tests/test_conformal.py` now recomputes the worked example from the shipped module and asserts
+the README still quotes what it computes. That closes the specific hole. The general one --
+every other number in a linked-but-unbound document -- is worth a sweep before 2026-09-15 and is
+recorded here as open.

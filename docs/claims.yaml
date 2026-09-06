@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 139
+    value: 141
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -103,7 +103,7 @@ claims:
     column: average_precision_mean
     tolerance: 0.00005
     note: >
-      Average precision of the tuned baseline on a stratified random split, mean of five
+      Average precision of the gradient-boosted baseline on a stratified random split, mean of five
       seeds.  The comparison against SplitApTemporal is the study's cleanest evidence that a
       random split cannot evaluate a fraud model.
 
@@ -252,7 +252,7 @@ claims:
     select: {model: xgboost}
     column: average_precision
     tolerance: 0.00005
-    note: The tuned baseline on identical rows and features.
+    note: The gradient-boosted baseline on identical rows and features.
 
   - key: MpsDeltaApBestChi
     value: -0.0172
@@ -380,7 +380,7 @@ claims:
     reduce: {op: min, column: roc_auc, where_equals: {arm: temporal, block: test}}
     tolerance: 0.00005
     note: >
-      Lowest tuned gradient-boosted ROC AUC across seeds on the temporal test block.  With
+      Lowest gradient-boosted ROC AUC across seeds on the temporal test block.  With
       GbdtFullAucMax this is the interval the full-scale tensor network is compared against.
 
   - key: GbdtFullAucMax
@@ -388,7 +388,7 @@ claims:
     source: results/tables/baselines.csv
     reduce: {op: max, column: roc_auc, where_equals: {arm: temporal, block: test}}
     tolerance: 0.00005
-    note: Highest tuned baseline ROC AUC across seeds, temporal test block.
+    note: Highest gradient-boosted ROC AUC across seeds, temporal test block.
 
   - key: GbdtFullApMin
     value: 0.5055
@@ -396,7 +396,7 @@ claims:
     reduce: {op: min, column: average_precision, where_equals: {arm: temporal, block: test}}
     tolerance: 0.00005
     note: >
-      Lowest tuned baseline average precision on the temporal test block.  The full-scale
+      Lowest gradient-boosted average precision on the temporal test block.  The full-scale
       tensor network's best draw reaches SweepBestAp, roughly half of this.
 
   - key: GbdtFullApMax
@@ -404,7 +404,7 @@ claims:
     source: results/tables/baselines.csv
     reduce: {op: max, column: average_precision, where_equals: {arm: temporal, block: test}}
     tolerance: 0.00005
-    note: Highest tuned baseline average precision across seeds, temporal test block.
+    note: Highest gradient-boosted average precision across seeds, temporal test block.
 
   - key: TestFraudRate
     value: 3.412

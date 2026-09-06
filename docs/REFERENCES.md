@@ -227,7 +227,7 @@ spectral pre-screening, which this study implements.
 **[QM-7]** Bowles, J., Ahmed, S. and Schuld, M. "Better than classical? The subtle art of
 benchmarking quantum machine learning models". arXiv:2403.07059, 2024.
 Out-of-the-box classical models outperform quantum classifiers; removing entanglement often
-does not hurt. The source of this study's commitments to a tuned classical baseline, an
+does not hurt. The source of this study's commitment to a strong classical baseline, an
 entanglement ablation, multiple seeds and released code.
 
 **[QM-8]** Chaves, Kumar, Chagas, Linerud, Sorem, Mancilla and Bell (Oxford Quantum Circuits
@@ -403,9 +403,10 @@ V. SR 26-2 frames reviewer independence as "effective challenge" in Section III;
 "independent review" does not appear in it and was carried over from the superseded SR 11-7.
 
 **[RG-5]** Prudential Regulation Authority. Supervisory Statement SS1/23, *Model risk
-management principles for banks*, 17 May 2023, effective 17 May 2024.
+management principles for banks*, 17 May 2023, effective 17 May 2024; current version
+23 April 2026 following LIAF01/26.
 Scope is limited to firms with internal model approval for regulatory capital (para 1.2);
-within that scope the principles cover all model and risk types (para 1.3), which is the basis
+within that scope the principles cover all model and risk types (paras 1.3-1.4), which is the basis
 on which a fraud model is treated as in scope. *Corrected 2026-08-30: this entry previously
 said the PRA had confirmed SS1/23 applies to fraud models. No such statement was found at the
 issuing authority -- "fraud" does not occur in SS1/23 -- so the claim is withdrawn and replaced

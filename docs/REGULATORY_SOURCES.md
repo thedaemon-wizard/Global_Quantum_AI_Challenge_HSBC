@@ -116,18 +116,31 @@ feature attribution in `attribution.csv` exists at all.
 | | |
 |---|---|
 | Issuer | Prudential Regulation Authority, Bank of England |
-| Published | 17 May 2023 |
-| Effective | 17 May 2024 |
+| Published | 17 May 2023; **current version 23 April 2026** |
+| Effective | 17 May 2024; current version effective 23 April 2026 |
 | Locator | <https://www.bankofengland.co.uk/prudential-regulation/publication/2023/may/model-risk-management-principles-for-banks-ss> |
 
-Publication date verified on the Bank of England page ("Published on 17 May 2023"). Sets out
-five principles for model risk management.
+Sets out five principles for model risk management.
+
+**The version was wrong, and the fetch date is what makes that awkward.** Re-checked at the
+Bank of England on 2026-09-06: the page lists an April 2026 edition as current and the May 2023
+edition as *past*, the current one "Published 23 April 2026. Effective from 23 April 2026",
+following **LIAF01/26 -- Low Impact Amendments Finalisation April 2026**. This entry recorded
+only the 2023 dates, and recorded them as verified on 2026-08-30 -- four months after the
+amendment was live. Verifying a date on the issuer's page is not the same as checking which
+version that page is serving.
+
+What this project takes from SS1/23 is the scope argument in paragraphs 1.2 to 1.4, and the
+amendment is a low-impact finalisation rather than a rewrite. **Needs confirmation:** the
+paragraphs relied on were read in the 2023 text, and no claim is made here about what LIAF01/26
+altered in them, because the amendment itself has not been read line by line. See
+[D-140](decisions.md).
 
 **Settled 2026-08-30 — the applicability sentence.** `REFERENCES.md` previously stated SS1/23
 was "confirmed by the PRA to apply to fraud models". No such confirmation exists at the issuing
 authority — the word "fraud" does not occur in SS1/23 — so the claim was withdrawn. What
 supports the citation instead is the statement's own scope: paragraph 1.2 limits it to firms
-with internal model approval, and within that scope paragraph 1.3 covers all model and risk
+with internal model approval, and within that scope paragraphs 1.3--1.4 cover all model and risk
 types. `REFERENCES.md` now says exactly that, so this item is closed.
 
 ## RG-6 — UK onshored SCA-RTS

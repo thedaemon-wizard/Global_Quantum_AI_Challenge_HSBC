@@ -38,7 +38,7 @@ Checked by reading, because no script can catch a sentence that was never measur
 
 | | Prohibited claim | Why |
 |---|---|---|
-| `[x]` | Any form of quantum advantage | Neither arm produced one. The kernel was rejected by its screens; the MPS lost to a tuned GBDT. |
+| `[x]` | Any form of quantum advantage | Neither arm produced one. The kernel was rejected by its screens; the MPS lost to the gradient-boosted baseline. |
 | `[x]` | A portfolio-level PSD2 compliance rate | Category error: the SCA-RTS ceilings govern exemption eligibility on a whole portfolio, not a decline threshold on a fraud-enriched benchmark. [Amendment A2](protocol.md). |
 | `[x]` | "Temporal splits inflate the false-decline rate by 1.4×" as a fixed quantity | Origin-dependent: 0.684 / 0.893 / 1.411 / 1.198 / 1.126 across five origins. [D-025](decisions.md). |
 | `[x]` | That the certificate binds the **unconditional** false-decline rate | It binds the band-conditional rate. The unconditional rate is dominated by `tau_hi`. |

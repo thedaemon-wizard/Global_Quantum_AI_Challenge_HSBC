@@ -13,10 +13,10 @@ kernel arm, so the three candidates -- MPS, quantum kernel, gradient boosting --
 comparable.  The quantum kernel was rejected by its a-priori screens, so the honest question
 is what a quantum-inspired model does in the place the kernel could not be used.
 
-**At full scale.**  All features, no band, against the tuned gradient-boosted baseline.  A
+**At full scale.**  All features, no band, against the gradient-boosted baseline.  A
 literature check on 2026-08-28 found published matrix-product-state work on tabular data to be
 largely *generative* -- synthetic-data modelling scored on fidelity and privacy -- rather than
-discriminative against a tuned gradient-boosted baseline on imbalanced payment data.  That is
+discriminative against a gradient-boosted baseline on imbalanced payment data.  That is
 a statement about what was found, not about what exists.  The arm is affordable because an MPS
 has no qubit ceiling: 431 sites is a long chain, not an intractable state space.
 
@@ -341,7 +341,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # ------------------------------------------------------------------------- H4
     # The null is that the tensor network does not improve band-conditional average precision
-    # over the tuned baseline.  Testing it at every bond dimension rather than at the best one
+    # over the baseline.  Testing it at every bond dimension rather than at the best one
     # avoids the winner's curse; Holm controls the family-wise error across the sweep.  Cards
     # are the resampling unit because rows within a card are not independent.
     band_clusters = frame.iloc[band_eval_rows]["card1"].to_numpy()

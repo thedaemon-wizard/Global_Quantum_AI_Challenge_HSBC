@@ -36,7 +36,14 @@ REPO = Path(__file__).resolve().parents[1]
 # All 394 transaction columns plus the 40 identity columns, left-joined.  Hand-picking a
 # subset is itself a modelling decision made with knowledge of the dataset, and an
 # artificially weak baseline is the most common way a comparison gets tilted -- this study's
-# argument requires the classical arm to be tuned at least as hard as the quantum arm.
+# argument requires the classical arm to be as strong as the quantum arm is given room to be.
+#
+# On the word "tuned", which this project used to use here and no longer does: there is no
+# hyperparameter search in this repository -- no grid, no optuna, no cross-validated sweep.
+# The seven XGBoost settings below are fixed at values the IEEE-CIS public solutions converged
+# on, and what *was* compared is the feature set, measured immediately below.  Calling that
+# "tuned" overstates the effort spent on the arm the whole comparison is measured against,
+# which is the direction that flatters the quantum result.  See D-140.
 # Measured: 40 hand-picked columns give AUC 0.8830 / AP 0.4823; the full set gives
 # 0.8805 / 0.5083, i.e. the same AUC and materially better average precision.
 BASE_COLUMNS = None
