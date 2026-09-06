@@ -4361,3 +4361,37 @@ both documents reference it, and that the band is still shaded so the dashed arr
 something meaningful. Nothing checked any of that before, which is how the README came to embed
 `overview.png` while the figure the proposal actually shipped was reachable from one
 documentation file.
+
+<a id="d-139"></a>
+### D-139 A fourth timing claim, in a table the reproduction does regenerate
+
+The fourth clean-room pass ran `make reproduce` to completion (exit 0) and `make check` failed
+on exactly **one** claim, against nine in the third pass. The parity skip fired as designed --
+*"SKIPPING the write: 4 comparisons here against 12 committed"* -- and every latency claim
+passed, so [D-135](#d-135) and [D-137](#d-137) hold.
+
+The survivor was `BandGbdtSeconds`: the gradient-boosted baseline's in-band fit time, bound to
+the `fit_seconds` column of `mps_band.csv` with a tolerance of **0.005 seconds**. The clean room
+measured 0.375 against a committed 0.28.
+
+**The latency fix did not cover it, and the reason is worth recording.** `latency.csv` is a
+table of nothing but timings, so preserving the whole file was the right move.
+`mps_band.csv` is a table of *results* that happens to carry one wall-clock column -- every
+scientific column reproduces exactly, as the third pass's diff already showed -- so it must be
+regenerated, and a claim bound to its one timing column fails for every reviewer on other
+hardware. A machine-dependent number hidden inside a machine-independent table.
+
+Section 5 already scoped it honestly: the same paragraph says these were measured "on the one
+RTX PRO 6000 Blackwell (96 GB), CUDA 13, Python 3.12 workstation every number here was measured
+on". The defect was never dishonesty in the PDF; it was that the number could not survive its
+own reproduction procedure. **The sentence now reads "in under a second"**, which carries the
+argument -- the classical core is cheap -- and holds on both machines measured (0.28 and 0.375).
+The claim is deleted rather than loosened: widening a 0.005 tolerance to absorb a 34 % swing
+would be a gate that passes anything.
+
+**Two timing claims remain bound**, `SweepSecondsMin` and `SweepSecondsMax`, at 2,747 and 3,145
+seconds. They survive only because `make reproduce` excludes the 13-GPU-hour sweep that writes
+their table, so a reviewer never regenerates them. That is a latent instance of the same defect,
+recorded here rather than fixed: the §5 sentence carrying them names the workstation in the same
+breath, and removing the only cost figure for the expensive arm would weaken the feasibility
+argument more than the latency exposure justifies.

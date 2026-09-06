@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 138
+    value: 139
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -794,25 +794,6 @@ claims:
     reduce: {op: max, column: n_train}
     note: Training rows behind each full-scale fit.
 
-  - key: BandGbdtSeconds
-    value: 0.28
-    source: results/tables/mps_band.csv
-    reduce:
-      op: min
-      column: fit_seconds
-      where_equals: {model: xgboost}
-    tolerance: 0.005
-    note: >
-      The gradient-boosted baseline's in-band fit, for scale: the classical core of the
-      pipeline is not the expensive part, which is what makes the abstention band affordable.
-      The model filter is load-bearing: mps_band.csv holds both arms, and without it the
-      reduction returned whichever fit was fastest -- right only because the baseline happened
-      to be faster than every tensor-network fit in this run.
-
-  # ------------------------- the challenge statement's primary metrics, on the test block
-  # Section 4.1 of the challenge statement names AUC-ROC, AUPRC, F1, precision, recall and a
-  # confusion matrix as the primary evaluation metrics.  All six were computed by
-  # run_baselines.py from the first run and none of them reached the submission.
   - key: BaselineTestFOne
     value: 0.4655
     source: results/tables/baselines.csv
