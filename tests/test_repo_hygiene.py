@@ -867,3 +867,79 @@ def _figure_builders() -> tuple:
         for name in listed.group(1).replace("\n", " ").split(",")
         if name.strip()
     )
+
+
+# Width of a stage box and of a dead-end box, as fractions of the 100-unit x-range the method
+# figure draws in. Kept beside the test rather than imported, so a change to the figure's
+# geometry has to be made deliberately in two places instead of silently widening the check.
+METHOD_STAGE_BOX_UNITS = 13.2
+METHOD_DEAD_BOX_UNITS = 29.5
+
+
+def test_no_method_figure_label_overflows_its_box() -> None:
+    """Every label must fit the rectangle drawn around it.
+
+    Two did not, and both were found by eye rather than by any check: "temporal split" ran
+    0.960 in against a 0.904 in box, and "tensor network: no improvement" ran 1.860 against
+    1.850. A figure whose text crosses its own border reads as carelessness in the one
+    artefact a reviewer looks at before reading anything.
+
+    Measured through matplotlib's renderer at the sizes the figure actually uses, so this
+    catches a label that grows, a font size that rises, and a box that narrows.
+    """
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    sys.path.insert(0, str(REPO / "scripts"))
+    from make_figures import METHOD_DEAD_ENDS, METHOD_STAGES, TEXT_WIDTH_IN
+
+    figure = plt.figure(figsize=(TEXT_WIDTH_IN, 1.10))
+    renderer = figure.canvas.get_renderer()
+
+    def widest(text: str, size: float, weight: str) -> float:
+        return max(
+            figure.text(0, 0, line, fontsize=size, fontweight=weight)
+            .get_window_extent(renderer=renderer)
+            .width
+            / figure.dpi
+            for line in text.split("\n")
+        )
+
+    stage_box = METHOD_STAGE_BOX_UNITS / 100 * TEXT_WIDTH_IN
+    dead_box = METHOD_DEAD_BOX_UNITS / 100 * TEXT_WIDTH_IN
+    placeholders = {"<rows>": "590,540", "<first>": "0", "<last>": "181"}
+
+    too_wide = []
+    for name, detail, _fill in METHOD_STAGES:
+        for text, size, weight in ((name, 8.8, "bold"), (detail, 7.2, "normal")):
+            for token, value in placeholders.items():
+                text = text.replace(token, value)
+            measured = widest(text, size, weight)
+            if measured > stage_box:
+                too_wide.append(f"{text!r} is {measured:.3f} in against a {stage_box:.3f} in box")
+    for label in METHOD_DEAD_ENDS:
+        measured = widest(label, 7.0, "bold")
+        if measured > dead_box:
+            too_wide.append(f"{label!r} is {measured:.3f} in against a {dead_box:.3f} in box")
+    plt.close(figure)
+
+    assert not too_wide, "labels overflow their boxes in the method figure: " + "; ".join(too_wide)
+
+
+def test_the_method_figure_stays_within_the_height_it_replaced() -> None:
+    """It sits on a page with no spare line, so its height is a hard constraint.
+
+    The split figure it replaced was 1.264 in after the tight bounding box. The first draft of
+    the replacement came out at 1.400 and pushed the proposal to seven pages, which is a
+    failure a page-count gate catches only after a full LaTeX rebuild.
+    """
+    pypdf = pytest.importorskip("pypdf")
+    figure = REPO / "results" / "figures" / "method.pdf"
+    if not figure.is_file():
+        pytest.skip("method.pdf is not built; run `make figures`")
+    height = float(pypdf.PdfReader(str(figure)).pages[0].mediabox.height) / 72
+    assert height <= 1.264, (
+        f"the method figure is {height:.3f} in tall against the 1.264 in it replaced; page 2 "
+        f"has no spare line, so a taller figure costs a page"
+    )

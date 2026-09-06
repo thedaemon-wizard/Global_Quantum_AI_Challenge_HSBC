@@ -8,8 +8,8 @@
     "results/figures/circuits.png": "77a64e793f7a71b5fe88caeea6cf9fa1797f32a7c7711988f49a46c2bea04c05",
     "results/figures/coverage_by_arm.pdf": "259ac2dba9a1ff9347f12d8010373d6d20e3f6a817cc5a0abd365ee70e5ae0a8",
     "results/figures/coverage_by_arm.png": "45e191761cda404e9f0d669becd2acdce0031e2bdb3c0c84f0d3a62b6249776c",
-    "results/figures/method.pdf": "1a2186625f44d34800cce2a66660e1ad76ace25b7aaefd40e24dff19a1d4d663",
-    "results/figures/method.png": "9be18b769ed87c9933c6a22e3b6b6839d297a91663b162ce2b0fa0b11f90763c",
+    "results/figures/method.pdf": "bc8ce6b908494a5836ed37380a36a86505e500e22aa8fa80980c9a352bf89e77",
+    "results/figures/method.png": "16c146fbdbe3c8a9bf65efab0634a3090fb497fab4e1e92cea8a828da399c096",
     "results/figures/mps_h4.pdf": "11654f3e0dda051a70a506d16ea64aa901fa268532b0f89be1382331b2e5222f",
     "results/figures/mps_h4.png": "eeb97a5e7f0248beda4b7041d7c3b310bdc5ad2480fd3b10ba57b1a8dc5651e8",
     "results/figures/overview.pdf": "935e602cf95fdc592d12bbc70009534a9553955dfa862c8e1f092e4870aba128",
@@ -17,6 +17,7 @@
     "results/tables/ablations.csv": "745cdeea5a0cfce2c4faf0b66458a7046c638abda9424019d60a7555faf471c3",
     "results/tables/attribution.csv": "182fdc6a8e1c285955ad90733be6360f3edc182f2d5d9a8cf6c53a1951697e35",
     "results/tables/attribution_examples.csv": "7be352d55c61e6c56e27ba654528ff281bec951b1c450e56d80a5cd1d86a457f",
+    "results/tables/baseline_tuning.csv": "79a8a75a8b8746b551366636627adce24c909b2ba9f019a817273ff7628ad83b",
     "results/tables/baselines.csv": "379f8f176edd2d34c3c156e1925db7591bc19aa12dab7237b3f2c4e52825e0e6",
     "results/tables/circuits.csv": "cafa88dff170b20725d20efdeef374c384d07c3ce369a334c00239023b98e42b",
     "results/tables/coverage.csv": "a4b1c70e60a0fbce1c6c1d3ce9f1fad1a9d89be5f52f2ba76aac0da2fa2a4764",
@@ -49,17 +50,17 @@
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
     "results/tables/test_access.json": "e83c79936cc9c734e823cc30f9dc44462c089466c255a59dc4a109ed30a5a448",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "de8e0975e755a8c068fb8efc92d59f4fc86851e2e137da4406ba46292027fe2c",
-    "submission/proposal.pdf": "08c2c01d90f58fc5f138e2b8da736e234e2a1b600fab3ac7cd2ea0154cb1a62b"
+    "submission/appendix.pdf": "55835bba150ec439d46d1e63c902eb958c2b3600c1d5c162f58c06617124b5d8",
+    "submission/proposal.pdf": "2a816214b389f9dbe91d95ee482bcfb9baaeaed42c4b7b7ef45b51dff83038d4"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
     "docs/REFERENCES.md": "1f06a6edb3dc4585aeaed878b67241dbd3a907a23d5001c0f127e470c184ceed",
-    "docs/claims.yaml": "848d64c51f37b319bf260b9b265e868c1a14b8d5710bb067fc6646f3b815abd5",
-    "docs/decisions.md": "51a97f736a2c4d1878a021472e04336573992e463445ab4ef103cd33c460b4e2",
+    "docs/claims.yaml": "36a3a8950db4055e1cbe95e0a3fc5155924386d6896a0f2b99877ba8762c98c8",
+    "docs/decisions.md": "865e32edb208f3d2c9e3a2c848f5384ad82f8296d58c0c894bb13236c56285ca",
     "docs/protocol.lock.json": "c45826a1140aeb8089a0849ef5fea933fa974b29cbf75c40c080ad3618c1c212",
     "docs/protocol.md": "f3ec1668d887d043adb6b96165f6856f787b3d51add26ec823d62aff0771e471",
     "docs/tables.yaml": "733fc794c24427f54e68901b97de12461deb806cf4acadcf6d1a26bf39a4c8b7",
-    "results/tables/decision_log.csv": "f22fa0e14c1b759e80e97503155f207fab9c69fbad85d40b04b9515bc9b464fa"
+    "results/tables/decision_log.csv": "6366956e3c55134f2700d8c500444234c90a68b297ce87277913cb182a566fbb"
   }
 }

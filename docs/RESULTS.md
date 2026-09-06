@@ -102,9 +102,59 @@ proposal's sample-starved sentence used to blur.
 
 The censoring control in full. The trailing-window fraud rate is 3.666 % against 3.281 %
 earlier -- higher, not lower, which is the opposite of what unresolved chargebacks would
-produce. The Mann-Kendall trend statistic over the per-bucket rates is -0.2857 at p = 0.3988,
-so there is no monotone trend either. The proposal states the two rates; the trend statistics
-are here, which is why this file rather than the six-page body carries them.
+produce. The Mann-Kendall trend statistic over the per-bucket rates is -0.2857 at p = 0.3988.
+
+**That is not evidence of no trend, and the sign is worth noting.** The statistic is *negative*,
+which is the direction unresolved chargebacks would produce, and p = 0.3988 over **eight**
+buckets is far from significant either way -- an eight-point test has very little power against
+a mild trend. So the two statistics point in opposite directions: the rate comparison is the
+one that carries weight, and the trend statistic neither supports censoring nor rules it out.
+`label_audit.py`'s own verdict string is "not detected", not "absent", and the proposal now uses
+that word too.
+
+The proposal states the two rates; the trend statistics are here, which is why this file rather
+than the six-page body carries them.
+
+## Is the classical baseline tuned enough to be a fair comparator?
+
+The challenge statement's secondary objective 4.2 asks for improvement over "**tuned** classical
+baselines". This study's XGBoost settings are seven values taken from the IEEE-CIS public
+solutions, not the output of a search -- so the question is whether that leaves the comparator
+weaker than it should be. Measured rather than argued.
+
+`scripts/tune_baseline.py` ranks twelve configurations, a coordinate sweep around the shipped
+one across five axes. **It searches entirely inside `D_train`**: fitted on the first 288,289
+rows, ranked on the 67,927 that follow. `D_band`, `D_cal` and `D_test` are never read, because
+selecting on any of them would spend the block that sets the band edges, certifies lambda, or
+carries the single-evaluation rule.
+
+| | Average precision |
+|---|---|
+| Best of twelve (`max_depth` 12) | 0.5520 |
+| **Shipped configuration** | **0.5463** |
+| Worst of twelve (`max_depth` 6) | 0.5301 |
+| **Spread across all twelve** | **0.0219** |
+
+The shipped configuration ranks eighth of twelve, which sounds worse than it is. What matters is
+the scale of the whole tunable range against the effect being measured:
+
+| Quantity | Average precision |
+|---|---|
+| Best-minus-shipped, the entire tuning headroom | 0.0057 |
+| Spread across all twelve configurations | 0.0219 |
+| **Seed noise in the quantum arm at one bond dimension** | **0.1781** |
+| **The quantum arm's deficit at full scale** | **0.2602** |
+
+**The quantum deficit is 46 times the tuning headroom and 12 times the entire tuning spread.**
+The quantum arm's own run-to-run variance, at a single fixed bond dimension, is 31 times the
+headroom. No hyperparameter choice available here moves the comparison's conclusion, and the
+classical arm is therefore not under-tuned in any sense that bears on it.
+
+**The winner was not adopted, deliberately.** Doing so would refit the scorer, and with it the
+band edges, lambda, the certificate, `predictions.csv` and ten bound claims -- and it would
+require a second evaluation of the held-out fold, which the pre-registration permits once. That
+is a new campaign, roughly thirteen GPU-hours and the loss of the single-evaluation record, to
+move a number by one forty-sixth of the effect under study. See [D-142](decisions.md).
 
 ## The certificate holds on held-out data
 

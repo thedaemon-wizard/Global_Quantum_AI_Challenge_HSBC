@@ -52,7 +52,7 @@ NEUTRAL = "#dfe6ee"
 # certificate rests on.
 METHOD_STAGES = (
     ("IEEE-CIS", "<rows> rows\ndays <first>-<last>", NEUTRAL),
-    ("temporal split", "4 blocks\nnever shuffled", NEUTRAL),
+    ("temporal\nsplit", "4 blocks\nnever shuffled", NEUTRAL),
     ("scorer $f$", "gradient-boosted\non all traffic", NEUTRAL),
     ("band $B$", "edges frozen\non $D_{\\mathrm{band}}$", INSIDE),
     ("Learn-then-\nTest", "2 risks, 11 $\\lambda$\nHolm-corrected", INSIDE),
@@ -148,7 +148,7 @@ def method_figure(tables: Path) -> tuple[Figure, str]:
     band_centre = 3 * (width + gap) + width / 2
     # One line each, not two.  Both arms are a single fact -- what was tried and that it did not
     # arrive -- and the second line cost 0.27 in of figure height that page 2 does not have.
-    dead_width, dead_gap = 27.0, 3.0
+    dead_width, dead_gap = 29.5, 3.0
     span = 2 * dead_width + dead_gap
     for index, label in enumerate(METHOD_DEAD_ENDS):
         x = band_centre - span / 2 + index * (dead_width + dead_gap)

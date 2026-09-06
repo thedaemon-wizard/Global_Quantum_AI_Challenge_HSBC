@@ -135,6 +135,7 @@ summaries:
 	$(PY) scripts/summarise_split_arms.py
 	$(PY) scripts/summarise_seed_sweep.py
 	$(PY) scripts/summarise_mps_lift.py
+	$(PY) scripts/tune_baseline.py
 	$(PY) scripts/run_rolling_origin.py
 
 figures:

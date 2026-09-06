@@ -4470,3 +4470,46 @@ spot.
 the README still quotes what it computes. That closes the specific hole. The general one --
 every other number in a linked-but-unbound document -- is worth a sweep before 2026-09-15 and is
 recorded here as open.
+
+<a id="d-142"></a>
+### D-142 The classical baseline was searched, and the winner deliberately not adopted
+
+The challenge statement's secondary objective 4.2 asks for improvement over "**tuned** classical
+baselines". [D-140](#d-140) had just removed the word "tuned" from twelve places on the grounds
+that no search exists -- which was true, and left a stated objective answered by argument rather
+than evidence.
+
+So it was measured. `scripts/tune_baseline.py` ranks twelve configurations, a coordinate sweep
+around the shipped one over five axes, **entirely inside `D_train`**: fitted on 288,289 rows,
+ranked on the 67,927 that follow. `D_band`, `D_cal` and `D_test` are never read. That constraint
+is the design, not a detail -- selecting on `D_band` would set the band edges on data already
+used to choose the model, selecting on `D_cal` would certify lambda the same way, and selecting
+on `D_test` would spend the single evaluation the pre-registration permits and `TestFoldGuard`
+enforces. **A tuning run that quietly spends one of those is worse than no tuning run**, because
+the guarantee is stated in terms of them.
+
+The shipped configuration ranks **eighth of twelve**, at 0.5463 average precision against a best
+of 0.5520. Taken alone that reads badly. Against the scales that matter it does not:
+
+| Quantity | AP |
+|---|---|
+| Tuning headroom, best minus shipped | 0.0057 |
+| Spread across all twelve configurations | 0.0219 |
+| Seed noise in the quantum arm at one fixed bond dimension | 0.1781 |
+| The quantum arm's deficit at full scale | 0.2602 |
+
+**The deficit is 46 times the headroom and 12 times the entire tuning spread**, and the quantum
+arm's own run-to-run variance is 31 times the headroom. No hyperparameter available here moves
+the conclusion.
+
+**Not adopted, and the reason is the cost, not the result.** Refitting the scorer changes the
+band edges, lambda, the certificate, `predictions.csv` and ten bound claims; it requires a
+second read of the held-out fold, so a declared new campaign; it invalidates the fourth
+clean-room pass; and it costs roughly thirteen GPU-hours. That is a rewrite of the study to move
+a number by one forty-sixth of the effect under study, nine days before the deadline.
+
+**What this buys is better than the word it replaces.** "Tuned" asserts that a search was run.
+What can now be said is stronger and checkable: the classical comparator sits within 0.006 AP of
+the best of twelve configurations, and the entire tunable range is an order of magnitude below
+the quantum arm's own seed noise. A reviewer asking "was the classical arm given a fair chance?"
+has a table rather than an assurance.

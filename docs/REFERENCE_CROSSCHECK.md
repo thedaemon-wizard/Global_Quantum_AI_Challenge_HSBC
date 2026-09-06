@@ -51,8 +51,8 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **QM-15** | Tensor Network Kernel Machines: A JAX Framework for Machine Learning and Nonlinear System Identification | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/mps.py` |
 | **QM-16** | Digital Payments Fraud Detection Using Quantum Machine Learning and Amazon Braket | `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/04-quantum.tex` |
 | **QM-17** | Comparative Performance Analysis of Quantum Machine Learning Architectures for Credit Card Fraud Detection | `docs/decisions.md`, `submission/content/04-quantum.tex` |
-| **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md`, `docs/SUBMISSION_CHECKLIST.md` and 25 more |
-| **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 25 more |
+| **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md`, `docs/RESULTS.md` and 27 more |
+| **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 27 more |
 | **DS-3** | Calibrating Probability with Undersampling for Unbalanced Classification | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/metrics.py` |
 | **DS-4** | Database: Open Database, Contents: Database Contents | `docs/decisions.md`, `NOTICE`, `docs/PROVENANCE.md`, `docs/protocol.md`, `submission/content/A1-protocol.tex` |
 | **DS-5** | Leveraging Machine Learning to Detect Fraud: Tips to Developing a Winning Kaggle Solution | `docs/COMPLIANCE_CHECKLIST.md`, `docs/decisions.md` |
@@ -69,7 +69,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **SW-3** | Amazon Braket SDK 1.126.0 and amazon-braket-default-simulator 1.40.1 | `NOTICE`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/FACTCHECK_LOG.md`, `docs/VERIFICATION_CHECKLIST.md`, `docs/decisions.md`, `pyproject.toml` and 3 more |
 | **SW-4** | MAPIE 1.5.0 | `NOTICE`, `pyproject.toml`, `scripts/smoke.py` |
 | **SW-5** | crepes 0.9.1 | `docs/decisions.md`, `NOTICE`, `pyproject.toml`, `scripts/smoke.py` |
-| **SW-6** | XGBoost 3.4.1 | `Makefile`, `NOTICE`, `docs/CLEANROOM.md`, `docs/CREDENTIALS.md`, `docs/ENVIRONMENT.md`, `docs/FACTCHECK_LOG.md` and 15 more |
+| **SW-6** | XGBoost 3.4.1 | `Makefile`, `NOTICE`, `docs/CLEANROOM.md`, `docs/CREDENTIALS.md`, `docs/ENVIRONMENT.md`, `docs/FACTCHECK_LOG.md` and 17 more |
 | **SW-7** | SHAP 0.52.0 | `docs/REFERENCE_IMPLEMENTATION.md`, `NOTICE`, `pyproject.toml`, `scripts/run_baselines.py`, `scripts/run_explain.py`, `scripts/smoke.py` and 1 more |
 | **SW-8** | scikit-learn 1.9.0 | `docs/decisions.md`, `NOTICE`, `docs/CREDENTIALS.md`, `docs/ENVIRONMENT.md`, `pyproject.toml`, `scripts/smoke.py` |
 | **SW-9** | PyTorch 2.13.0+cu130 | `Makefile`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/ENVIRONMENT.md`, `docs/decisions.md` and 2 more |
