@@ -17,7 +17,7 @@
     "results/tables/ablations.csv": "745cdeea5a0cfce2c4faf0b66458a7046c638abda9424019d60a7555faf471c3",
     "results/tables/attribution.csv": "182fdc6a8e1c285955ad90733be6360f3edc182f2d5d9a8cf6c53a1951697e35",
     "results/tables/attribution_examples.csv": "7be352d55c61e6c56e27ba654528ff281bec951b1c450e56d80a5cd1d86a457f",
-    "results/tables/baseline_tuning.csv": "79a8a75a8b8746b551366636627adce24c909b2ba9f019a817273ff7628ad83b",
+    "results/tables/baseline_tuning.csv": "0a928cdc28394c9caffbb265f40dcdfe2e02d120bb4c09b604b1fa70cb4e77c6",
     "results/tables/baselines.csv": "379f8f176edd2d34c3c156e1925db7591bc19aa12dab7237b3f2c4e52825e0e6",
     "results/tables/circuits.csv": "cafa88dff170b20725d20efdeef374c384d07c3ce369a334c00239023b98e42b",
     "results/tables/coverage.csv": "a4b1c70e60a0fbce1c6c1d3ce9f1fad1a9d89be5f52f2ba76aac0da2fa2a4764",
@@ -30,11 +30,11 @@
     "results/tables/h5_validation.csv": "26496256782729eec5cad65fd1a2a3dcaa2a38cae531e6f4863e8916a0c48a74",
     "results/tables/label_censoring.csv": "0e8e30d4caa2b518096bebf44ca30b9ef447cbeb5f0d3053497d17e45b4ca118",
     "results/tables/label_verdict.csv": "19ed4256e03258be80b8d769e78499e2b19971e57afd22c9e4282aea0993042b",
-    "results/tables/latency.csv": "7f4241c1dc97835c0546947a66d12b963588f6e61a1274c46f47945331dcb4c6",
+    "results/tables/latency.csv": "3317c4d573728a240da7ff4d6d97fce77abaa2fd232992410b9cd5c9e6ec179e",
     "results/tables/mps_band.csv": "04e414d8c1ca66c0402c97dd470364e9566cc4e288f5e6bfe19a0282b0824818",
     "results/tables/mps_full.csv": "6d79b62b5a3cb59d949f739a1a3b3c9c3e763da7b41f2ce29f24bda26e8a0c96",
     "results/tables/mps_h4.csv": "d496ec98ff8bd4d95962209d411ce86bb24a081175876156013c22813fe84976",
-    "results/tables/mps_lift.csv": "5ff33c27a7520fdf438e7d895d96924c790e6c0962215d4cc2cde1a3a1323ba0",
+    "results/tables/mps_lift.csv": "214004c3bc0d3c3f18cf83e8137598f07bcfbc19e932f6b107f755feddef4486",
     "results/tables/mps_seed_spread.csv": "729609e7b977716af46793cf48fdb899da62a26e1dc4b79cfe435a4132ef5c2c",
     "results/tables/mps_seed_sweep.csv": "b653820ee82855bf61b580fbb6a2a2a021f38873770d86030e2fd2b674315ad6",
     "results/tables/mps_seed_sweep_summary.csv": "84b019610600ac7eae85feee7f78f56c712eec10a5f78dcc589d67a1d312ac20",
@@ -48,19 +48,19 @@
     "results/tables/smoke.json": "9d5d081660f90802edbfacfa8689abec4d4d4d16f81c3025eb84e2eff34eccca",
     "results/tables/split_arm_baselines.csv": "21582c1dae1cde2c3bbd6ab0d06ff611014a4e5a1aff4dd04e67cafbe25b878f",
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
-    "results/tables/test_access.json": "e83c79936cc9c734e823cc30f9dc44462c089466c255a59dc4a109ed30a5a448",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "f7e8ab20cbf6a2129f0ee939c5660ba26a360d1a6adf54e33aab472e61a722bb",
-    "submission/proposal.pdf": "060b753a4c1326c46f739a835f7981d09d0363ae7b84b333a53020143d7b640b"
+    "submission/appendix.pdf": "ccbfeccb547733f81c9de509895e8d238dfdbac9e0896fc1a8041316cc2082e6",
+    "submission/proposal.pdf": "3c6a429f4291e458c881871d50e542b662cd37e6d4045c1e2b4100ec91710fa0"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
-    "docs/REFERENCES.md": "1f06a6edb3dc4585aeaed878b67241dbd3a907a23d5001c0f127e470c184ceed",
-    "docs/claims.yaml": "7a1f44bdda2204cc1e3f6440d68471a46f03f8bb5aab901f4e70b61935dac5d7",
-    "docs/decisions.md": "063beb452e50aa53b4c98afa538cd7432ac26c883734eea2ce755e590641f00a",
-    "docs/protocol.lock.json": "c45826a1140aeb8089a0849ef5fea933fa974b29cbf75c40c080ad3618c1c212",
+    "docs/REFERENCES.md": "8e6a0a4cefa9002bfccd511f480fada224ae82e37aa0938924b6ce865958effa",
+    "docs/claims.yaml": "2d7363b3f7585348849b272bd74c50a922b67b4149ea585f086d92a10e531936",
+    "docs/decisions.md": "e3819e412adf82a273f9f9fb02158bf88b5b768717c97e67e7c616584f9941ce",
+    "docs/protocol.lock.json": "21b61cdb4ced3d54c418f2906db1362cb6d29841b47607f440cdbf78ef82d97d",
     "docs/protocol.md": "f3ec1668d887d043adb6b96165f6856f787b3d51add26ec823d62aff0771e471",
     "docs/tables.yaml": "733fc794c24427f54e68901b97de12461deb806cf4acadcf6d1a26bf39a4c8b7",
-    "results/tables/decision_log.csv": "eaabe8f69cabb71f1f7ec2db4a8dc88ccc461d56d5cd5241a8990e5793b2a6dc"
+    "results/tables/decision_log.csv": "105cc00d5368334bd75ece79901f9d023acfc980f0fb8e92a2f77bca27839597",
+    "results/tables/test_access.json": "e83c79936cc9c734e823cc30f9dc44462c089466c255a59dc4a109ed30a5a448"
   }
 }

@@ -21,8 +21,6 @@ import numpy as np
 import pytest
 from scipy import stats
 
-REPO = Path(__file__).resolve().parents[1]
-
 from hsbcfraud.conformal.coverage import (
     beta_binomial_pmf,
     coverage_band,
@@ -35,6 +33,8 @@ from hsbcfraud.conformal.split import (
     mondrian_thresholds,
 )
 from hsbcfraud.conformal.weighted import geometric_weights, weighted_conformal_threshold
+
+REPO = Path(__file__).resolve().parents[1]
 
 SEED = 20260828
 

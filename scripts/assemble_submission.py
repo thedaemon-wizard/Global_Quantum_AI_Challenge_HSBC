@@ -73,9 +73,24 @@ STAGED: tuple[tuple[str, str], ...] = (
     ("results/figures/certified_region.png", "HSBC-certified-region.png"),
 )
 
-# Artefacts whose hash must still match the manifest.  Documents that are expected to move
-# between a freeze and an upload are staged but not hash-checked; the PDFs are not among them.
-HASH_CHECKED = ("submission/proposal.pdf", "submission/appendix.pdf")
+# Artefacts whose hash must still match the manifest.
+#
+# This was the two PDFs alone, under a comment saying documents expected to move between a
+# freeze and an upload are staged but not hash-checked.  That reasoning does not describe a
+# results table: `predictions.csv` and `certified_region.png` are both **scientific** members of
+# the manifest, so re-running `export_predictions.py` after `make freeze` let this script stage
+# a changed file and exit 0 while `freeze.py --check` on the same tree exited 1.  The upload set
+# is the one artefact a reviewer actually receives, and it was being checked less strictly than
+# the repository it comes from.
+#
+# `riskcontrol.py` is deliberately absent: it is source, the manifest covers neither `src/` nor
+# any Python file, and listing it here would silently check nothing.
+HASH_CHECKED = (
+    "submission/proposal.pdf",
+    "submission/appendix.pdf",
+    "results/tables/predictions.csv",
+    "results/figures/certified_region.png",
+)
 
 
 def digest(path: Path) -> str:
@@ -139,6 +154,24 @@ def main(argv: list[str] | None = None) -> int:
         for problem in problems:
             print(f"  {problem}", file=sys.stderr)
         return 1
+
+    # `--out` is emptied before staging, so it must not be a directory that contains anything
+    # this script is about to read.  The default is `submission/portal`, and `--out submission`
+    # is one keystroke away: that would delete `submission/proposal.pdf` and
+    # `submission/appendix.pdf` -- the two files whose hashes were verified four lines above --
+    # and then fail trying to copy them.  Neither is recoverable without a rebuild.
+    out = args.out.resolve()
+    for source, _name in STAGED:
+        origin = (REPO / source).resolve()
+        if out == origin or out in origin.parents:
+            print(
+                f"REFUSING to stage into {display_path(args.out)}: it contains {source}, which "
+                f"this script copies from, and staging empties the directory first.\n"
+                f"  Pass a directory that holds nothing but the upload set "
+                f"(the default is {display_path(REPO / 'submission' / 'portal')}).",
+                file=sys.stderr,
+            )
+            return 1
 
     if args.out.exists():
         shutil.rmtree(args.out)

@@ -31,20 +31,31 @@ Writes ``results/tables/baseline_tuning.csv``.
 from __future__ import annotations
 
 import argparse
+import sys
 import time
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score, roc_auc_score
 
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.data.splits import temporal_blocks
+from hsbcfraud.features.engineering import add_entity_aggregates, select_model_columns
 from hsbcfraud.paths import display_path
 from hsbcfraud.progress import run_log
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "scripts"))
+
+# The shipped scorer's feature pipeline, imported rather than reconstructed.  This script used to
+# fit on every numeric column the loader returns -- 400 of them -- while `run_baselines.py` fits
+# on `encode_strings` -> `add_entity_aggregates(causal=True)` -> `select_model_columns`, over a
+# restricted `BASE_COLUMNS` read.  So the row labelled `is_shipped` was **not** the shipped model,
+# and the headroom reported against it was headroom for a model nobody deploys.  `max_depth` and
+# `min_child_weight` optima both move with feature count, which is precisely the axis that
+# differed, so the answer to "is the comparator well tuned" was being read off the wrong curve.
+from run_baselines import BASE_COLUMNS, encode_strings  # noqa: E402
 
 # The shipped configuration, copied from `run_baselines.fit_xgboost`.  Named here so the search
 # always contains the incumbent and the comparison is against what actually ships, not against
@@ -105,11 +116,14 @@ def main(argv: list[str] | None = None) -> int:
 
     with run_log("tune_baseline", directory=args.runs) as run:
         run.info(f"loading {args.zip.name}")
-        loaded = load_ieee_cis(args.zip, None, with_identity=True)
-        frame = loaded.frame
-        for column in frame.columns:
-            if frame[column].dtype == "object" or str(frame[column].dtype) == "str":
-                frame[column] = frame[column].astype("category").cat.codes.astype("int32")
+        loaded = load_ieee_cis(args.zip, BASE_COLUMNS, with_identity=True)
+        frame = encode_strings(loaded.frame)
+        causal = add_entity_aggregates(frame, causal=True)
+        features = select_model_columns(causal)
+        run.info(
+            f"{loaded.n_rows:,} rows, {len(features)} features -- the same pipeline "
+            f"run_baselines.py fits, so the incumbent below is the scorer that ships"
+        )
 
         blocks = temporal_blocks(frame["day"], cfg.split)
         train_idx = blocks["train"]
@@ -122,11 +136,7 @@ def main(argv: list[str] | None = None) -> int:
             f"rank on {len(rank_idx):,} rows after it. D_band, D_cal and D_test are not read."
         )
 
-        features = [
-            c for c in frame.select_dtypes(include=[np.number]).columns
-            if c not in {"isFraud", "day", "TransactionDT", "TransactionID"}
-        ]
-        x = frame[features]
+        x = causal[features]
         y = frame["isFraud"].to_numpy()
         x_fit, y_fit = x.iloc[fit_idx], y[fit_idx]
         x_rank, y_rank = x.iloc[rank_idx], y[rank_idx]

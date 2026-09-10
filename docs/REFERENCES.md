@@ -306,8 +306,10 @@ Machine Learning Architectures for Credit Card Fraud Detection". arXiv:2412.1944
 Intelligence*, 2026. DOI 10.1007/s10489-026-07110-7.
 Variational quantum classifier with a Z and Pauli-Two-Design feature map, $F_1 = 0.88$. The
 challenge statement cites it as "Karimi et al., 2024", which is a common miscitation; section 7
-of this file recorded the correct attribution before the paper was cited here, and the proposal
-uses the correct one. The $F_1$ was obtained on a 984-row balanced undersample of ULB reduced to
+of this file recorded the correct attribution before the paper was cited here. Proposal section 4
+prints the correct attribution **and** the statement's form beside it, so a reviewer holding both
+documents can see they are the same paper rather than reading the difference as a misreading of
+the statement. The $F_1$ was obtained on a 984-row balanced undersample of ULB reduced to
 seven principal components, **with no classical baseline** -- so it is neither this task's base
 rate nor a comparison, which is what proposal section 4 says about it.
 Cited as: `El Alami et al., 2024`

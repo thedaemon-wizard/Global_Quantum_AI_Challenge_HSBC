@@ -45,6 +45,8 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.special import betaln
 
+from hsbcfraud.conformal.split import conformal_threshold
+
 __all__ = ["CoverageVerdict", "beta_binomial_pmf", "coverage_band", "tail_probability", "verify"]
 
 
@@ -226,15 +228,23 @@ def split_conformal_coverage(
     A level whose order index exceeds the calibration block is skipped rather than clamped:
     the quantile does not exist at that sample size, and reporting a clamped one would assert
     coverage the data cannot support.
+
+    The order statistic comes from :func:`conformal_threshold` rather than being recomputed
+    here.  It was recomputed here, three lines of ``np.ceil`` and ``np.sort`` that looked
+    identical to the library's -- and were not, because the library also **validates**.  With a
+    NaN among the calibration scores ``conformal_threshold`` raises ``"calibration scores
+    contain NaN or infinity"``, while the inline copy sorted the NaN to the end, took it as the
+    threshold, found ``(legit_test >= nan).sum() == 0``, and reported zero errors and
+    ``finite_sample_ok=True``: a corrupted calibration block certified as clean coverage.  That
+    is the precise drift the paragraph above warns about, in the function written to prevent it.
     """
     legit_cal = cal_scores[cal_labels == 0]
     legit_test = test_scores[test_labels == 0]
     rows: list[dict[str, object]] = []
     for alpha in alpha_grid:
-        order_index = int(np.ceil((1 - alpha) * (legit_cal.size + 1)))
-        if order_index > legit_cal.size:
+        threshold, order_index, n_cal = conformal_threshold(legit_cal, alpha)
+        if order_index > n_cal:
             continue
-        threshold = float(np.sort(legit_cal)[order_index - 1])
         observed = int((legit_test >= threshold).sum())
         verdict = verify(
             n_calibration=legit_cal.size,

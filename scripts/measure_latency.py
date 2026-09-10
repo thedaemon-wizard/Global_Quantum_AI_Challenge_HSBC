@@ -80,6 +80,10 @@ from hsbcfraud.quantum.featuremaps import build_feature_map
 from hsbcfraud.quantum.kernel import fidelity_gram
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "scripts"))
+
+from run_baselines import XGBOOST_PARAMS  # noqa: E402
+from run_mps import IN_BAND_CONTROL_PARAMS  # noqa: E402
 
 # The authorisation budget the challenge statement states, and the network share it attributes
 # to the card network.  Both are quoted to give the measurement a scale, not used as thresholds.
@@ -121,17 +125,20 @@ WARMUP = 20
 
 PERCENTILES = (50, 95, 99)
 
-# Fitted identically to the pipeline's scorers, so the timing prices the deployed model rather
-# than a stand-in.  Kept in one place because both components use it.
-SCORER_PARAMS = dict(
-    n_estimators=400, max_depth=6, learning_rate=0.05, tree_method="hist",
-    eval_metric="aucpr", subsample=0.8, colsample_bytree=0.8, verbosity=0,
-)
-
-
-def fit_scorer(x: np.ndarray, y: np.ndarray, seed: int) -> XGBClassifier:
+# The two components are two different models, and this script used to fit one stand-in for both.
+#
+# `SCORER_PARAMS` was 400 trees at depth 6 under a comment reading "Fitted identically to the
+# pipeline's scorers, so the timing prices the deployed model rather than a stand-in."  That was
+# true of the in-band re-scorer -- `run_mps.py`'s control really is 400/6 -- and false of the
+# full-traffic scorer, which ships at 1000 trees and depth 10.  Boosted inference is close to
+# linear in tree count, so the all-traffic row understated the deployed model by roughly the
+# ratio of the two, and `LatencyKernelVersusScorer` was correspondingly *over*stated: a slower
+# scorer makes the quantum kernel a smaller multiple of it, not a larger one.
+#
+# Both dicts are now imported from the scripts that own the models.
+def fit_scorer(x: np.ndarray, y: np.ndarray, seed: int, params: dict) -> XGBClassifier:
     """Fit on the GPU, as the pipeline does.  Serving device is chosen later."""
-    model = XGBClassifier(device="cuda", random_state=seed, **SCORER_PARAMS)
+    model = XGBClassifier(device="cuda", random_state=seed, **params)
     model.fit(x, y)
     return model
 
@@ -229,16 +236,33 @@ def contended(*, allow: bool) -> bool:
     per_core = one_minute / cores
     if per_core <= MAX_LOAD_PER_CORE:
         return False
+    load = (
+        f"load average {one_minute:.1f} over {cores} cores is {per_core:.2f} per core, "
+        f"above the {MAX_LOAD_PER_CORE} it needs"
+    )
+    # Two outcomes, two messages.  One message served both, and it ended with
+    # "results/tables/latency.csv is left as committed" -- printed on the `--allow-contended`
+    # path as well, immediately before `main` overwrote that very file.  The flag exists to let
+    # someone measure on a busy host anyway; it does not exist to let the script claim it
+    # preserved a table it replaced.
+    if allow:
+        print(
+            f"MEASURING ANYWAY on a contended host: {load}.\n"
+            f"  --allow-contended was passed, so results/tables/latency.csv WILL BE OVERWRITTEN "
+            f"with timings that describe this machine's other work as well as the model.\n"
+            f"  Do not commit the result as a clean measurement.\n",
+            flush=True,
+        )
+        return False
     print(
-        f"SKIPPING the latency measurement: load average {one_minute:.1f} over {cores} cores "
-        f"is {per_core:.2f} per core, above the {MAX_LOAD_PER_CORE} it needs.\n"
+        f"SKIPPING the latency measurement: {load}.\n"
         f"  Timings taken now would describe the machine's other work, not the model, and "
         f"would overwrite a measurement taken on a quiet host.\n"
         f"  results/tables/latency.csv is left as committed. Re-run on an idle machine, or "
         f"pass --allow-contended to measure anyway.\n",
         flush=True,
     )
-    return not allow
+    return True
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -310,11 +334,11 @@ def main(argv: list[str] | None = None) -> int:
 
     # The full-traffic scorer, on every feature, as the pipeline fits it.
     x_full, _ = prepare(frame, train_rows, numeric, None)
-    full_model = fit_scorer(x_full, labels[train_rows], seed)
+    full_model = fit_scorer(x_full, labels[train_rows], seed, XGBOOST_PARAMS)
 
     # The in-band re-scorer, on the eight selected features.
     x_band, _ = prepare(frame, band_rows, band_columns, None)
-    band_model = fit_scorer(x_band, labels[band_rows], seed)
+    band_model = fit_scorer(x_band, labels[band_rows], seed, IN_BAND_CONTROL_PARAMS)
 
     # The quantum kernel, priced per in-band row against its support set.  The screens rejected
     # it, so this is what it *would* have cost, and it is the figure the band argument turns on.

@@ -761,7 +761,7 @@ def test_no_japanese_or_emoji_survives_in_a_tracked_text_file() -> None:
             continue
         found = _forbidden_character(path.read_text(encoding="utf-8", errors="ignore"))
         if found is not None:
-            index, code, label = found
+            _index, code, label = found
             offences.append(f"{name}: {code} ({label})")
 
     assert not offences, (
@@ -802,7 +802,8 @@ def test_no_tracked_file_points_at_the_private_planning_directory() -> None:
         path = REPO / name
         if path.suffix not in TEXT_SUFFIXES or not path.is_file():
             continue
-        for number, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines(), 1):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for number, line in enumerate(text.splitlines(), 1):
             if needle in line:
                 offenders.append(f"{name}:{number}")
 
@@ -943,3 +944,87 @@ def test_the_method_figure_stays_within_the_height_it_replaced() -> None:
         f"the method figure is {height:.3f} in tall against the 1.264 in it replaced; page 2 "
         f"has no spare line, so a taller figure costs a page"
     )
+
+
+# A tripwire, not a measured optimum.  The README is 469 lines today and its job is to be read
+# end to end; the failure mode this guards is growth by accretion, where sections are appended
+# until nobody reads past the first screen and the `docs/` split quietly stops being maintained.
+# The headroom is deliberate: a ceiling that fires on the next honest paragraph gets raised
+# rather than obeyed, which is how a gate becomes a formality.
+README_MAX_LINES = 600
+
+
+def test_the_readme_stays_short_enough_to_be_read() -> None:
+    """The README's length is a standing requirement with no check behind it until now.
+
+    `COMPLIANCE_CHECKLIST.md` P3 requires supporting documents to be linked rather than inlined
+    so the README stays readable.  That is a property of the *documents*, and it held while the
+    README itself grew past four hundred lines.  Nothing measured the thing the requirement is
+    actually about.
+
+    The remedy when this fires is to move a section into `docs/` and link it, which is what P3
+    already asks for -- not to compress prose until the ceiling is met.
+    """
+    lines = (REPO / "README.md").read_text(encoding="utf-8").splitlines()
+    assert len(lines) <= README_MAX_LINES, (
+        f"README.md is {len(lines)} lines, over the {README_MAX_LINES}-line ceiling. "
+        f"Move a section into docs/ and link it from README section 1; every .md in docs/ is "
+        f"already required to be linked there, so the split costs nothing to navigate."
+    )
+
+
+def test_the_kaggle_rules_acceptance_is_recorded_as_an_attestation() -> None:
+    """Acceptance is the author's word, and must stay labelled as the author's word.
+
+    The competition rules gate what this dataset may be used for, so a reviewer will want to
+    know they were accepted.  Nothing in this repository can evidence that -- it happened in a
+    browser -- and the risk is not that the row goes missing but that it quietly firms up into
+    a claim of verification during a later edit.
+
+    So this pins three things: that the row exists, that it still says *attested*, and that the
+    two rule quotations it sits beside remain attributed to a URL a reviewer can open. The last
+    matters because the quotations are independently checkable and the attestation is not;
+    letting them blur together would borrow the stronger fact's standing for the weaker one.
+    """
+    text = (REPO / "docs" / "PROVENANCE.md").read_text(encoding="utf-8")
+
+    assert "| Rules accepted |" in text, (
+        "PROVENANCE.md section 1.1 no longer records whether the competition rules were accepted"
+    )
+    assert "Attested by the author, not verifiable from this repository" in text, (
+        "the rules-acceptance row no longer marks itself as an attestation; if it has become "
+        "verifiable, say what verifies it rather than dropping the qualifier"
+    )
+    assert "https://www.kaggle.com/competitions/ieee-fraud-detection/rules" in text, (
+        "the rules URL is gone, so the 7.A and 7.B quotations are no longer checkable"
+    )
+    for section in ("non-commercial purposes only", "transmit, duplicate, publish, redistribute"):
+        assert section in text, f"the competition-rules quotation lost {section!r}"
+
+
+def test_every_decision_cross_reference_resolves_on_github() -> None:
+    """`#d-094` is not the anchor GitHub generates for `### D-094 Two teammates' ...`.
+
+    GitHub slugs a heading from its **whole text**, so the decision log's own cross-references --
+    written as short `#d-NNN` fragments -- resolve only where an explicit `<a id>` was placed by
+    hand. Twenty-four had one and a hundred and nineteen did not, so eighteen links inside
+    `decisions.md` landed at the top of a four-thousand-line file instead of at the entry they
+    named. Nothing failed, because no gate read links.
+
+    Every heading now carries an anchor, and this pins both halves: that the anchors keep pace
+    with the headings, and that no reference points at one that does not exist.
+    """
+    text = (REPO / "docs" / "decisions.md").read_text(encoding="utf-8")
+    headings = {name.lower() for name in re.findall(r"^### (D-\d+)\b", text, re.M)}
+    anchors = set(re.findall(r'<a id="(d-\d+)"></a>', text))
+
+    missing = sorted(headings - anchors)
+    assert not missing, (
+        f"{len(missing)} decision heading(s) carry no explicit anchor, so a `#{missing[0]}` link "
+        f"would silently land at the top of the file: {missing[:8]}. Add `<a id=\"d-nnn\"></a>` "
+        f"on the line above the heading."
+    )
+
+    referenced = {frag for _, frag in re.findall(r"\]\(([^)\s]*)#(d-\d+)\)", text)}
+    dangling = sorted(referenced - anchors)
+    assert not dangling, f"decision reference(s) point at anchors that do not exist: {dangling}"

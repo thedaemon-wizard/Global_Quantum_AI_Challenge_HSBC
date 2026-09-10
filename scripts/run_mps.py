@@ -146,6 +146,17 @@ def evaluate(y_true, scores) -> dict[str, float]:
     }
 
 
+# The in-band GBDT control.  Deliberately smaller than the full-traffic scorer in
+# `run_baselines.XGBOOST_PARAMS`: it re-scores a few thousand banded rows on eight features, not
+# 590,540 rows on 439.  Named so `measure_latency.py` can price this model rather than assume the
+# two are the same -- it used one parameter set for both components, which was right here and
+# wrong for all traffic.
+IN_BAND_CONTROL_PARAMS = dict(
+    n_estimators=400, max_depth=6, learning_rate=0.05, tree_method="hist",
+    eval_metric="aucpr", verbosity=0,
+)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--config", type=Path, default=None)
@@ -315,8 +326,7 @@ def main(argv: list[str] | None = None) -> int:
     import xgboost as xgb
 
     control = xgb.XGBClassifier(
-        n_estimators=400, max_depth=6, learning_rate=0.05, tree_method="hist",
-        device="cuda", eval_metric="aucpr", random_state=seed, verbosity=0,
+        **IN_BAND_CONTROL_PARAMS, device="cuda", random_state=seed,
     )
     start = time.perf_counter()
     control.fit(x_bt, y_bt)

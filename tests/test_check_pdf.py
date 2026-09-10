@@ -55,7 +55,7 @@ def _scan(tmp_path: Path, text: str, check) -> list[str]:
         r"\renewcommand{\topfraction}{0.9}",
         r"\setlength{\parskip}{0.5em}",
         r"\Cited{all effect sizes below 0.013 ARI}",
-        r"\Record{Yale Peaked Hackathon 2026, \#13 of 550}",
+        r"\Record{Yale Peaked Hackathon 2026, \#13 of 549}",
     ],
 )
 def test_identifiers_and_declared_externals_are_not_measurements(tmp_path, line) -> None:

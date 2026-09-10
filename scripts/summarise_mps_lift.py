@@ -14,8 +14,15 @@ in-band ratio starts from a much higher floor and flatters whatever sits on it.
 
 Dividing lift by lift removes the floor from both sides, and the two settings then agree to
 within a point.  ROC AUC, whose floor is a fixed 0.5 and needs no correction, is reported
-alongside as an independent check; it moves in the *opposite* direction to the raw shares,
-which is the clearest evidence that the raw comparison was measuring the base rate.
+alongside as a second reading on the same fit; it moves in the *opposite* direction to the raw
+shares, which is the clearest evidence that the raw comparison was measuring the base rate.
+
+**Both arms are represented by their best fit, and that favours the quantum arm.**  The tensor
+network is selected over sixteen fits and the baseline over five seeds, so the selection is
+wider on the side this study reports as *losing*.  That asymmetry is deliberate and is stated
+rather than corrected: the conclusion is that the arm loses, and it is worth more if it loses
+at its own best.  Averaging instead would lower the tensor network's full-scale average
+precision from 0.2512 to about 0.1997 and widen the deficit.
 
 Nothing is fitted here.  Every value is arithmetic over committed tables, so this runs in
 milliseconds and cannot disagree with the tables the proposal quotes.
@@ -42,6 +49,30 @@ REPORTED_ARM = "temporal"
 # whatever the base rate.  Naming it here rather than inlining 0.5 is what lets the two rows
 # below share one code path.
 RANDOM_RANKING_AUC = 0.5
+
+
+# The metric that selects the representative fit.  Average precision, because it is the metric
+# the comparison is *about*; ROC AUC then describes the same model rather than a different one.
+SELECTION_METRIC = "average_precision"
+
+
+def best_fit(frame: pd.DataFrame) -> pd.Series:
+    """The single best fit by :data:`SELECTION_METRIC`, with every metric read from that one row.
+
+    This used to take an independent maximum per column, which is wrong in a way that is easy to
+    miss: ``frame["average_precision"].max()`` and ``frame["roc_auc"].max()`` need not come from
+    the same fit, and here they do not.  In ``mps_band.csv`` the best average precision is at bond
+    dimension 32 and the best ROC AUC at bond dimension 4; in ``mps_seed_sweep.csv`` they are at
+    two different seeds.  The published row therefore paired one model's average precision with a
+    *different* model's ROC AUC, while the module docstring offered the AUC column as an
+    independent check on the AP column -- a check that only means something if both describe the
+    same classifier.
+
+    Selecting one row costs the AUC column its status as a free-standing best case, which is the
+    honest trade: it is now the same-model companion to the AP figure, and that is what makes the
+    two comparable at all.
+    """
+    return frame.loc[frame[SELECTION_METRIC].idxmax()]
 
 
 def lift_share(model: float, baseline: float, floor: float) -> float:
@@ -84,28 +115,31 @@ def main(argv: list[str] | None = None) -> int:
         ["count_fraud_rate"].iloc[0]
     )
 
+    mps_band_best = best_fit(band[band["model"] == "mps"])
+    mps_full_best = best_fit(sweep)
+    baseline_full_best = best_fit(test)
+    baseline_band = band[band["model"] == "xgboost"].iloc[0]
+
     rows = [
         {
             "setting": "band",
             "n_features": int(band["n_features"].iloc[0]),
             "n_eval": n_band,
             "positive_rate": band_positive_rate,
-            "mps_average_precision": float(band[band["model"] == "mps"]["average_precision"].max()),
-            "baseline_average_precision": float(
-                band[band["model"] == "xgboost"]["average_precision"].iloc[0]
-            ),
-            "mps_roc_auc": float(band[band["model"] == "mps"]["roc_auc"].max()),
-            "baseline_roc_auc": float(band[band["model"] == "xgboost"]["roc_auc"].iloc[0]),
+            "mps_average_precision": float(mps_band_best["average_precision"]),
+            "baseline_average_precision": float(baseline_band["average_precision"]),
+            "mps_roc_auc": float(mps_band_best["roc_auc"]),
+            "baseline_roc_auc": float(baseline_band["roc_auc"]),
         },
         {
             "setting": "full",
             "n_features": int(sweep["n_features"].iloc[0]),
             "n_eval": int(sweep["n_eval"].iloc[0]),
             "positive_rate": full_positive_rate,
-            "mps_average_precision": float(sweep["average_precision"].max()),
-            "baseline_average_precision": float(test["average_precision"].max()),
-            "mps_roc_auc": float(sweep["roc_auc"].max()),
-            "baseline_roc_auc": float(test["roc_auc"].max()),
+            "mps_average_precision": float(mps_full_best["average_precision"]),
+            "baseline_average_precision": float(baseline_full_best["average_precision"]),
+            "mps_roc_auc": float(mps_full_best["roc_auc"]),
+            "baseline_roc_auc": float(baseline_full_best["roc_auc"]),
         },
     ]
 

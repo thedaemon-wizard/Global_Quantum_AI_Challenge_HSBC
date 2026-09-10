@@ -7,9 +7,10 @@ from this study — and therefore **exempts it from every numeric gate in this r
 exemption is correct. It also meant nothing checked them until 2026-08-30, and when they were
 checked, six needed changing.
 
-Verified 2026-08-30. Where a claim cannot be settled from an artefact it is marked **Needs confirmation**
-rather than asserted or quietly dropped — and **no Needs confirmation remains open in this file**. The three
-that were carried here were all closed on 2026-08-30 by going to the artefact:
+Verified 2026-08-30; C3 re-verified and replaced 2026-09-06 (§8). Where a claim cannot be settled
+from an artefact it is marked **Needs confirmation** rather than asserted or quietly dropped — and
+**no Needs confirmation remains open in this file**. The three that were carried here were all closed
+on 2026-08-30 by going to the artefact:
 
 | Item | Outcome |
 |---|---|
@@ -20,6 +21,13 @@ that were carried here were all closed on 2026-08-30 by going to the artefact:
 Two of the three were errors in this file's own earlier auditing, not in the credential. Both
 made the author's record look weaker than the evidence supports.
 
+**Why §8 is not a fourth open marker.** The Qiskit row records that the badge holder and issue
+date could not be read from Credly's static HTML. That is a statement about *this file's reach*,
+not an unsettled question about the credential: a reviewer settles it by clicking the badge URL,
+which is precisely what a **Needs confirmation** marker exists to flag as *impossible* for the
+reader. So it is written as a standing caveat with the route attached, on the same footing as C1,
+C2 and C6, rather than as a marker that will never close.
+
 ---
 
 ## 1. What the proposal claims
@@ -28,7 +36,7 @@ made the author's record look weaker than the evidence supports.
 |---|---|---|---|
 | C1 | Registered sole proprietor in Japan | **date confirmed by the author, filing not checkable here** | Filed **1 August 2026**, confirmed 2026-08-30. The proposal states the status without a date, so nothing in the submission turns on it; see §7 for a discrepancy in a document outside this repository |
 | C2 | B.S. Physics, Tokyo Denki University | not checkable here | diploma, held by the author |
-| C3 | IBM Qiskit Advocate (2026) | **confirmed, not publicly verifiable** | acceptance email held by the author (`Congratulations and welcome to the Qiskit advocate program!.pdf`, not in this repository); the programme is at Tier 0 and no badge has been issued, so there is no URL to cite |
+| C3 | IBM Certified Quantum Computation using Qiskit v2.X Developer - Associate | **badge title verified; holder and issue date not verifiable from outside the browser** | see [§8](#8-c3--the-ibm-qiskit-credential) |
 | C4 | QIntern 2026 Project 12 (QWorld), Team A — split-conformal calibration and results freeze | **verified, and independently attributed by a teammate** | see §2. Both the Day-15 calibration module and the Days 26–27 freeze are named as the author's in handoff documents committed by a teammate, who re-ran each and reproduced the numbers |
 | C5 | Yale Peaked Hackathon 2026, rank 13 of 549 entries at 450 of 550 points, team MerQury; MPS runs exact to 60 qubits | **rank and score verified on the organiser's leaderboard; the solved count and the method boundary are the author's own record** | see §3. The two have different sources and are no longer stated as though they had one |
 | C6 | QPoland 2025 runner-up, team The Cats Cradle | **team confirmed by the author, placement not checkable here** | no artefact on this machine; the placement stands with no technical detail attached. The team name is the author's own record, confirmed 2026-09-02 ([D-111](decisions.md)); this row carried the placement bare for two days after the submission attributed it, which is the same gap that left the Yale placement unattributed |
@@ -273,3 +281,55 @@ two different dates for the same fact.
 
 **Action, and it is the author's, not this repository's:** correct the CV to 1 August 2026 before
 circulating it further. No change is required in `submission/`.
+
+## 8. C3 — the IBM Qiskit credential
+
+**What changed.** Until 2026-09-06 this row read *IBM Qiskit Advocate (2026)*, backed by an
+acceptance email the author holds and which is not in this repository. That was the only item in
+proposal section 8 with **no reviewer-side verification route at all**: the Advocate programme
+sits at Tier 0, issues no badge, and therefore has no URL. An audit flagged that a credential a
+reviewer cannot check reads worse than one that is simply absent, and the author has since
+obtained a certification that does have a public record. Section 8 has room for one Qiskit line,
+so the verifiable one replaces the unverifiable one.
+
+**The exact title, and how it was established.** The proposal prints
+
+> IBM Certified Quantum Computation using Qiskit v2.X Developer - Associate
+
+quoted character for character from the badge page title, including the plain hyphen before
+*Associate*. The LaTeX source carries a comment saying so, because `--` is better typography and
+would be the wrong name.
+
+| | |
+|---|---|
+| Badge | <https://www.credly.com/badges/0beb5e13-8116-4b3c-9090-85da23ee134d> |
+| Badge title | IBM Certified Quantum Computation using Qiskit v2.X Developer - Associate |
+| Issued to | **Amon Koike** |
+| Issued by | **IBM Professional Certification** |
+| Date issued | **6 September 2026** |
+| Underlying exam | Fundamentals of Quantum Computing Using Qiskit v2.X Developer, C1000-179 |
+| Read | in a browser, 2026-09-06, from the rendered page |
+
+**An earlier version of this section said the last four rows could not be confirmed, and that was
+wrong.** A plain HTTP fetch of the badge URL returns a navigation shell, because Credly renders
+badge detail client-side, and the conclusion drawn from that was that the holder and the date
+were unverifiable from here. They are not: opening the same URL in a browser renders all of them.
+**The limit was the tool, not the source**, and reporting a tool limit as a property of the
+evidence is the same error in miniature that [D-133](decisions.md) and [D-137](decisions.md)
+record -- concluding from "I did not see it" that "it is not there". The fetch was repeated in a
+browser and every field above came back.
+
+Two consequences:
+
+* **Section 8 now prints the year.** It printed no date while the date was unconfirmed, which was
+  right at the time; every other dated item in that section carries a date this file could
+  confirm, and this one now does too.
+* **The level is kept.** *Associate* is part of the title the issuer publishes. Dropping it would
+  name a bigger credential than the one held, and section 8 has already been corrected four times
+  for exactly that kind of quiet inflation. Note the badge's own metadata separately grades it
+  **Foundational**, so nothing here should be read as a senior certification.
+
+**One thing this file still cannot do**, and it is worth stating precisely: it confirms that the
+badge at that URL names Amon Koike. It cannot confirm that the person operating this repository
+is that Amon Koike. No document can; a reviewer resolves it the same way they resolve C1 and C2,
+by taking the author's identity as given.

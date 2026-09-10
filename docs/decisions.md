@@ -8,6 +8,7 @@ pointer, because the fact that a thing was once believed is part of the record.
 
 ## Round 1 — Environment and pinning (2026-08-28)
 
+<a id="d-001"></a>
 ### D-001 Python 3.12 through the virtual environment's interpreter, never `python3`
 
 On this machine `python3` is 3.9, and a bare `python3.12` resolves to a system interpreter
@@ -15,6 +16,7 @@ whose `torch` has no `sm_120`. Every Makefile target therefore invokes `.venv/bi
 directly and the bootstrap uses `/usr/bin/python3.12` explicitly.
 `tests/test_repo_hygiene.py` forbids a bare `python3` anywhere in the repository.
 
+<a id="d-002"></a>
 ### D-002 `torch==2.13.0+cu130`, installed before the project
 
 Verified against the PyTorch cu130 index on 2026-08-28: `torch-2.13.0+cu130` publishes a
@@ -24,6 +26,7 @@ project itself, because the default PyPI build does not carry `sm_120`.
 
 Confirmed on this host: `torch.cuda.get_arch_list()` ends `['sm_90', 'sm_100', 'sm_120']`.
 
+<a id="d-003"></a>
 ### D-003 Six inherited pins were stale and were updated
 
 The sibling Airbus project supplied the engineering scaffolding and its pins were carried
@@ -41,6 +44,7 @@ over as a starting point. Checked against the PyPI JSON API on 2026-08-28, six h
 Every pin in `pyproject.toml` was additionally checked for a `cp312` x86_64 manylinux wheel
 so that no dependency arrives as a source build.
 
+<a id="d-004"></a>
 ### D-004 `pandas==3.0.5`, defended by a gate rather than pinned backwards
 
 **Rejected alternative:** pin `pandas<3` (the newest 2.x is 2.3.3, 2025-09-29).
@@ -62,6 +66,7 @@ and passes good."*
 The fallback, if the gate ever proves insufficient, is `pandas==2.3.3` (cp312 wheel
 confirmed present).
 
+<a id="d-005"></a>
 ### D-005 sQUlearn is not adopted
 
 **Rejected alternative:** use sQUlearn 0.11.2 for scikit-learn-native quantum kernels.
@@ -74,6 +79,7 @@ publicly disowned dependency into a submission whose argument is governance, alo
 `qiskit-machine-learning` 0.9.1 supplies `FidelityStatevectorKernel` directly with none of
 that. Smoke check S0 asserts that `qiskit-algorithms` is absent, transitively included.
 
+<a id="d-006"></a>
 ### D-006 The production kernel path is `FidelityStatevectorKernel`; Aer GPU is a cross-check
 
 Two facts pull in the same direction.
@@ -96,6 +102,7 @@ XGBoost (`sm_120` is in its compiled architecture list) and the tensor-network a
 
 `NOTICE` section 4 records exactly what installing the extra adds.
 
+<a id="d-007"></a>
 ### D-007 Aer's GPU wheel must be installed *last*
 
 `qiskit-aer` and `qiskit-aer-gpu-cu11` are separate distributions that both install the same
@@ -106,6 +113,7 @@ error, no warning, and a "GPU" cross-check that would silently have been a secon
 `make venv-gpu` therefore reinstalls the GPU wheel with `--force-reinstall --no-deps` after
 the resolution and asserts `'GPU' in available_devices()` before returning.
 
+<a id="d-008"></a>
 ### D-008 LightGBM runs on CPU
 
 Its PyPI wheel ships the OpenCL backend only; the CUDA backend requires a source build with
@@ -113,6 +121,7 @@ Its PyPI wheel ships the OpenCL backend only; the CUDA backend requires a source
 float32 columns the CPU path is comfortable on this machine, and GBDT GPU speed-ups are
 modest at that scale. Putting a source build on an 18-day critical path is not warranted.
 
+<a id="d-009"></a>
 ### D-009 The GPU memory witness must live outside the interpreter — retraction of a check
 
 Smoke check S1 asserts that Aer's GPU path really executes on the device. Its first
@@ -136,6 +145,7 @@ cuStateVec=True; device memory 629 to 5565 MiB (+4936, 4096 expected)."*
 This entry is kept in full, including the two wrong implementations, because a reader
 evaluating the GPU claim should be able to see how it was established.
 
+<a id="d-010"></a>
 ### D-010 Conformal and statistics modules are written from the primary literature
 
 **Rejected alternative:** port the corresponding modules from the QIntern 2026 Team A
@@ -153,6 +163,7 @@ the sources instead, with each docstring naming the paper whose result it implem
 project in the team-capability section remains unaffected; what is prohibited is copying
 code and reproducing unpublished co-authored figures.
 
+<a id="d-011"></a>
 ### D-011 Smoke checks may not be skipped except for three stated reasons
 
 A skipped check reads like a passing one at a glance. `scripts/smoke.py` therefore treats a
@@ -164,6 +175,7 @@ which the default install deliberately omits (D-006), and S7 needs a dataset tha
 
 ## Round 2 — The conformal layer (2026-08-28)
 
+<a id="d-012"></a>
 ### D-012 The coverage check uses the exact Beta-Binomial law, not `rate <= alpha`
 
 The split-conformal guarantee is an expectation over the calibration draw, so on any finite
@@ -188,6 +200,7 @@ The pmf agrees with `scipy.stats.betabinom` to 7e-17 across the tested parameter
 is computed in log space because the binomial coefficient alone overflows double precision
 well below this study's test-set sizes.
 
+<a id="d-013"></a>
 ### D-013 Weighted conformal is implemented but is not quoted as a number
 
 `hsbcfraud.conformal.weighted` implements Barber et al. eq. (11), and `tests/test_conformal.py`
@@ -208,6 +221,7 @@ would be required to explain it. That is a necessary consequence of a measuremen
 than a promise about the future, and a reviewer can judge whether the implied drift is
 plausible for payments data.
 
+<a id="d-014"></a>
 ### D-014 Retraction — an unverified claim about clustered bootstrap width
 
 The first version of `hsbcfraud.stats` stated that a row-level bootstrap produces intervals
@@ -224,6 +238,7 @@ dependence structure, and the sign of its error is statistic-dependent. The clus
 is used everywhere rather than only where the error was expected to be in a particular
 direction.
 
+<a id="d-015"></a>
 ### D-015 Tests are matched to estimands, not applied uniformly
 
 Average precision is threshold-free and is compared by paired clustered bootstrap. A
@@ -244,6 +259,7 @@ estimate Chaves et al. (arXiv:2603.06473) report for a comparable hybrid archite
 
 ## Round 3 — Classical baselines (2026-08-28)
 
+<a id="d-016"></a>
 ### D-016 The G1 gate was mis-specified, and the measurement that shows why is a headline result
 
 The implementation plan set a go/no-go gate of "IEEE-CIS test AUC >= 0.92, else retune".
@@ -292,6 +308,7 @@ label-propagation mechanism: forbidding an entity from appearing on both sides r
 signal that a temporal split leaves available, since 85.0 % of test-block entities also
 occur in training.
 
+<a id="d-017"></a>
 ### D-017 The full feature set is used, including the identity join
 
 An initial run used 40 hand-picked columns and reached temporal AUC 0.8830 / AP 0.4823. The
@@ -305,6 +322,7 @@ straightforward one — an artificially weak baseline is the most common way a c
 tilted, and this study's entire argument depends on the classical arm being tuned as hard as
 the quantum arm.
 
+<a id="d-018"></a>
 ### D-018 The test-fold guard fired, and the reset is recorded here
 
 `TestFoldGuard` refused a second `D_test` evaluation after the configuration digest changed,
@@ -317,6 +335,7 @@ decline threshold. That evaluation is void, not spent.
 entry as the record. The ledger is not reset again: the next `D_test` evaluation is the one
 that counts.
 
+<a id="d-019"></a>
 ### D-019 [SUPERSEDED by D-020 and D-025] The central experimental result: the guarantee breaks, and only under time
 
 Split conformal calibrated on `D_cal` and applied to `D_test`, identical code and identical
@@ -358,6 +377,7 @@ The alpha = 1e-3 temporal cell passing is consistent rather than anomalous: at t
 threshold sits far enough into the tail that the drift in the bulk of the score distribution
 moves it comparatively little.
 
+<a id="d-020"></a>
 ### D-020 [SUPERSEDED in part by D-025] Correction to D-019: the headline ratio is 1.44, not 1.49
 
 D-019 quoted "1.49x nominal" for the temporal breach at alpha = 1e-2 and 5e-3. That figure was
@@ -400,6 +420,7 @@ deviations are correspondingly the smallest in the table (0.020-0.067). The two 
 resample their blocks per seed, so their variation compounds split and model randomness. The
 arms are therefore not directly comparable on spread, only on level and on breach count.
 
+<a id="d-021"></a>
 ### D-021 The leakage ablations return a null result, and one motivation is withdrawn
 
 `scripts/run_ablations.py`, three seeds, temporal arm, mean over seeds against the reported
@@ -434,6 +455,7 @@ family do not transfer to a forward holdout.
 
 ## Round 4 — The quantum arm (2026-08-28)
 
+<a id="d-022"></a>
 ### D-022 Braket becomes a first-class execution path; D-006 was too narrow
 
 D-006 chose `FidelityStatevectorKernel` on two grounds: it needs no proprietary NVIDIA binary,
@@ -475,6 +497,7 @@ The Gram diagonal is set to exactly 1 rather than left to accumulate floating-po
 eigenspectrum and shifts the effective-rank screen -- which is the quantity the a-priori gate
 is decided on.
 
+<a id="d-023"></a>
 ### D-023 The entanglement ablation is the same circuit, not a different one
 
 `build_feature_map` takes an `entanglement` argument, and the `none` setting removes the
@@ -493,6 +516,7 @@ rather than a formality.
 
 ## Round 5 — Retraction of the certification frontier (2026-08-28)
 
+<a id="d-024"></a>
 ### D-024 The certificate was vacuous and one of its p-values was invalid. Both are retracted.
 
 An adversarial audit of this repository found two defects in the central deliverable. Both
@@ -572,6 +596,7 @@ synthetic monotone risk curve with a well-scaled target, so it exercised the pro
 the estimand. A guarantee can be correctly implemented and still certify nothing of interest,
 and a validation that only checks the machinery will not notice.
 
+<a id="d-025"></a>
 ### D-025 The central claim is narrowed again: the deviation is origin-dependent
 
 D-019 and D-020 stated that "the breach is specifically temporal". An audit pointed out that
@@ -619,6 +644,7 @@ deliverable, so this measurement was promised rather than added after the fact. 
 
 ## Round 6 — The tensor-network arm (2026-08-28)
 
+<a id="d-026"></a>
 ### D-026 Two silent initialisation defects in the MPS classifier
 
 Both produced a model that trained without error, reported a plausible loss near ln 2, and
@@ -642,6 +668,7 @@ dimensions 4, 12 and 32, against 0.9801 for logistic regression. An MPS reaching
 below a linear model on a linearly separable problem is the expected ordering, which is what
 makes it a usable check that the implementation works.
 
+<a id="d-027"></a>
 ### D-027 The in-band tensor-network result is negative, and it is not under-training
 
 Fitted on the 2,916 band rows of `D_band` (292 fraud), evaluated on the 2,537 band rows of
@@ -676,6 +703,7 @@ mechanisms identified, two negative results.
 
 ## Round 7 — Repository integrity (2026-08-28)
 
+<a id="d-028"></a>
 ### D-028 Four source files were absent from every pushed commit
 
 `.gitignore` line 5 read `data/`. A git ignore pattern without a leading slash matches at
@@ -695,6 +723,7 @@ The pattern is now anchored (`/data/`, `/datasets/`), and
 `tests/test_repo_hygiene.py::test_every_source_file_is_tracked` compares the files on disk
 against `git ls-files` so the class of defect cannot recur silently.
 
+<a id="d-029"></a>
 ### D-029 The repository-hygiene suite, and two things it found about itself
 
 `tests/` was empty. It now asserts seven properties of the artefact rather than of the
@@ -720,6 +749,7 @@ scripts land.
 
 ## Round 8 — The power gate, and the long-chain instability (2026-08-28)
 
+<a id="d-030"></a>
 ### D-030 The H4 power gate was calibrated on the wrong noise, and passed for the wrong reason
 
 The pre-registration commits to computing the minimum detectable effect **before** the
@@ -736,7 +766,7 @@ irrelevant. It gave a standard error of 0.0025 and an MDE of 0.0069, comfortably
 0.023 ceiling.
 
 The comparison H4 actually makes is between **model families**, and when it ran, its measured
-standard error was 0.0183–0.0204 depending on bond dimension — about eightfold larger. The
+standard error was 0.0187–0.0199 depending on bond dimension — about eightfold larger. The
 true MDE for this comparison is therefore near 0.056, which **exceeds** the pre-registered
 ceiling. A gate calibrated on seed noise passes almost anything, and this one did.
 
@@ -748,11 +778,35 @@ preserved.
 **Consequence for the claim.** H4 must be reported as underpowered against its
 pre-registered ceiling. What survives is weaker than a null result and is stated as such: the
 95 % clustered interval on the MPS-minus-GBDT difference in band-conditional average
-precision is `[-0.0597, +0.0136]` at bond dimension 4 and `[-0.0574, +0.0222]` at bond
+precision is `[-0.0593, +0.0149]` at bond dimension 4 and `[-0.0582, +0.0200]` at bond
 dimension 32, so **any improvement is bounded above by roughly +0.02 AP**. That is a
 non-superiority bound, not evidence of equivalence, and not evidence that the tensor network
 is worse.
 
+**The figures in this entry were restated on 2026-09-06, and the restatement is the point.**
+`mps_h4.csv` was regenerated twice after this entry was written (`4a774ef`, `050c31c`) and the
+entry kept the numbers it was drafted with: a standard error of 0.0183--0.0204 against a measured
+0.0187--0.0199, and upper interval endpoints of +0.0136 and +0.0222 against +0.0149 and +0.0200.
+Nothing here is bound to a table by `check_claims.py` -- the decision log is prose, and
+deliberately outside the gate because it quotes superseded values on purpose -- so the drift was
+invisible to every check in the repository and was found only by reading the entry against the
+table.
+
+**The stale endpoint mattered.** This entry is where README claim C5 and the appendix's power-gate
+paragraph send a reviewer, and its old `+0.0222` would not have supported the "bounded above by
+roughly +0.02" it is quoted for. The current `+0.0200` supports it exactly. `RESULTS.md` had
+carried the correct "0.018--0.020" throughout, so the two documents disagreed and neither was
+gated against the other.
+
+**Two numbers here were checked and are *not* stale**, which is worth recording because the
+temptation was to fix them too. The minimum detectable effect quoted as "near 0.056" is
+$2.8016 \times 0.019893 = 0.0557$ from the current maximum standard error, and README C5's
+`0.0557` is that same quantity to four places. Both are current. The proxy the gate actually
+binds on is a different quantity -- $2.8016 \times 0.016444 = 0.0461$, which is what
+`\ClaimPowerMde` prints in the appendix -- and confusing the two would have replaced a correct
+figure with a wrong one.
+
+<a id="d-031"></a>
 ### D-031 A matrix-product-state chain over 431 sites needs a depth-scaled learning rate
 
 The full-scale arm raised `RuntimeError: MPS loss became non-finite` at 431 features. The
@@ -783,6 +837,7 @@ by zero was intended to discard it while keeping the tensor in the graph. But `i
 `nan`, so had the log-norm ever overflowed, the term would have silently poisoned the loss
 instead of being ignored. It is now dropped outright.
 
+<a id="d-032"></a>
 ### D-032 The bond-dimension sweep is nearly free, because the chain is launch-bound
 
 A matrix product state contracts one site at a time, so a forward pass over 431 features
@@ -819,6 +874,7 @@ have had to refuse to predict past the current job.
 The prediction was recorded before the measurement: the alternative hypotheses were 2765 s
 per job under launch-bound behaviour against 2765, 11062, 44246 and 176986 s under `chi^2`.
 
+<a id="d-033"></a>
 ### D-033 Progress reporting, and a first design that would have warned on every healthy run
 
 Three defects in one: a full-scale run produced no output for forty-six minutes, then failed
@@ -867,6 +923,7 @@ clipping at norm 1.0 and a decaying step together make it very hard to break. Th
 is therefore covered by unit tests on its components rather than by an end-to-end failure,
 and the inability to trigger it is evidence about the fix rather than a gap in the test.
 
+<a id="d-034"></a>
 ### D-034 An exploratory run could silently overwrite a pre-registered result
 
 Testing the new reporting with `--bonds 4 --epochs 6` overwrote `results/tables/mps_band.csv`
@@ -880,6 +937,7 @@ compares its arguments against the parser defaults and diverts a non-default run
 `results/runs/exploratory/`, saying so on stdout. Verified by re-running the same command and
 confirming the committed table's hash is unchanged.
 
+<a id="d-035"></a>
 ### D-035 The non-finite check was one step too late, and the loss cannot be the trigger
 
 `fit_mps` guarded on `torch.isfinite(loss)`. That check fires one optimiser step after the
@@ -914,6 +972,7 @@ survive checking: it stated that the `nan` propagates to every parameter, wherea
 coefficient of zero means the others receive a zero update and stay finite. The consequence
 is the same and the fix is the same, but the mechanism is recorded as measured.
 
+<a id="d-036"></a>
 ### D-036 The site loop was launch-bound; reassociating it into a reduction tree is 12x
 
 `MPSClassifier.forward` contracted one site at a time in a Python loop, issuing roughly seven
@@ -980,6 +1039,7 @@ allocation grows with the width: at `chi = 32`, 0.99 GiB for the fold against 3.
 full tree. Memory, not time, is what bounds the bond dimension here, and the tuner skips
 widths that do not fit rather than reporting them as slow.
 
+<a id="d-037"></a>
 ### D-037 A parallel investigation produced no recorded results, for two reasons, both avoidable
 
 Four parallel workers were run in isolated checkouts to evaluate restructurings of the
@@ -1020,6 +1080,7 @@ The same instability was then found independently on the current code, at a far 
 magnitude, and is recorded in D-038. The conclusion was right; the evidence behind it was not
 transferable, and the difference matters.
 
+<a id="d-038"></a>
 ### D-038 The full-scale bond-dimension sweep measures seed noise, not capacity
 
 The committed full-scale table reports one seed per bond dimension and shows ROC AUC from
@@ -1066,6 +1127,7 @@ at the reduced width costs twenty minutes against three and a half hours, and re
 range instead of a point is what the arm needed. It is only unsound to use it for the numbers
 the study reports as its own.
 
+<a id="d-039"></a>
 ### D-039 A thirteen-hour sweep ran without the metric that exists to catch a degenerate fit
 
 `scripts/run_seed_sweep.py` called `fit_mps` without an `evaluate` callback. It logged elapsed
@@ -1095,6 +1157,7 @@ test runs sharing the device. The metrics are unaffected; the timing is not, whi
 `require_idle_gpu` refuses to start a fresh sweep against a busy device and why the same
 discipline should apply to anything else running alongside one.
 
+<a id="d-040"></a>
 ### D-040 The divergence detector watches the wrong direction, and the sweep says why
 
 The seed-replicated sweep -- sixteen full-scale fits, four bond dimensions at four seeds --
@@ -1132,6 +1195,7 @@ That the accuracy probe exists at all is D-039: the sweep was first launched wit
 reader asking where the accuracy column was is the only reason the failure mode is visible
 here rather than an unexplained pair of bad rows.
 
+<a id="d-041"></a>
 ### D-041 Capacity is not resolvable at full scale, and one fit in eight does not train
 
 Sixteen jobs, contraction width 1, all reported:
@@ -1181,6 +1245,7 @@ Three things follow, and the middle one is the reason to record this at all.
 The rate stays as reported. What changes is that it is now positioned against work that explains
 it, which is the difference between a negative result and an unfinished one.
 
+<a id="d-042"></a>
 ### D-042 The format gate failed the build on the proposal's own filenames
 
 `scripts/check_pdf.py` scans the LaTeX sources for numeric literals, because every measured
@@ -1224,6 +1289,7 @@ survived. `SweepChiFlopSpan` is now `(SweepChiMax / SweepChiMin)^2` and cannot d
 grid. The first hand-computed value for `PowerSeRatio` was 7.96, from the rounded inputs; the
 mechanism resolved it to 8.03 from the raw ones, on its first run.
 
+<a id="d-043"></a>
 ### D-043 A results table reported four comparisons as resolvable that could not resolve themselves
 
 `results/tables/mps_h4.csv` is the evidence behind claim C5 and the source of the proposal's H4
@@ -1265,6 +1331,7 @@ The body now reports the **realised** minimum detectable effect, 0.0557, rather 
 pre-registered 0.0461. It is the larger and therefore the more conservative statement, and it
 is the one that describes this comparison rather than the estimate that preceded it.
 
+<a id="d-044"></a>
 ### D-044 The alpha floor was attributed to a mechanism that cannot produce it
 
 The README and the results section both explained the band-conditional certificate's reachable
@@ -1293,6 +1360,7 @@ of seeing that the sample size does not act through a representability floor.
 
 Both passages now describe the concentration bound, and the README states the retraction.
 
+<a id="d-045"></a>
 ### D-045 The proposal answered the rubric's smallest criteria and not its largest
 
 The official Phase I guidelines and assessment criteria were downloaded from the portal and
@@ -1339,6 +1407,7 @@ floating-point round-off"*. D-022 records the opposite: the exact statevector is
 Braket is one of four routes measured against it, and Aer agrees to between 2.6e-15 and
 4.8e-13 — three orders of magnitude above double round-off. The section now says so.
 
+<a id="d-046"></a>
 ### D-046 Three of the challenge statement's six primary metrics were computed and never reported
 
 The HSBC challenge statement, section 4.1, names the primary evaluation metrics: **ROC AUC,
@@ -1378,6 +1447,7 @@ outputs, alongside the fraud probability and the binary prediction. There is non
 never started. This is a genuine gap against a stated requirement rather than a reporting
 oversight, and it is recorded here rather than left for a reviewer to find.
 
+<a id="d-047"></a>
 ### D-047 The parity claim shipped in the PDF with no table and no script behind it
 
 D-022 records the agreement between four independent routes to the same overlap, and names
@@ -1407,6 +1477,7 @@ statevector and Braket only. The script records any backend it could not import,
 either required backend is absent -- a parity check that silently compares one implementation
 against itself would report success and mean nothing.
 
+<a id="d-048"></a>
 ### D-048 The in-band model is three-quarters one anonymised card identifier
 
 The challenge statement lists feature attribution as one of three expected outputs, alongside
@@ -1448,6 +1519,7 @@ row selection, the mutual-information feature choice and the scaler lived inline
 The tensor-network arm was re-run after the extraction and reproduced every measured column
 bit-identically.
 
+<a id="d-049"></a>
 ### D-049 Three pre-registered hypotheses and three pre-registered measurements had no written disposition
 
 An audit of the plan against the repository found two gaps of the same kind. Neither is a
@@ -1482,6 +1554,7 @@ recorded, rather than as commands that fail. `make reproduce` completes.
 The distinction that matters throughout: **"not run" is a result when a pre-registered rule
 stopped it, and a gap otherwise.** Both are now written down, and which is which is stated.
 
+<a id="d-050"></a>
 ### D-050 A reported environment deviation was not one, and the correction changed the plan
 
 An audit reported that `cuquantum-cu11`, `custatevec-cu11`, `qiskit-aer` and
@@ -1510,6 +1583,7 @@ The general lesson is the one this log keeps recording: an audit finding is a hy
 one was plausible, specific, and wrong, and it was escalated to a decision without being
 checked against the file that would have refuted it in two lines.
 
+<a id="d-051"></a>
 ### D-051 The three documents other documents promised now exist, and writing them found two errors
 
 `docs/REFERENCES.md` said `REFERENCE_CROSSCHECK.md` and `REGULATORY_SOURCES.md` existed;
@@ -1557,6 +1631,7 @@ the theorem, the five certified configurations with their held-out results, and 
 guarantee explicitly does not cover. All thirty-nine numbers in it were checked against the
 tables they come from before it was committed.
 
+<a id="d-052"></a>
 ### D-052 The statistical core now has tests, and writing them found an off-by-one
 
 Three sentences in this repository described validations that had never been committed:
@@ -1596,6 +1671,7 @@ risk at a threshold equals the mean of the indicator exactly, and that the effec
 size is the conditioned subset rather than the row count -- using the row count would claim
 more evidence than the data contains.
 
+<a id="d-053"></a>
 ### D-053 The label-censoring audit was run, and its result was never reported
 
 `scripts/audit_labels.py` has produced `label_censoring.csv` and `label_verdict.csv` since the
@@ -1628,6 +1704,7 @@ a reviewer would ask, and was left out because no argument in the draft happened
 gate that checks every quoted number against its table cannot see a table that is quoted
 nowhere.
 
+<a id="d-054"></a>
 ### D-054 A reference audit against primary sources found eleven defects, one of them a title that does not exist
 
 Every entry in `docs/REFERENCES.md` was checked against its primary source: the arXiv abstract
@@ -1689,6 +1766,7 @@ silent wrong answer.
 source -- the PSD2 Annex rates and the cuQuantum installation -- and eleven did. The difference
 was always whether the check went to the issuing document or to a summary of it.
 
+<a id="d-055"></a>
 ### D-055 An exploratory check for value-conditional under-coverage, and what it does not license
 
 A literature sweep surfaced a mechanism worth checking against this certificate. Zhong et al.
@@ -1740,6 +1818,7 @@ Reproduce with the certified rows of `riskcontrol.csv` against
 `results/runs/scores_temporal_20260828.parquet`, quartiles on `amount` within
 `band_lo <= score < band_hi` and `y == 0`, declining at `selected_lambda`.
 
+<a id="d-056"></a>
 ### D-056 The team section had dropped a disclosure the project's own rule required
 
 The pre-study draft that scoped this submission set an explicit rule for one credential: the
@@ -1775,6 +1854,7 @@ organisers which applied. Comparing the two published versions: the figure appea
 requirement this submission already meets -- state the sample count used for quantum execution,
 and stratify the subsample.
 
+<a id="d-057"></a>
 ### D-057 Six biographical claims were not supported by the artefacts, and three had no artefact at all
 
 The team section makes claims wrapped in `\Record{}`. That macro declares a figure as the
@@ -1831,6 +1911,7 @@ from verification is not the same as a fence that verifies it.
 *Separately, and outside this submission:* the `taler-sbom` README states "10 tests" where the
 suite defines 15. Not part of any deliverable here, recorded because it was found while checking.
 
+<a id="d-058"></a>
 ### D-058 A URL was clipped off the page, and no gate could see it
 
 The team section gives a portfolio URL. In the built PDF it rendered as
@@ -1855,6 +1936,7 @@ entirely readable, while the clipped URL overhung by 146 pt. Both directions are
 `tests/test_check_pdf.py`, including the case where the log is missing -- a gate that passes
 when its evidence is absent is worse than no gate.
 
+<a id="d-059"></a>
 ### D-059 The strongest credential rested on placeholder scores, and the section said so nowhere
 
 The first credential audit (D-057) removed three unsupported claims and corrected two. A second
@@ -1905,6 +1987,7 @@ statement must be safe. It was not, because the artefact does not support the at
 that size at all. The check that settled it was running the repository's own verifier, which
 took one command.
 
+<a id="d-060"></a>
 ### D-060 The rank I removed was correct, and the source I trusted to remove it was the weaker one
 
 D-057 removed "#13 of 550" from the team section, and D-059 repeated the reasoning. Both were
@@ -1953,6 +2036,7 @@ which is the honest position rather than an omission.
 mirror image: *removing* a claim is not checking it either. Both errors came from acting on a
 single source without asking which source was in a position to know.
 
+<a id="d-061"></a>
 ### D-061 The organiser's leaderboard settled a claim that three repositories had disagreed about
 
 The Yale credential has now been through four readings, three of them wrong, and the error each
@@ -2010,6 +2094,7 @@ organiser, a merge by the upstream maintainer, a coverage number by the run that
 Every wrong reading in this sequence came from a source that was reporting the fact rather than
 holding it.
 
+<a id="d-062"></a>
 ### D-062 The rank had a denominator after all, and it was on the same screen
 
 D-061 established that "550" is the maximum score and not the field size, and that "#13 of 550
@@ -2041,6 +2126,7 @@ sourced from the organiser's leaderboard, which was the right source — and the
 table without reading the control underneath it. A number absent from a document is a finding; a
 number present and unread is an error.
 
+<a id="d-063"></a>
 ### D-063 The latency measurement measured a threading default and nearly reported it as model cost
 
 E13 was the last open item on the compliance checklist: the challenge statement lists inference
@@ -2097,6 +2183,7 @@ something else.** Three separate anomalies pointed at a shared cause and each wa
 dismissible as noise. The check that resolved it — hold everything constant and sweep only the
 suspected confound — took two minutes and should have come before the table, not after it.
 
+<a id="d-064"></a>
 ### D-064 Six defects were shipping in the built PDFs, and the gates could not see any of them
 
 Every gate was green: 6 + 3 pages, 155 tests, 88 claims resolving, citations resolving, no
@@ -2144,6 +2231,7 @@ themselves: **a green gate certifies the properties it was built to check, and s
 certifies nothing about the rest.** The correct reading of "all checks passed" is "no bound
 number disagrees with its table" — which is a much smaller statement than it looks.
 
+<a id="d-065"></a>
 ### D-065 The prior work was closer than the proposal admitted, and saying so is the stronger position
 
 §1 described the conformal fraud-detection literature as certifying "a *marginal* error rate
@@ -2175,6 +2263,7 @@ so the next round starts from what was checked rather than repeating it.
 described. The proposal's one-line summary of them was not. **A citation being present is not
 the same as the sentence around it being true**, and the citation gate checks only the former.
 
+<a id="d-066"></a>
 ### D-066 I diagnosed a script from a contaminated measurement, and the instrument disproved me twice
 
 During a clean-room reproduction, `scripts/make_splits.py` printed one line about the dataset
@@ -2214,6 +2303,7 @@ a library default, here it was **processes I had started myself and left running
 attributing slowness to code, look at what else is on the machine — and when an instrument you
 have just added disagrees with the sentence you wrote beside it, the sentence is what is wrong.
 
+<a id="d-067"></a>
 ### D-067 Two of the three open Needs confirmation were errors in my own auditing, both against the author
 
 The three items this repository carried as unresolved were closed by going to the artefact. Two
@@ -2267,6 +2357,7 @@ explanation (D-063, D-066).
 Only A8 remains open, and it cannot be closed from here: the portal upload is a manual action.
 The live form was read on 2026-08-30 and confirms five empty slots and the accepted-format list.
 
+<a id="d-068"></a>
 ### D-068 The pre-registration claimed an enforcement the code does not perform
 
 Section 2.2 of the protocol stated: "`D_test` is evaluated **once** … **Every sweep, ladder and
@@ -2306,6 +2397,7 @@ This is the same shape one level up: **a pre-registration is only as good as the
 sentence in it**, and the sentences most worth auditing are the ones describing enforcement,
 because those are the ones a reader will test against the code.
 
+<a id="d-069"></a>
 ### D-069 The proposal had one figure, and its labels were under the font floor
 
 The assessment criteria ask the Technical Approach section for "a clear description of the
@@ -2338,6 +2430,7 @@ what it was actually absorbing was mathematical scripts.
 The body is 4,016 words against 4,166 before, and every figure in the submission is still
 generated from a committed table rather than drawn.
 
+<a id="d-070"></a>
 ### D-070 ULB was pre-registered, never obtained, and its one numeric claim did not follow from the split
 
 The pre-registration listed ULB European Cardholder as **Secondary**, with row and fraud counts,
@@ -2376,6 +2469,7 @@ implies the right conclusion is not evidence, and is harder to find than one tha
 wrong one.** The check that caught it was arithmetic against the protocol's own configuration,
 which costs nothing and was never run on this paragraph in three rounds.
 
+<a id="d-071"></a>
 ### D-071 The appendix printed nine amendments and listed eight, and the bound count is why
 
 `ProtocolAmendments` moved 8 to 9 the moment amendment A9 was written, and `A1-protocol.tex`
@@ -2395,6 +2489,7 @@ the `enumerate` block and asserts the item count equals `protocol_amendments` in
 leaves everything that references it unguarded.** Every bound count in this project should be
 asked what prose asserts a structure around it.
 
+<a id="d-072"></a>
 ### D-072 A tolerance chosen for a catastrophe certified a defect a reader could see
 
 `check_pdf.py` carried `OVERFULL_TOLERANCE_PT = 60.0`, set to catch a URL that overhung by
@@ -2411,6 +2506,7 @@ the text block. Run against the previously shipped PDF it reports page 4 at 44 p
 margin; against the current one, nothing outside the block on any page. **A gate that infers
 from a build log is checking the log. This one checks the page.**
 
+<a id="d-073"></a>
 ### D-073 The reference list's "cited nowhere" column was about to be used as a deletion list
 
 The cross-check reported 16 of 59 entries as reached by nothing, and the plan was to delete
@@ -2438,6 +2534,7 @@ Ten genuinely unreachable entries were deleted; 49 remain and every one resolves
 This one had a 25 % false-positive rate and its output was one command away from removing four
 working citations.
 
+<a id="d-074"></a>
 ### D-074 5.554 % was attributed to the file in three documents and to the wrong band in a fourth
 
 The claim key is `BandValueFraudRate` and its selector is `{arm: temporal, block: band}`: it is
@@ -2452,6 +2549,7 @@ whole file is still an order of magnitude above the loosest ceiling. **A claim m
 value to a selector and says nothing about the noun the prose attaches it to**, which is the
 same failure as D-071 in a different dress.
 
+<a id="d-075"></a>
 ### D-075 The kernel latency conclusion did not follow from the measurement
 
 Section 5 read "one in-band kernel evaluation would cost 96.577 ms ... it fits only because the
@@ -2469,6 +2567,7 @@ are per-request. Both PDFs and `ENVIRONMENT.md` now state the support-set assump
 linearity, and what the band does and does not bound; per-request feasibility separately
 requires holding the support set to order 100.
 
+<a id="d-076"></a>
 ### D-076 The literal scanner could not see a number at the end of a sentence
 
 `LITERAL`'s trailing lookahead was `(?![\w.])`, so a full stop immediately after a digit run
@@ -2483,6 +2582,7 @@ Also corrected in the same pass: `A3-reproduction.tex` claimed "every number in 
 is generated", which was the claim this defect falsified. It now says every *measured* number,
 which is what the machinery actually enforces.
 
+<a id="d-077"></a>
 ### D-077 Three credentials and one product name, checked against their sources
 
 The team section said the QIntern results freeze had "the 135 checks green", conflating a
@@ -2501,6 +2601,7 @@ the OpenMP note now says threads.
 five sit at $\alpha_{\mathrm{FN}} = 0.45$, so it is a necessary condition for certifying at all;
 band budget and $\alpha$ are what distinguish them.
 
+<a id="d-078"></a>
 ### D-078 The README opened with tables and closed with the picture that explains them
 
 Section 4 was 244 lines of tables between the certificate and the negative results, and the
@@ -2520,6 +2621,7 @@ by looking at the rendered PNG rather than by any test: the branch arrows origin
 the bottom box was narrower than its own caption. **No gate in this project catches either.
 Figures are checked by eye, and that is a standing cost of having them.**
 
+<a id="d-079"></a>
 ### D-079 The telemetry was written, tested, used once, and then not used again
 
 `run_log` exists because a seed sweep called `fit_mps` without a reporter and ran silently for
@@ -2542,6 +2644,7 @@ science column exactly. **The general point: a helper is not adopted because it 
 test added here asserts that each of the five scripts loading IEEE-CIS opens a progress
 destination, which is the only thing that stops this recurring a third time.
 
+<a id="d-080"></a>
 ### D-080 The reproducibility check fired on every rebuild, so it checked nothing
 
 `scripts/freeze.py` classifies `results/figures/*` as scientific artefacts and requires them to
@@ -2561,6 +2664,7 @@ produce identical bytes. The Makefile already had a `DETERMINISTIC` variable for
 reason and it was applied to the LaTeX build only, which is why the gap survived: the mechanism
 existed and covered the artefact somebody had already thought about.
 
+<a id="d-081"></a>
 ### D-081 The tables grouped their counts and the prose did not
 
 `format_value` rendered a claim exactly as `claims.yaml` records it, so section 3 read "847
@@ -2572,6 +2676,7 @@ Integers of 10,000 and above are now grouped in the inline macros as they always
 tables. Only integers: a probability or a ratio is never grouped, and `_value_appears` in
 `check_claims.py` already matched both forms, so the binding is unaffected.
 
+<a id="d-082"></a>
 ### D-082 GitHub eats backslash escapes inside math, and eleven expressions were affected
 
 A reader reported "Missing or unrecognized delimiter for \Bigl" in README section 4.2.
@@ -2633,6 +2738,7 @@ actually read, and the first attempt to build that gate used the wrong renderer 
 certified a document GitHub could not display. **A gate is only as good as its oracle, and the
 oracle has to be identified rather than assumed.**
 
+<a id="d-083"></a>
 ### D-083 Three formulas in the shipped documents are not what the code computes
 
 Found while checking the mathematics that the rendering work had touched. All three are in the
@@ -2662,6 +2768,7 @@ gates on it. It never checked a single *formula* against the code, and three of 
 in the shipped PDF while every gate was green. A number is easy to bind and a formula is not,
 which is exactly why the formulas drifted and the numbers did not.
 
+<a id="d-084"></a>
 ### D-084 The degeneracy flag disagreed with its own module, twice
 
 `degeneracy_floor` derives the bound and documents it as **strict**:
@@ -2680,6 +2787,7 @@ configuration is anywhere near the boundary. That is precisely why only a test w
 caught it, and there is one now, parameterised over the five levels on the grid, asserting the
 three statements agree at `floor` and at `floor - 1`.
 
+<a id="d-085"></a>
 ### D-085 The band was written open at both ends and implemented half-open
 
 `rows_in_band` selects `score >= low & score < high` and its docstring says so: a score at the
@@ -2704,6 +2812,7 @@ $\mathbb{P}(D(X) = \texttt{DECLINE} \mid Y = 0, X \in B)$ is a statement about a
 and a reader checking the code against the document would have found them disagreeing about
 which one.
 
+<a id="d-086"></a>
 ### D-086 The documents describe a two-model rule; the certified path thresholds one score
 
 `docs/guarantee.md` prints the decision rule as `STEP-UP, then g(x) >= lambda => DECLINE`, and
@@ -2732,6 +2841,7 @@ code about a *computation*. This one is documents disagreeing with code about *h
 there are*, which is a larger claim and was harder to see precisely because every individual
 sentence was defensible.
 
+<a id="d-087"></a>
 ### D-087 Numbers typed into a document by hand, three of four wrong, caught in one command
 
 Relocating the label-censoring control out of the six-page body and into `RESULTS.md`, the
@@ -2749,6 +2859,7 @@ exists to prevent and it happened while *moving* a passage rather than writing o
 that feels safest. **Text that carries a bound number is not prose and must not be retyped; it
 has to be read off the source or moved verbatim.**
 
+<a id="d-088"></a>
 ### D-088 The statement's first Expected Outcome had no artefact a reviewer could open
 
 The portal's challenge panel lists four Expected Outcomes, and the first is "fraud probability
@@ -2783,6 +2894,7 @@ the full 48-cell grid is what the certified-region figure plots.
 whether the *upload* answered the question the challenge asked, and the checklist row that
 should have caught it was satisfied by evidence in a format the portal rejects.
 
+<a id="d-089"></a>
 ### D-089 Four committed tables had no producer, and the manifest could not see it
 
 `freeze.py --check` compares each committed table to its recorded hash. A table that no target
@@ -2819,6 +2931,7 @@ test. Reproducing it costs eight GPU fits and buys a number nothing quotes.
 question "can this be produced again". The second needs a different test, and it is now
 `test_every_committed_table_has_a_producer`, with an exemption list that has to state a reason.
 
+<a id="d-090"></a>
 ### D-090 A map from each reference to the code that realises it
 
 `REFERENCES.md` records what is cited and `REFERENCE_CROSSCHECK.md` records, automatically,
@@ -2848,6 +2961,7 @@ Section 2 of that file is checked for attribution rather than line by line, and 
 judgement half of this check cannot be generated, which is the reason to write down where it has
 been done and where it has not.
 
+<a id="d-091"></a>
 ### D-091 The certificate was stated at a level and never at a confidence
 
 Both PDFs said "certified at level $\alpha$" throughout and neither ever printed $\delta$.
@@ -2865,6 +2979,7 @@ The same gap applied to the interval level. Every coverage verdict in section 3 
 every seed", the seeds-outside column of Table 2, Figure 2 -- is decided by
 `risk.coverage_band_level`, and 99 % appeared nowhere in either document.
 
+<a id="d-092"></a>
 ### D-092 "Tuned" described a baseline that was never tuned, in eight places
 
 There is no hyperparameter search anywhere in this repository: no grid search, no randomised
@@ -2887,6 +3002,7 @@ documenting the Expected Outcomes: "§3 against tuned XGBoost and LightGBM". The
 row in any shipped table. The challenge statement asks for at least one classical baseline and
 XGBoost is one; claiming two was gratuitous and checkable.
 
+<a id="d-093"></a>
 ### D-093 Four smaller defects the same audit confirmed
 
 **The latency figure was quoted in the wrong unit.** 96.577 ms is one Gram *row* against a
@@ -2915,6 +3031,7 @@ RBF distinctness -- conditioning admitted 28. The distinctness gate is inclusive
 `ibm_fez` hardware run "now appears in the team section where it counts", which had stopped
 being true when the section was compressed; it is back, in a section carrying 10 % of the score.
 
+<a id="d-094"></a>
 ### D-094 Two teammates' personal email addresses were in a repository going public
 
 `docs/CREDENTIALS.md` identified the teammates who independently attributed the author's QIntern
@@ -2944,6 +3061,7 @@ go. The one address remaining anywhere is the author's own, in the paragraph est
 two git identities are the same person; it is already public in his own commits, and it is his
 to keep or remove.
 
+<a id="d-095"></a>
 ### D-095 The submission ignored the two positive quantum results its own sponsor cites
 
 The challenge statement's executive summary cites a hybrid quantum neural network at 0.87
@@ -2963,6 +3081,7 @@ producing an apparent advantage.
 
 Both are now reference entries, copied from the statement's own list.
 
+<a id="d-096"></a>
 ### D-096 The statement supplies the economics the proposal declined to use
 
 Section 1 read "We attach no monetary figure: issuer-side false-decline costs are not public".
@@ -2976,6 +3095,7 @@ Section 1 now uses both, attributed to the sources the statement attributes them
 the restraint where it is still correct: the *issuer-side* cost of one false decline is not
 public, so the study certifies the rate and leaves the bank to multiply it.
 
+<a id="d-097"></a>
 ### D-097 No hardware run, and the statement is the reason
 
 The statement asks participants to "use Amazon Braket (real QPUs and simulators)", which reads
@@ -3004,6 +3124,7 @@ No requirement changed. An earlier automated diff reported the two as identical,
 but not what the diff shows; the substantive conclusion survives and the claim of identity does
 not.
 
+<a id="d-098"></a>
 ### D-098 I propagated a miscitation this repository had already caught, and asserted a fact I never checked
 
 D-095 added the challenge statement's two positive quantum results to section 4. Both halves of
@@ -3036,6 +3157,7 @@ moment to search for it first. The check that caught this was an independent pas
 rather than confirm, reading the same file I had edited; it is the second time in this project
 that adversarial verification caught a defect introduced by the fix for another defect.
 
+<a id="d-099"></a>
 ### D-099 Two named requirements of the statement, one unmet and one framed as a lapse
 
 **Class imbalance.** Section 5 of the challenge statement says "handling of class imbalance
@@ -3055,6 +3177,7 @@ the two it is.
 
 Four lines of displacement came from restatement in sections 2, 3 and 6.
 
+<a id="d-100"></a>
 ### D-100 The clean room found a defect the gates could not, which is why it is run
 
 The first clean-room pass predates `summarise_split_arms.py`, `summarise_seed_sweep.py`,
@@ -3079,6 +3202,7 @@ already states: silently passing when the evidence is absent is the worst thing 
 [`CLEANROOM.md`](CLEANROOM.md) §2b records which and why, so a third party following the
 procedure is not alarmed by them.
 
+<a id="d-101"></a>
 ### D-101 Two governing documents had never been read against the submission
 
 Five audit rounds checked this submission against itself and against the challenge statement.
@@ -3100,6 +3224,7 @@ development environment and the measured benchmark timings" and cited a *link* t
 `ENVIRONMENT.md`. Carrying and linking are not the same thing for a reader who opens one file.
 The README now states the machine and a six-row stage-cost table inline.
 
+<a id="d-102"></a>
 ### D-102 A team result presented inside a paragraph that says "single-person team"
 
 Section 8 declares "Single-person team." and, two lines below, listed the Yale Peaked Hackathon
@@ -3128,6 +3253,7 @@ and any later `$` in the same file can pair with it. The gate built for the repo
 a fresh instance of the same bug class inside the entry describing an unrelated fix, which is
 the only evidence worth having that a gate is doing its job.
 
+<a id="d-103"></a>
 ### D-103 A rule stated in the same section it was broken in
 
 D-094 removed two teammates' full names and email addresses from `CREDENTIALS.md`, and added a
@@ -3149,6 +3275,7 @@ confidential or proprietary information of any third party" -- was already ticke
 compliance checklist, and was ticked on the strength of an argument about *datasets*. A tick
 with the wrong evidence stops anyone looking again, which is exactly what happened here.
 
+<a id="d-104"></a>
 ### D-104 A section that reproduced a private repository's contents while saying it did not
 
 `CREDENTIALS.md` §2 opened with "Per the Phase I submission guidelines, no third party's
@@ -3254,6 +3381,7 @@ material the author is choosing to publish anyway.
 
 Recorded because a null row and an unconsidered row look identical six months later.
 
+<a id="d-108"></a>
 ### D-108 A novelty claim that was true as written and unqualified as read
 
 Section 1 said conformal methods "reach this problem closely" and that "none conditions the
@@ -3292,6 +3420,7 @@ challenging it, the challenge statement asks only that its own two cited results
 a 6-of-6 page is the wrong place to spend lines corroborating a negative result the document
 already reports. Recorded so the omission is visibly a decision.
 
+<a id="d-109"></a>
 ### D-109 A literature sweep that found the nearest published certificate, three weeks old
 
 [D-108](#d-108) added two selection-conditional references and stopped. A second sweep over
@@ -3329,6 +3458,7 @@ either claiming the idea or quietly citing it as though it were the source.
 
 All four were resolved against the arXiv record on 2026-09-02 before being written down.
 
+<a id="d-110"></a>
 ### D-110 A clean-room checkout found three scripts that crash instead of instructing
 
 `results/runs/` is gitignored on purpose: the per-seed score files are large intermediates and
@@ -3352,6 +3482,7 @@ populated. They tested whether the tables *regenerate*, which is a different que
 whether a reviewer can run the scripts at all. The third pass copied only tracked files and
 found in one command what two passes had missed.
 
+<a id="d-111"></a>
 ### D-111 Both competition placements are team results, and only one was attributed
 
 [D-102](#d-102) attributed the Yale placement to team MerQury and left the QPoland line bare,
@@ -3367,6 +3498,7 @@ teams'.
 Note that this was carried as an open Needs confirmation rather than guessed at, and the guess that would
 have been natural --- solo, since the CV does not say otherwise --- would have been wrong.
 
+<a id="d-112"></a>
 ### D-112 The two degenerate fits were inflating the capacity signal, not the seed noise
 
 Section 4 reported that seed noise is \ClaimSweepSpreadRatio-fold the capacity signal at full
@@ -3414,6 +3546,7 @@ already making the comparison.
 
 Paid for by deleting a sentence that restated the section title in a different register.
 
+<a id="d-113"></a>
 ### D-113 `make reproduce` could not reproduce the table behind the largest reported effect
 
 `make reproduce` passes no flags, so the defaults in `run_baselines.py` are what rebuild
@@ -3444,6 +3577,7 @@ instead of instructing), the two clean-room passes that ran in a populated tree,
 **Every one was invisible to a test suite that passes arguments.** The lesson is not about
 baselines; it is that the reviewer's path through the repository is the one least exercised.
 
+<a id="d-114"></a>
 ### D-114 A retracted attribution went back in, in the commit that removed a different instance of it
 
 [D-057](#d-057) removed "graph kernels", Weisfeiler-Lehman baselines and nested cross-validation
@@ -3463,6 +3597,7 @@ The misreading risk that motivated the change is real and is handled by context:
 titled "Two quantum arms, and how each failed", and the team line now carries a team name, a
 year and a placement, none of which reads as this study's kernel arm.
 
+<a id="d-115"></a>
 ### D-115 "Tuned" survived in four places, three of them in the shipped PDFs
 
 [D-092](#d-092) is titled "'Tuned' described a baseline that was never tuned, in eight places"
@@ -3484,6 +3619,7 @@ the held-out block.
 wrong for eight days. The generated captions are the blind spot: `tables.yaml` is prose that
 ships in the PDF, and every text audit until now searched the `.tex` sources.
 
+<a id="d-116"></a>
 ### D-116 Three shares that summed to 100.87 per cent
 
 Section 1 printed the operating point as approve / step-up / decline. Two of the three were
@@ -3505,6 +3641,7 @@ noting: it is the gate that stops the ledger accumulating definitions no documen
 fired within a minute of the claim becoming dead. The overlap is in `operating_point.csv`,
 which the roll-up rows name explicitly.
 
+<a id="d-117"></a>
 ### D-117 A requirement ticked against a section that did not contain it
 
 The challenge statement asks, in §5.2 Reporting Considerations, for a "Description of quantum
@@ -3538,6 +3675,7 @@ non-exchangeable statement, and `weighted.py` reaches no committed table. The wa
 covers the guarantee the body does make, which is that $\alpha$ must be fixed before the
 calibration scores are seen.
 
+<a id="d-118"></a>
 ### D-118 Three open questions closed by the only party who could close them
 
 All three had been carried as Needs confirmation rather than guessed at, and one of the guesses that would
@@ -3571,6 +3709,7 @@ Ltd" -- which is what §4.2's "organizational affiliations ... company, or insti
 So the document was the only surface under our control, and it now states the name. Note: Whether
 the registration field already holds it is **Needs confirmation** and can only be read while signed in.
 
+<a id="d-119"></a>
 ### D-119 The remaining audit findings, and the three that only closed across group boundaries
 
 A second workflow re-verified every confirmed finding from the full-hierarchy audit against the
@@ -3614,6 +3753,7 @@ lines from their own "roughly 380 times slower". Recomputed from `latency.csv`: 
 for the two scorers, 379x for the micro-benchmark. None reaches three orders, and a reviewer
 dividing two columns of the project's own table catches it immediately.
 
+<a id="d-120"></a>
 ### D-120 Three author strings on a submission that claims a sole author
 
 `git log` carried three author strings over 58 commits: `thedamon-wizard
@@ -3691,6 +3831,7 @@ because a browser held a compositing context throughout, and `fit_seconds` came 
 3,369 seconds against 2,747 to 3,145 for the uncontended committed run. That is the stamp doing
 its job: the numbers are visibly marked rather than silently wrong.
 
+<a id="d-122"></a>
 ### D-122 The two tables behind the central contrast had no producer, and now reproduce byte for byte
 
 `coverage_by_arm.csv` and `coverage_by_arm_seeds.csv` carry the comparison the three-arm design
@@ -3727,6 +3868,7 @@ the registry entry to be removed in the same change. Both registries in the suit
 and `SILENT_WITHOUT_A_DESTINATION` --- are now empty and kept rather than deleted. The
 mechanism is the asset, not the entries.
 
+<a id="d-123"></a>
 ### D-123 A control experiment that stopped a false finding
 
 Verifying the README in a browser on 2026-09-02 showed every formula as raw LaTeX --
@@ -3776,13 +3918,29 @@ Dividing lift by lift removes the floor from both sides:
 
 They agree to seven tenths of a point. **The deficit does not move with dimension at all.**
 
-ROC AUC settles it independently, because its floor is a fixed 0.5 whatever the base rate and
-needs no correction. As a share of the baseline's lift over 0.5 the arm reaches **35.9 %** in
-the band and **79.2 %** at full scale -- the gap *narrows*, in the opposite direction to the raw
-shares. Three normalisations, and only the confounded one supported the sentence that shipped.
+ROC AUC settles it, because its floor is a fixed 0.5 whatever the base rate and needs no
+correction. As a share of the baseline's lift over 0.5 the arm reaches **32.8 %** in the band and
+**79.6 %** at full scale -- the gap *narrows*, in the opposite direction to the raw shares. Three
+normalisations, and only the confounded one supported the sentence that shipped.
 
 `scripts/summarise_mps_lift.py` now computes all of this from committed tables, so the
 correction is bound rather than argued.
+
+**These two AUC figures were restated on 2026-09-06, and the word "independently" was withdrawn
+with them.** The script took an independent maximum per column, so
+`average_precision.max()` and `roc_auc.max()` were free to come from different fits -- and they
+did: bond dimension 32 against bond dimension 4 in the band, and two different seeds at full
+scale. The published row therefore paired one model's average precision with **a different
+model's** ROC AUC, and then offered the second as an independent check on the first. A check
+across two classifiers is not a check.
+
+`best_fit()` now selects one row by average precision and reads every metric from it, on both
+arms. **The conclusion is unchanged and the AP figures did not move at all** -- 44.8 % and
+45.5 %, still agreeing to seven tenths of a point -- because average precision was always
+selected consistently. What moved is the companion reading, 35.9 % to 32.8 % in the band and
+79.2 % to 79.6 % at full scale, and it still narrows where the raw shares widen. So the
+retraction this entry records survives its own correction; what it loses is the claim that two
+independent normalisations agreed, when one of them was reading a different fit.
 
 **What makes this the worst kind of error this project has made.** It was not inherited: it was
 written today, deliberately, as the answer to a named objective, and it went in the direction
@@ -4543,3 +4701,236 @@ appendix now says every **certified** threshold comes from the band and calibrat
 because `run_rolling_origin.py` calibrates on windows containing test-block rows; and label
 censoring is **not detected** rather than "ruled out", which is `label_audit.py`'s own verdict
 string and what eight buckets at p = 0.399 support.
+
+<a id="d-144"></a>
+### D-144 The credential that could be checked replaced the one that could not
+
+Section 8 carried *IBM Qiskit Advocate (2026)*, backed by an acceptance email held by the author
+and by nothing a reviewer could open. The Advocate programme sits at Tier 0, issues no badge and
+has no URL, which made it **the only line in section 8 with no verification route at all** -- and
+an audit had already noted that such a line reads worse than an omission, because it asks for
+trust in the one place the section is otherwise scrupulous about earning it.
+
+The author holds an IBM certification that does have a public record, so it takes the slot.
+Section 8 has room for one Qiskit line and now spends it on the verifiable one.
+
+**What was actually verified, and what was not.** The badge **title** was read from Credly's
+static HTML on 2026-09-06 and is quoted character for character, including the plain hyphen
+before *Associate* -- the LaTeX source carries a comment saying so, because `--` is better
+typography and would be the wrong name. The **recipient, issuer and issue date are rendered by
+JavaScript** and are not in the bytes a fetch returns. They are therefore recorded as unverified
+in [CREDENTIALS.md](CREDENTIALS.md) section 8, and **section 8 prints no date** for this
+credential: every other dated item there carries a date this project confirmed, and setting an
+unconfirmed year beside confirmed ones is the failure [D-111](#d-111) recorded for the QPoland
+placement.
+
+**The level is kept.** *Associate* is part of the published title. Dropping it would name a
+larger credential than the one held, which is the quiet inflation section 8 has been corrected
+for four times.
+
+**It cost a line, and the line was paid for rather than taken.** The replacement is 47 characters
+longer, page 6 had 0.14 of a line spare, and the proposal went to seven pages. Four sentences in
+sections 6 and 8 were tightened to pay for it -- a repetition of "comparison", a doubled
+"the certificate holds", a third consecutive em-dash, and "with the results in" -- none of which
+removed a fact. **No claim, number or qualification was dropped to fit the credential**, which
+was the constraint worth stating explicitly before starting.
+
+**One consequence outside this repository.** The portfolio, which section 8 links and which is
+the proposal's only verification URL, still lists the Advocate and not the certification. A
+reviewer opening it finds a credential the proposal does not name, and vice versa. That is
+recorded in [VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md) section 5c as an author
+action; it is not a defect in this submission, and it is not something this repository can fix.
+
+<a id="d-145"></a>
+### D-145 The decision log's own cross-references did not resolve
+
+GitHub slugs a heading from its entire text, so `### D-094 Two teammates' personal email
+addresses were in a repository going public` anchors at
+`#d-094-two-teammates-personal-email-addresses-were-in-a-repository-going-public`. The log
+referred to its own entries by the short form `#d-094`, which resolves **only** where an explicit
+`<a id>` had been placed by hand.
+
+Twenty-four headings had one. A hundred and nineteen did not. Eighteen links inside
+`decisions.md` therefore landed at the top of a four-thousand-line file instead of at the entry
+they named, and **nothing failed**, because no gate had ever read a link.
+
+All 143 headings now carry an anchor, and
+`tests/test_repo_hygiene.py::test_every_decision_cross_reference_resolves_on_github` pins both
+directions: that anchors keep pace with headings, and that no reference points at one that does
+not exist.
+
+**The blast radius was measured before the fix, not assumed.** Every `#d-NNN` reference in every
+tracked file was collected and checked: all eighteen broken links were **inside `decisions.md`
+itself**, and no link from the README, the proposal or any other document was affected. That
+distinction is the difference between a presentation defect in a supporting file and a broken
+reference in the artefact a reviewer reads first, and it was worth establishing before deciding
+how much the fix mattered.
+
+**A second defect surfaced in the checker, not the repository.** The first sweep also flagged
+`CREDENTIALS.md#8-c3--the-ibm-qiskit-credential` as broken. It was not: GitHub replaces **each**
+space with a hyphen, so a heading with a removed em-dash between two spaces yields a doubled
+hyphen, and the checker had collapsed whitespace runs to one. The link was correct and the
+measurement was wrong -- which is the same shape as [D-133](#d-133) and [D-137](#d-137), and the
+reason the anchors above were counted directly rather than inferred from the sweep's verdict.
+
+<a id="d-146"></a>
+### D-146 "A tuned GBDT" was never true, and the proposal had already avoided saying it
+
+The challenge statement's secondary objective 4.2 asks for improvement over "**tuned** classical
+baselines", and `scripts/tune_baseline.py` was written to establish whether this study's
+comparator deserves the word. It does not, quite: the shipped XGBoost settings are seven values
+taken from IEEE-CIS public solutions, and the twelve-configuration sweep ranks them **eighth on
+AUPRC and ninth on ROC AUC**.
+
+The shipped PDF was already correct. `03-results.tex` says "a gradient-boosted model at **fixed
+hyperparameters**", which is exactly what it is. **`README.md` was not**: claim C5 read "does not
+beat a **tuned** GBDT in the band".
+
+That is an overstatement in the project's own favour -- it claims the harder bar of objective 4.2
+was met -- and it contradicted `RESULTS.md` four hundred lines away, which says in as many words
+that the settings are "not the output of a search". C5 now matches the proposal's language and
+links the sweep, so the comparator's strength is conveyed by the evidence rather than by an
+adjective.
+
+**The sweep is still worth having, and its conclusion is unchanged.** The entire tuning headroom
+is 0.0057 AP against a quantum deficit of 0.2602 and seed noise of 0.1781 in the quantum arm
+itself. The word was wrong; the comparison it was defending is not.
+
+<a id="d-147"></a>
+### D-147 Two studies priced a model this project does not ship
+
+`run_baselines.py` fits the scorer at 1000 trees, depth 10, `min_child_weight` 4, over 439
+engineered features. Two scripts set out to describe *that* model and each re-typed it instead of
+importing it.
+
+**`measure_latency.py` timed a 400-tree, depth-6 stand-in**, under a comment reading "Fitted
+identically to the pipeline's scorers, so the timing prices the deployed model rather than a
+stand-in." Six bound claims quote the table it writes, and proposal section 5 argues feasibility
+from them.
+
+**`tune_baseline.py` searched the wrong feature matrix** -- the 400 raw numeric columns the loader
+returns, rather than `encode_strings` then `add_entity_aggregates(causal=True)` then
+`select_model_columns`. `max_depth` and `min_child_weight` optima both move with feature count, so
+the answer to "is the comparator well tuned" was read off the wrong curve.
+
+**Both are now imported from one place.** `run_baselines.XGBOOST_PARAMS` is the deployed scorer and
+`run_mps.IN_BAND_CONTROL_PARAMS` the in-band control -- two genuinely different models, which is
+why one parameter set could not have served both. The latency script's 400/6 figure was *correct*
+for the in-band re-scorer and wrong only for all traffic; an audit that reported the mirror image
+had it backwards, and reading `run_mps.py` rather than trusting the report is what caught it.
+
+**What the corrections did to the numbers, and the direction matters.**
+
+| | Published | Corrected | |
+|---|---|---|---|
+| Classical scorer, p50 | 0.084 ms | **0.154 ms** | the model correction: 1.8x slower |
+| Kernel vs scorer | 1,148x | **498x** | falls, because the denominator was wrong |
+| Kernel tail / residual budget | 75.9 % | **61.3 %** | falls |
+| Tuning headroom, AP | 0.0057 | **0.0089** | rises |
+
+**Both latency figures move against this project's own argument.** Section 5 says the quantum
+kernel cannot sit in an authorisation path; 498x and 61.3 % make that case less dramatically than
+1,148x and 75.9 % did. The conclusion survives -- 498x is still prohibitive -- but the published
+version overstated it, and the overstatement was in the direction the study wanted.
+
+**The tuning correction also cost an argument.** The earlier run had AUPRC and ROC AUC choosing
+different winners, and `RESULTS.md` used that disagreement as evidence the ordering was noise. On
+the shipped pipeline **the two metrics agree**: the shipped configuration with the learning rate
+lowered to 0.03. That argument is withdrawn, not quietly replaced, because it was one of two
+independent reasons given for not adopting the winner.
+
+**The winner is still not adopted, and the surviving reason is stronger than materiality.**
+Refitting the scorer moves the band edges, lambda and the certificate, and therefore every
+held-out number -- which requires a **second evaluation of `D_test`**. The pre-registration
+permits one, `TestFoldGuard` enforces it, and it is spent. A 0.0089 AP improvement cannot be
+bought with the guarantee that is the deliverable.
+
+**A noise floor, measured rather than assumed.** The in-band re-scorer and the quantum kernel run
+*identical* code in the old and new measurements and still moved by 23 % and 20 %. So any reading
+of `latency.csv` finer than about a fifth is host variation. The first re-measurement attempt was
+discarded for exactly this: it was taken while this session was editing documents, and
+`CLEANROOM.md` already records a loaded host driving the same figure to 177.8 %. The adopted run
+waited for load below 0.15 per core with nothing else running.
+
+<a id="d-148"></a>
+### D-148 Three gates reported a pass they had never tested
+
+Each of these printed or returned success on a path where the thing it exists to check was never
+evaluated. None was caught by a test, because none of the three had a test.
+
+**`check_parity.py` returned 0 twenty lines before its verdict.** A branch added to stop a
+four-row run overwriting the committed twelve-row table returned 0 from inside the skip, while
+the agreement check sat below the write. The skip is reached in exactly the environment the
+documented procedure produces -- `make venv` installs `.[dev]`, and `qiskit-aer` lives in the
+optional `gpu-crosscheck` extra -- so four Braket rows exceeding tolerance exited 0 under the
+printed sentence "Every comparison that did run agreed with the reference." The four-backend
+agreement is this study's stated substitute for hardware execution, so the only gate behind that
+claim could not fail. **Verified against a reconstructed pre-fix copy**, which returns 0 on
+disagreeing rows; `tests/test_check_parity.py` now pins both directions.
+
+**`split_conformal_coverage` re-derived the order statistic** with `np.ceil` and `np.sort` instead
+of calling `conformal_threshold`, whose validation is the difference between the two. With a NaN
+among the calibration scores the library function raises; the inline copy sorted the NaN last,
+took it as the threshold, found nothing at or above it, and reported zero errors with
+`finite_sample_ok=True` -- a corrupted calibration block certified as clean coverage. The
+function's own docstring warns that a producer re-deriving the order statistic "could drift from
+the one the certificate uses". It had. Both by-arm tables still reproduce byte-identically.
+
+**`measure_latency.py` announced it had preserved a table it was about to overwrite.** The
+contention message ended "results/tables/latency.csv is left as committed" and was printed before
+the `--allow-contended` return, so the flag produced that sentence and then replaced the file.
+
+<a id="d-149"></a>
+### D-149 The upload set was checked less strictly than the repository
+
+**A mutable counter sat inside the byte-identity manifest.** `TestFoldGuard.authorise` increments
+`evaluations` in `results/tables/test_access.json`, which the SCIENTIFIC glob swept up. Every
+reproduction therefore moved a scientific artefact and `make check` answered with "either a
+measurement genuinely changed, or the run is not reproducible" -- [D-080](#d-080)'s failure mode
+exactly, a check that fires every time teaching its reader to clear it unread. It is now
+specification, alongside `decision_log.csv`, and **listed rather than dropped**: removing it from
+both classes would have left the file recording how often the held-out fold was read as the one
+artefact under `results/` that no manifest covers.
+
+**`assemble_submission.py` hash-checked two of the four staged files the manifest covers.**
+`predictions.csv` and `certified_region.png` are both scientific members, so re-running
+`export_predictions.py` after `make freeze` let the staging script pass while `freeze.py --check`
+on the same tree failed. `riskcontrol.py` stays out deliberately -- it is source, the manifest
+covers no Python file, and listing it would check nothing.
+
+**And it would delete the artefacts it had just verified.** `--out` is emptied with `rmtree`
+before staging. The default is `submission/portal`; `--out submission` is one keystroke away and
+would have removed `proposal.pdf` and `appendix.pdf` -- the two files whose hashes are verified
+four lines earlier -- then failed copying them. Neither is recoverable without a rebuild. The
+guard now refuses any `--out` that contains a staged source, verified by running it.
+
+<a id="d-150"></a>
+### D-150 "Not verifiable" described the tool, not the evidence
+
+The IBM Qiskit certification replaced the Advocate line in section 8 because the Advocate has no
+public record ([D-144](#d-144)). A plain HTTP fetch of the replacement's Credly URL returned a
+navigation shell -- Credly renders badge detail client-side -- so `CREDENTIALS.md` recorded the
+badge **title** as verified and the **holder, issuer and issue date** as not verifiable from
+here, and section 8 deliberately printed no year.
+
+**Opening the same URL in a browser rendered all of them**: issued to Amon Koike, by IBM
+Professional Certification, on 6 September 2026, against exam C1000-179. Nothing about the source
+had changed. The fetch tool could not execute JavaScript, and that limitation was written down as
+a property of the evidence.
+
+This is [D-133](#d-133) and [D-137](#d-137) in miniature -- concluding from "I did not see it"
+that "it is not there" -- and it is the third time this project has made that inference. The
+difference here is the direction: the earlier two over-read evidence into a finding, this one
+under-read it into a caveat, and the correction *adds* a confirmed fact rather than withdrawing
+one.
+
+Section 8 now prints the year, `CREDENTIALS.md` section 8 carries every field with the browser
+read date, and P15 records that the row turned twice. One limit is stated rather than papered
+over: the badge names Amon Koike, and no document in this repository can confirm that the person
+operating the repository is that Amon Koike. That is resolved the way C1 and C2 are, by taking
+the author's identity as given.
+
+**The badge's own metadata grades it `Foundational`.** That is noted beside the title so nothing
+here reads as a senior certification; *Associate* is retained because it is part of the published
+name, not because it is the level.
+

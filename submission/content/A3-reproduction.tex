@@ -9,14 +9,14 @@ make reproduce
 make check    # rebuilds the PDFs, then the claim, citation and manifest gates
 \end{verbatim}
 
-\paragraph{A third clean-room run, \Record{2026-09-05}.} From an empty directory,
-\Record{26} of \Record{34} committed tables are byte-identical and five more agree in every
-measured value, differing only in wall-clock seconds --- including the full-scale
-tensor-network fits, exact to the last digit on both metrics across a rebuilt CUDA stack.
-\Record{94} of \Record{103} bound claims passed. The two that did not are the two that cannot
-be re-measured everywhere --- latency, whose every value is a timing, and parity, which needs
-the optional extra above --- and both now report a skip and keep the committed table rather
-than overwrite it, so the same run on the same host is green and says what it did not verify.
+\paragraph{A fourth clean-room run, \Record{2026-09-06}.} From an empty directory,
+\Record{28} of the \Record{34} tables committed at that date are byte-identical and five more
+agree in every measured value, differing only in wall-clock seconds --- including the
+full-scale tensor-network fits, exact to the last digit across a rebuilt CUDA stack. All
+\Record{102} bound claims passed, and the run reached the manifest comparison rather than
+halting before it. The third run, a day earlier, left nine failing: latency, whose every value
+is a timing, and parity, which needs the optional extra above. Both now report a skip and keep
+the committed table rather than overwrite it, so a reviewer's run says what it did not verify.
 
 \paragraph{Two environment traps, both silent.} \texttt{qiskit-aer} and
 \texttt{qiskit-aer-gpu-cu11} install the \emph{same} package, so whichever pip unpacks last

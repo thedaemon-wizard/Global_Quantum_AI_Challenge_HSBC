@@ -117,6 +117,21 @@ def main(argv: list[str] | None = None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     target = args.out / "parity.csv"
 
+    # The verdict is decided before anything below can return.  It used to sit at the end of
+    # main, twenty lines *after* the skip branch returned 0 -- so in the default environment,
+    # which is the one the documented procedure produces, a genuine numerical disagreement was
+    # reported as "Every comparison that did run agreed with the reference" and exited 0.  The
+    # comment below already claimed the reduced comparison "still had to agree"; it did not.
+    # Deciding here is what makes that sentence true by construction rather than by intent.
+    if not frame["agrees"].all():
+        failed = frame[~frame["agrees"]]
+        print(f"\n{len(failed)} comparison(s) exceed the tolerance of {TOLERANCE:.0e}.")
+        print(
+            failed[["encoding", "n_qubits", "backend", "max_abs_difference"]]
+            .to_string(index=False)
+        )
+        return 1
+
     # Do not overwrite a wider cross-check with a narrower one.  `aer_cpu` and `aer_gpu` are
     # optional -- they arrive with `cuquantum-cu11` under NVIDIA's licence -- so a default
     # environment compares against Braket alone and produces a third of the rows.  Writing that
@@ -158,11 +173,6 @@ def main(argv: list[str] | None = None) -> int:
     for backend, value in worst.items():
         print(f"    {backend:>10s} {value:.3e}")
     print(f"  Wrote {display_path(target)}")
-
-    if not frame["agrees"].all():
-        failed = frame[~frame["agrees"]]
-        print(f"\n{len(failed)} comparison(s) exceed the tolerance.")
-        return 1
     return 0
 
 

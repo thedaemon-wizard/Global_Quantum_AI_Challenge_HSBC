@@ -13,6 +13,7 @@ it was used. Nothing here is taken on trust from a filename.
 |---|---|
 | Source | Kaggle competition `ieee-fraud-detection`, `train_transaction.csv` and `train_identity.csv` |
 | Obtained | Downloaded by the project owner from the competition data page; staged locally as `datasets/ieee-fraud-detection.zip` |
+| Rules accepted | **Attested by the author, not verifiable from this repository.** Accepted on the competition data page before download. See the note below. |
 | Licence | **Kaggle competition rules**, not an open licence. Section 7.A restricts use to **non-commercial purposes only**; section 7.B forbids redistribution. See the note below. |
 | In this repository | **Never committed.** `.gitignore` carries an anchored `/datasets/` pattern. |
 | Verified | 590,540 rows, 20,663 frauds (3.4990 %), 394 columns, `TransactionDT` monotonically non-decreasing (17,191 ties, so it is ordered but not strictly increasing — the loader asserts non-decreasing, which is what the temporal split needs), spanning exactly 182.00 days. Asserted at load time by `src/hsbcfraud/data/ieee_cis.py`, so a substituted or truncated file fails immediately rather than producing plausible numbers. |
@@ -39,6 +40,22 @@ the data does not.
 
 Practical consequence for a reviewer: every number in this submission is reproducible by anyone
 who accepts the same competition rules, and none of it may be carried into a deployed system.
+
+**Acceptance is attested, not evidenced, and the distinction is deliberate.** The author accepted
+the competition rules on the data page before downloading the archive. That act happened in a
+browser session and left nothing in this repository, so it is recorded here as an **attestation
+by the author** and carries exactly the weight of one -- the same footing as the credential rows
+in [CREDENTIALS.md](CREDENTIALS.md) that no artefact here can confirm.
+
+Two things it deliberately does **not** lean on. It does not claim that possession of the archive
+proves acceptance: Kaggle's data page renders client-side and returns nothing about rule gating
+to a plain fetch, so whether the download is technically gated could not be confirmed on
+2026-09-06 and is not argued from. And it does not upgrade itself by association with the two
+quotations above, which were read directly at
+<https://www.kaggle.com/competitions/ieee-fraud-detection/rules> on 2026-08-30 and are
+independently checkable by anyone. **What the rules say is verified; that they were accepted is
+attested.**
+
 
 **The data cannot ship, so its fingerprint does.** Section 7.B forbids redistribution, which
 makes the input the one part of this study a reader must fetch themselves -- and therefore the
@@ -123,12 +140,19 @@ trivially. Reproducing it costs eight GPU fits. `tests/test_repo_hygiene.py` car
 single *exemption* to the rule that every committed table has a producer.
 
 Exemption is not the same as absence, and this file used to read as though it were. Two further
-tables have no producer either -- `coverage_by_arm.csv` and `coverage_by_arm_seeds.csv` -- but
-they are recorded in the same test as defects rather than exemptions, under
+tables had no producer either -- `coverage_by_arm.csv` and `coverage_by_arm_seeds.csv` -- and
+were recorded in the same test as defects rather than exemptions, under
 `TABLES_WHOSE_PRODUCER_IS_MISSING`, because unlike this one they should have had a producer all
 along. They were invisible for the whole study because the guard searched the corpus for the
 file name and three scripts *read* `coverage_by_arm.csv`, which a substring match cannot tell
 from a write.
+
+**Both have since been closed.** `scripts/run_coverage_arms.py` derives every row from the
+per-seed score files `run_baselines.py` already writes, through the same
+`split_conformal_coverage` the certificate uses, and reproduces both tables byte-identically.
+`TABLES_WHOSE_PRODUCER_IS_MISSING` is now empty, so `mps_seed_spread.csv` below is the single
+remaining table without a producer, and it is an exemption with a stated reason rather than a
+gap nobody had noticed.
 
 ---
 

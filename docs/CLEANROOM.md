@@ -38,7 +38,10 @@ six bound claims quote it. Any other CPU produces different numbers, so re-measu
 reproduction would fail those six for every reviewer -- which is exactly what happened to the
 third pass, where a loaded host produced timings two to four times the committed ones and took
 the kernel's share of the authorisation budget from 75.9 % to 177.8 %, past the point where the
-conclusion inverts.
+conclusion inverts. (Both figures are as they stood then. The committed baseline has since been
+re-measured to **61.3 %** on a quiet host, after [D-147](decisions.md) corrected the model the
+scorer rows priced; the point the episode makes is unchanged and the ratio between a quiet and a
+loaded reading is if anything larger.)
 
 `measure_latency.py` therefore preserves the committed table by default and says so. Pass
 `--measure` to take your own reading; it will still refuse above 0.25 load per core, because a
@@ -136,9 +139,14 @@ verdicts are now named constants read in both places.
 | `test_results_tables_are_tracked` | same | same |
 
 Every other collected test either passes or is a recorded expected failure. At the last
-measurement, 2026-09-02, the tree collected 187: these three, five strict `xfail`s that record
-defects elsewhere in the repository — two producerless tables and three scripts that read the
-full dataset behind no progress destination — and 179 that pass. The composition is stated with
+measurement, **2026-09-06**, the tree collected 210: these three, **no strict `xfail`s at all**,
+209 that pass and one skipped. The five `xfail`s the previous measurement recorded on 2026-09-02
+have all cleared, and they cleared by the defects being fixed rather than by the entries being
+deleted: `scripts/run_coverage_arms.py` now produces the two producerless tables, and
+`audit_labels.py`, `run_explain.py` and `run_power.py` each open a `run_log`. Both registries --
+`TABLES_WHOSE_PRODUCER_IS_MISSING` and `SILENT_WITHOUT_A_DESTINATION` -- are now empty dicts, and
+they are kept rather than deleted so the next such defect has a place to be recorded instead of
+argued about. The composition is stated with
 its date rather than as a bare "N of M", because the suite grows and both halves of such a
 figure go stale silently: this sentence read "172 of 175" against a tree that collected 179,
 and then "184 of 187" against a tree in which five of those 187 had since become expected
@@ -223,7 +231,8 @@ tables in the "did not reproduce" row.
 **Defect one: a latency benchmark measures the host.** Six timing claims failed. The scorer
 tail moved from 0.32 ms to 1.27, the kernel tail from 129 ms to 302, and
 `LatencyKernelBudgetShare` from **75.9 % to 177.8 %** -- past the point where the claim's own
-note, "under one, so it fits", inverts into "does not fit". Nothing was wrong with the code.
+note, "under one, so it fits", inverts into "does not fit". (75.9 % was the committed value at
+the time; it is **61.3 %** since the 2026-09-06 re-measurement, [D-147](decisions.md).) Nothing was wrong with the code.
 The host was busy, at a load average of 33 across 20 cores, **and the busiest thing on it was
 the work of auditing this submission**. `measure_latency.py` now refuses above 0.25 load per
 core, because a number that silently changes by a factor of four is worse than a run that
@@ -241,3 +250,51 @@ machine by someone who had just built the tree, which is the one reader a reprod
 does not need to satisfy. Running it under adversarial conditions -- stale code, contended
 host, default environment -- is what turned up anything, and both findings are things a
 reviewer would have hit first.
+
+
+## 2d. Fourth run, 2026-09-06: the prediction, tested
+
+The third pass ended with `make check` failing on nine claims and a diagnosis that the two
+tables which could not reproduce anywhere were being regenerated and then failed against. The
+fix -- latency re-measurement made opt-in, parity refusing to overwrite a wider result -- made a
+prediction: **a fourth pass should come back green.** This is that pass.
+
+`make reproduce` exit 0. `make check` **exit 0**, and it reached the manifest comparison rather
+than halting at the claims gate:
+
+```
+All 102 claims agree with their tables.
+every citation resolves to a reference entry
+Protocol unchanged. Guarantee hash a8275e8fc7666cb3, amendments A1-A9
+All 51 scientific artefacts match the manifest.
+```
+
+**What actually reproduced**, measured by diffing all 34 committed tables against the clean
+room's own regenerated ones rather than by reading the run log:
+
+| | Tables |
+|---|---|
+| Byte-identical | **28** |
+| Identical in every measured value, differing only in a wall-clock column | **5** |
+| Differing in a measured value | **1**, the decision-entry count |
+
+The last is `decision_log.csv`, a projection of `docs/decisions.md` that moves whenever an entry
+is added, and which [D-128](decisions.md) reclassified as specification for exactly that reason.
+So **every scientific value in every table reproduced**, including the full-scale
+tensor-network fits, across a fresh virtual environment and a rebuilt CUDA stack.
+
+Twenty-eight byte-identical against the third pass's twenty-six. The two that moved into the
+column are latency and parity, which now preserve rather than overwrite.
+
+**Why the quoted artefact count is 51 and the manifest now says 52.** The extra file is
+`results/tables/baseline_tuning.csv`, the hyperparameter sweep, which was committed at 19:15 --
+after this pass had already reached its manifest comparison. The count moved because the study
+gained a table, not because anything in the clean room disagreed with it. Read the block above as
+the output of a run against the tree as it stood, which is what it is.
+
+**One correction to how the third pass was reported.** After fixing the last failing claim, a
+`git checkout` in the clean room reverted its regenerated tables to the committed ones, and the
+claim check that followed was therefore committed-claims against committed-tables -- trivially
+true, and briefly written up as though it meant something. It did not. This pass was re-run
+from scratch for that reason, and the table above is a direct file diff, not an inference from
+a log.

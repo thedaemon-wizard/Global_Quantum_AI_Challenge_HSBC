@@ -63,22 +63,32 @@ def encode_strings(frame: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+# The deployed full-traffic scorer.  A module constant rather than literals inside `fit_xgboost`,
+# because two other scripts need to describe *this* model and were each re-typing it:
+# `measure_latency.py` priced a 400-tree depth-6 stand-in while its comment said the timing
+# "prices the deployed model rather than a stand-in", and `tune_baseline.py` kept a third copy as
+# the incumbent to search around.  One dict, imported, so the three cannot disagree again.
+XGBOOST_PARAMS = dict(
+    n_estimators=1000,
+    max_depth=10,
+    learning_rate=0.05,
+    subsample=0.9,
+    colsample_bytree=0.5,
+    min_child_weight=4,
+    reg_lambda=1.0,
+    tree_method="hist",
+    eval_metric="aucpr",
+    verbosity=0,
+)
+
+
 def fit_xgboost(x_train, y_train, x_eval, seed: int, device: str = "cuda"):
     import xgboost as xgb
 
     model = xgb.XGBClassifier(
-        n_estimators=1000,
-        max_depth=10,
-        learning_rate=0.05,
-        subsample=0.9,
-        colsample_bytree=0.5,
-        min_child_weight=4,
-        reg_lambda=1.0,
-        tree_method="hist",
+        **XGBOOST_PARAMS,
         device=device,
-        eval_metric="aucpr",
         random_state=seed,
-        verbosity=0,
     )
     model.fit(x_train, y_train)
     return model, model.predict_proba(x_eval)[:, 1]

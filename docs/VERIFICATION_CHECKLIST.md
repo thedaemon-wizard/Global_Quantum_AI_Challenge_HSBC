@@ -34,8 +34,35 @@ A row is ticked only when the check was actually run, not when it was planned.
 | `[x]` | GitHub rendering of every markdown document | 2026-08-31; re-checked 2026-09-02 | All spans render; enforced by `scripts/check_markdown_math.py` against GitHub's own `POST /markdown` and MathJax. The Mermaid pipeline diagram was watched rendering in a browser on 2026-09-02 |
 | `[ ]` | In-browser re-check of math rendering, 2026-09-02 | **inconclusive, and the reason matters** | The README's formulas displayed as raw LaTeX in the browser used for this check. That is **not** a defect in this repository: GitHub's *own* documentation page for mathematical expressions displayed `$\sqrt{3x-1}+(1+x)^2$` as raw text in the same session, with zero math nodes. GitHub renders math client-side, and that renderer was not executing. The control experiment is what stopped this being filed as a defect against the submission. Re-check from a different browser before 2026-09-15 |
 | `[ ]` | The repository URL printed in the proposal title block | **manual, before upload** | Confirmed 404 to an unauthenticated request on 2026-09-02, which is correct while private. Must be public on 2026-09-15 or the title block points at nothing |
-| `[x]` | The portfolio, which is the proposal's only verification URL | fetched and read 2026-09-02 | HTTP 200. Five claims agree with §8 exactly: the sole proprietorship "filed 1 Aug 2026", Team MerQury, three merged pull requests with two bounty issues (#2242 and #749) for USD 200, Qiskit Advocate (Feb 2026), and QIntern 2026. **One disagrees, and the proposal is the correct one** -- see §5c |
+| `[x]` | The portfolio, which is the proposal's only verification URL | fetched and read 2026-09-02 | HTTP 200. Four claims agree with §8 exactly: the sole proprietorship "filed 1 Aug 2026", Team MerQury, three merged pull requests with two bounty issues (#2242 and #749) for USD 200, and QIntern 2026. A fifth agreed until 2026-09-06, when §8 replaced the Qiskit Advocate line with a certification that has a public badge; the portfolio still lists only the Advocate. **Two now differ, and in both the proposal is the one to trust** -- see §5c |
 | `[ ]` | The upload itself, and the lead-contact field | **manual, before upload** | Cannot be automated |
+
+## 2b. The portal, read in a browser on 2026-09-06
+
+Read while signed in at
+`https://quantumaiportal.thequantuminsider.com/user/.../#challenges`. What the live form says,
+rather than what this repository assumes about it:
+
+| | Portal | Consequence here |
+|---|---|---|
+| HSBC challenge status | **Not submitted**, `0 uploaded - 5 slots left`; **My Files** reads "No files uploaded yet" | The five-file plan fits exactly, with nothing to remove first |
+| Allowed formats | `PDF, PNG, JPG, WEBP, GIF, PY, JSON, JS, XLS, XLSX, CSV, DOC, DOCX` | The staged set is `.pdf .pdf .csv .py .png` -- **every one allowed** |
+| Operative statement | the download link resolves under **`/uploads/2026/08/`**, `HSBC-Challenge-Statement-vFinalRevised.pdf` | Confirms the August revision is the live document; the April `vF-1` is superseded |
+| Resource documents | Submission guidelines, Assessment Criteria and Terms all under `/uploads/2026/04/` | The three governing documents have not moved since April |
+| Submission form fields | a file input and nothing else -- no team-name, title or description field | Whatever the account's registration holds is what the organisers see; the form offers no place to state a trading name at upload time |
+
+**The four Expected Outcomes the portal lists for this challenge, against what ships:**
+
+| Portal wording | Where it is answered |
+|---|---|
+| "Fraud probability scores (float [0,1]) and binary predictions for each transaction" | `predictions.csv`, 115,534 rows: `fraud_probability` spanning [0.0000, 1.0000], `predicted_fraud`, and `decision` carrying the three-valued rule |
+| "Feature attribution analysis explaining individual predictions" | `attribution.csv` and `attribution_examples.csv`, from `scripts/run_explain.py` |
+| "Quantitative comparison with at least one classical baseline (XGBoost, LightGBM, or CatBoost)" | `baselines.csv` -- XGBoost **and** LightGBM, five seeds, three splits |
+| "Documentation of quantum encoding strategy, circuit design choices, and conditions where quantum methods..." | proposal section 4 and `circuits.csv`; `results/figures/circuits.png` draws the screened encodings |
+
+**Still manual, and still open.** The upload itself, and confirming the repository URL in the
+title block resolves once the repository goes public on 2026-09-15. Neither can be automated
+from here.
 
 ## 3. Reproduction
 
@@ -43,7 +70,7 @@ A row is ticked only when the check was actually run, not when it was planned.
 |---|---|---|---|
 | `[x]` | Clean-room, first pass | 2026-08-30 | [`CLEANROOM.md`](CLEANROOM.md) §2 |
 | `[x]` | Clean-room, second pass covering the four producers written afterwards | 2026-08-31 | All five derived tables byte-identical; found one defect, a verdict literal that had drifted between a row builder and its summary. [`CLEANROOM.md`](CLEANROOM.md) §2b |
-| `[x]` | Every committed table has a producer | continuous, `tests/test_repo_hygiene.py` | **Three tables have none, not one.** `mps_seed_spread.csv` is the documented exemption ([`PROVENANCE.md`](PROVENANCE.md) §1.4); `coverage_by_arm.csv` and `coverage_by_arm_seeds.csv` should have had producers and are carried as strict xfails so the entries clear themselves the moment one is written. This row read "one documented exemption" while the gate behind it searched for the file name anywhere in `scripts/` and `src/`, which counted the three scripts that *read* `coverage_by_arm.csv` as producing it |
+| `[x]` | Every committed table has a producer | continuous, `tests/test_repo_hygiene.py` | **One table has none, and it is the documented exemption.** `mps_seed_spread.csv` ([`PROVENANCE.md`](PROVENANCE.md) §1.4). This row read "one documented exemption" when the true figure was three, because the gate behind it searched for the file name anywhere in `scripts/` and `src/` and so counted the three scripts that *read* `coverage_by_arm.csv` as producing it. The gate was corrected, which exposed `coverage_by_arm.csv` and `coverage_by_arm_seeds.csv` as producerless; both were carried as strict xfails until `scripts/run_coverage_arms.py` was written, and `TABLES_WHOSE_PRODUCER_IS_MISSING` is now empty. Both tables reproduce byte-identically ([D-132](decisions.md)) |
 | `[x]` | Walkthrough against the committed tables | `make walkthrough` | Every assertion holds |
 | `[ ]` | Full-scale sweep re-run | not re-run | 13 GPU-hours; the frozen manifest covers it and no claim depends on re-deriving it |
 
@@ -100,6 +127,7 @@ this repository and are recorded here because the submission points at them.
 | Yale field size | "#13 / **550 teams** (team score 450)" | "13th of **549** at 450 of 550" | **The submission.** [D-061](decisions.md) settled this from the organiser's own leaderboard: the pagination control reads `11-20 of 549`, so 549 is the field, and 550 is the maximum score. The portfolio uses 550 for both, which is the exact conflation D-061 was written to remove |
 | Yale method reach | "9/10 peaked-circuit challenges **up to 69 qubits**" | "matrix-product-state runs are exact to **60** qubits and degrade above it" | **Both, about different things.** Nine of ten were solved and the largest was 69 qubits; separately, the *saved tensor-network* runs are exact to 60. [D-059](decisions.md) established that no artefact attributes the 69-qubit answer to a tensor network, which is why §8 makes the narrower claim. Not a contradiction, but a reviewer reading them together may not see that |
 | QPoland title | "Quantum Graph Kernels for Molecular Classification" | "Quantum kernels" | **Neither is wrong; the submission is deliberately narrower.** [D-114](decisions.md) reverted a "graph kernels" label because [D-057](decisions.md) removed that attribution for want of any checkable implementation. The CV uses a third form, "Quantum-Inspired Graph Kernels" |
+| Qiskit credential | "Qiskit Advocate (Feb 2026)" | "IBM Certified Quantum Computation using Qiskit v2.X Developer - Associate" | **Both are held; §8 prints the one a reviewer can check.** The Advocate programme issues no badge, so it has no URL; the certification has one, recorded in [CREDENTIALS.md](CREDENTIALS.md) §8. §8 has room for a single Qiskit line and spends it on the verifiable credential. **Author action, outside this repository:** add the certification to the portfolio, or a reviewer opening the link finds a credential the proposal does not name and vice versa |
 
 **Needs confirmation, outside this repository.** The portfolio describes the graph-kernel work as
 "10-fold stratified cross-validation" and the CV as "nested 5-fold". One of the two is wrong, or
@@ -137,7 +165,7 @@ Three things this apparatus cannot check, stated so they are not mistaken for co
   misleading scale. Every figure in the submission has been looked at; that is the whole
   assurance.
 * **A formula against the literature is a judgement.** [`REFERENCE_IMPLEMENTATION.md`](REFERENCE_IMPLEMENTATION.md)
-  records which five were read line by line against their cited source and which fifteen were
+  records which five were read line by line against their cited source and which thirteen were
   checked only for attribution.
 * **The upload is manual.** Everything up to `submission/portal/` is verified; what is actually
   uploaded, and to which slot, is not.

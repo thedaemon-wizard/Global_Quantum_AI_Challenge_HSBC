@@ -122,48 +122,62 @@ baselines". This study's XGBoost settings are seven values taken from the IEEE-C
 solutions, not the output of a search -- so the question is whether that leaves the comparator
 weaker than it should be. Measured rather than argued.
 
-`scripts/tune_baseline.py` ranks twelve configurations, a coordinate sweep around the shipped
-one across five axes. **It searches entirely inside `D_train`**: fitted on the first 288,289
-rows, ranked on the 67,927 that follow. `D_band`, `D_cal` and `D_test` are never read, because
-selecting on any of them would spend the block that sets the band edges, certifies lambda, or
-carries the single-evaluation rule.
+`scripts/tune_baseline.py` ranks twelve configurations, a coordinate sweep around the shipped one
+across five axes. **It searches entirely inside `D_train`**: fitted on the first 288,289 rows,
+ranked on the 67,927 that follow. `D_band`, `D_cal` and `D_test` are never read, because selecting
+on any of them would spend the block that sets the band edges, certifies lambda, or carries the
+single-evaluation rule.
+
+**It fits the pipeline the scorer actually ships with**, which it did not at first: the search
+used the 400 raw numeric columns the loader returns, while `run_baselines.py` fits 439 features
+through `encode_strings` then `add_entity_aggregates(causal=True)` then `select_model_columns`.
+The row labelled "shipped" was therefore not the shipped model, and `max_depth` and
+`min_child_weight` optima both move with feature count -- the search was reading the right
+question off the wrong curve. Every figure below is from the corrected run
+([D-147](decisions.md)).
 
 Ranked on both metrics the statement names first -- ROC AUC, which it lists first, and AUPRC,
 which it recommends for imbalanced data:
 
 | | AUPRC | ROC AUC |
 |---|---|---|
-| Best of twelve | 0.5520 (`max_depth` 12) | 0.8984 (`learning_rate` 0.03) |
-| **Shipped configuration** | **0.5463** (rank 8) | **0.8932** (rank 9) |
-| Worst of twelve | 0.5301 | 0.8888 |
-| **Headroom above shipped** | **0.0057** | **0.0052** |
-| **Spread across all twelve** | **0.0219** | **0.0096** |
+| Best of twelve | 0.5529 | 0.8987 |
+| **Shipped configuration** | **0.5440** (rank 7) | **0.8885** (rank 11) |
+| Worst of twelve | 0.5346 | 0.8814 |
+| **Headroom above shipped** | **0.0089** | **0.0101** |
+| **Spread across all twelve** | **0.0183** | **0.0172** |
 
-**The two metrics pick different winners.** AUPRC prefers `max_depth` 12; ROC AUC prefers the
-lower learning rate, which ranks fourth on AUPRC. When two reasonable criteria disagree about
-which of twelve configurations is best, the ordering is not measuring a real difference between
-them -- which is the same conclusion the magnitudes give, arrived at independently.
+**Both metrics pick the same winner**: the shipped configuration with the learning rate lowered
+from 0.05 to 0.03, every other axis unchanged.
 
-F1, precision and recall are deliberately not ranked on. Each needs a threshold, and choosing
-one here would make the comparison depend on that choice rather than on the hyperparameters;
-the certificate selects the operating point downstream, on blocks this search never reads.
+*An earlier version of this section argued the opposite* -- that AUPRC and ROC AUC disagreed about
+the winner, and that the disagreement was itself evidence the ordering was noise. That argument
+was an artefact of the wrong feature matrix and does not survive the corrected run. It is
+withdrawn rather than quietly replaced, because it was load-bearing: it was the second of two
+independent reasons given for not adopting the winner, and only the first still stands.
 
-The shipped configuration ranks eighth and ninth of twelve, which sounds worse than it is. What
-matters is the scale of the whole tunable range against the effect being measured:
+F1, precision and recall are deliberately not ranked on. Each needs a threshold, and choosing one
+here would make the comparison depend on that choice rather than on the hyperparameters; the
+certificate selects the operating point downstream, on blocks this search never reads. All five
+metrics the statement names *are* reported on the held-out test set, with the confusion matrix,
+in [`baselines.csv`](../results/tables/baselines.csv) and in appendix A4.
+
+The shipped configuration ranks seventh and eleventh of twelve, which sounds worse than it is.
+What matters is the scale of the whole tunable range against the effect being measured:
 
 | Quantity | Average precision |
 |---|---|
-| Best-minus-shipped, the entire tuning headroom | 0.0057 |
-| Spread across all twelve configurations | 0.0219 |
+| Best-minus-shipped, the entire tuning headroom | 0.0089 |
+| Spread across all twelve configurations | 0.0183 |
 | **Seed noise in the quantum arm at one bond dimension** | **0.1781** |
 | **The quantum arm's deficit at full scale** | **0.2602** |
 
-**The quantum deficit is 46 times the tuning headroom and 12 times the entire tuning spread.**
-The quantum arm's own run-to-run variance, at a single fixed bond dimension, is 31 times the
-headroom. No hyperparameter choice available here moves the comparison's conclusion, and the
-classical arm is therefore not under-tuned in any sense that bears on it.
+**The quantum deficit is 29 times the tuning headroom and 14 times the entire tuning spread.** The
+quantum arm's own run-to-run variance, at a single fixed bond dimension, is 20 times the headroom.
+No hyperparameter choice available here moves the comparison's conclusion, and the classical arm
+is therefore not under-tuned in any sense that bears on it.
 
-**The winner was not adopted, deliberately.** Doing so would refit the scorer, and with it the
+**The winner was not adopted, and the reason is a protocol constraint rather than a judgement about materiality.** Refitting the scorer would change the band edges, lambda and the certificate, and therefore every held-out number in this study -- which requires a **second evaluation of `D_test`**. The pre-registration permits one, `TestFoldGuard` enforces it, and it has been spent. A 0.0089 AP improvement cannot be bought with the guarantee that is the deliverable. Doing so would refit the scorer, and with it the
 band edges, lambda, the certificate, `predictions.csv` and ten bound claims -- and it would
 require a second evaluation of the held-out fold, which the pre-registration permits once. That
 is a new campaign, roughly thirteen GPU-hours and the loss of the single-evaluation record, to

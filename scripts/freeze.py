@@ -67,12 +67,28 @@ SPECIFICATION = (
     # prevent.  Classifying it with the document it projects makes the movement legitimate,
     # which it always was.  See D-128.
     "results/tables/decision_log.csv",
+    # The single-evaluation ledger.  Excluded from SCIENTIFIC below for the same reason and
+    # listed here so it stays *tracked*: dropping it from both classes would leave the file that
+    # records how many times the held-out fold was read as the one artefact under `results/`
+    # that no manifest covers.
+    "results/tables/test_access.json",
 )
 
 # Members of a SCIENTIFIC pattern that are bookkeeping rather than measurement.  Listed
 # explicitly rather than pattern-matched: this exemption weakens a gate, so it should be
 # impossible to widen by accident.
-SPECIFICATION_UNDER_RESULTS = ("results/tables/decision_log.csv",)
+#
+# `test_access.json` is the single-evaluation ledger.  `TestFoldGuard.authorise` *increments* a
+# counter in it, and two scripts authorise, so any reproduction moves its bytes while nothing
+# measured changes.  Under the SCIENTIFIC class that made `make check` report "a scientific
+# artefact differs" -- with the alarming "either a measurement genuinely changed, or the run is
+# not reproducible" text -- on every clean-room run, which is D-080's failure mode exactly: a
+# check that fires every time teaches its reader to clear it without reading the list.  It is a
+# record of what was done, not a measurement, so it belongs with `decision_log.csv`.
+SPECIFICATION_UNDER_RESULTS = (
+    "results/tables/decision_log.csv",
+    "results/tables/test_access.json",
+)
 
 # The two scientific artefacts that `make check` rebuilds before verifying them, because
 # `check` depends on `pdf`.  They quote bound claims, so a specification change alone is enough

@@ -95,11 +95,17 @@ complexity* as a bottleneck. Per single authorisation, batch size 1:
 
 | Component | Serving profile | p50 | p99 |
 |---|---|---|---|
-| Classical scorer, 431 features | 1-thread CPU | **0.084 ms** | 0.320 ms |
-| In-band re-scorer, 8 features | 1-thread CPU | 0.074 ms | 0.286 ms |
-| Quantum kernel (screened out) | CPU (unconstrained) | **96.577 ms** | 129.080 ms |
-| Classical scorer, 431 features | all-core CPU | 19.854 ms | 28.763 ms |
-| Classical scorer, 431 features | GPU | 19.456 ms | 37.233 ms |
+| Classical scorer, 439 features | 1-thread CPU | **0.154 ms** | 0.385 ms |
+| In-band re-scorer, 8 features | 1-thread CPU | 0.057 ms | 0.174 ms |
+| Quantum kernel (screened out) | CPU (unconstrained) | **76.843 ms** | 104.207 ms |
+| Classical scorer, 439 features | all-core CPU | 19.061 ms | 20.297 ms |
+| Classical scorer, 439 features | GPU | 19.815 ms | 26.839 ms |
+
+Re-measured 2026-09-06, on a host at 0.15 load per core, after a correction described in
+[D-147](decisions.md): the classical-scorer rows had been priced on a **400-tree, depth-6
+stand-in** rather than the 1000-tree, depth-10 model that ships. The scorer is 1.8x slower than
+this table used to say, and both figures derived from it move **against** this study's own
+argument -- see the feasibility note below.
 
 **The serving profile matters more than the model, by more than two orders of magnitude.** XGBoost
 defaults its thread count to the core count. On a one-row payload the OpenMP barrier costs about
@@ -119,15 +125,29 @@ process, through `Booster.inplace_predict`. It is not production latency: a depl
 behind a service boundary with serialisation, feature retrieval and network hops that dominate
 everything above, on the issuer's hardware rather than this one.
 
-**The feasibility consequence.** The classical core is not the latency risk — it uses 0.19 % of
-the residual budget at its tail. The kernel is: at 96.6 ms it costs about 1,148× a classical
-score, and its tail takes 75.9 % of the residual budget. That figure prices a **64-row support
-set** (`SUPPORT_ROWS` in `scripts/measure_latency.py`) and is linear in it, so the in-band
-training block of 2,916 rows would cost some 4.4 s per authorisation. Rationing bounds aggregate
+**The feasibility consequence.** The classical core is not the latency risk — it uses 0.23 % of
+the residual budget at its tail. The kernel is: at 76.8 ms it costs about 498× a classical score,
+and its tail takes 61.3 % of the residual budget. That figure prices a **64-row support set**
+(`SUPPORT_ROWS` in `scripts/measure_latency.py`) and is linear in it, so the in-band training
+block of 2,916 rows would cost some 3.5 s per authorisation.
+
+**Both of those numbers used to be larger, and the correction weakens this study's own case.**
+The ratio was quoted as 1,148x and the budget share as 75.9 %. The ratio fell because the
+denominator was wrong -- the classical scorer really costs 0.154 ms, not 0.084 -- and the share
+fell because this measurement was taken on a quieter host than the previous one. 498x and 61.3 %
+still say the kernel cannot sit in a per-authorisation path, so the conclusion is unchanged; but
+it is a weaker version of it than was published, and it is stated here rather than left for a
+reviewer to find by re-running the script.
+
+**The measurement's own noise floor, now that it has been measured twice.** The in-band
+re-scorer and the quantum kernel use *identical* code in both runs, and moved by 23 % and 20 %
+respectively between them. Any reading of this table finer than about a fifth is host variation,
+not model cost. That is why the claims bound to it are quoted to three or four figures but
+argued to one. Rationing bounds aggregate
 kernel compute, not per-request latency: a transaction that lands in the band pays the tail
 whether the band is 2 % of traffic or all of it. Per-request feasibility separately requires
 holding the support set to order 100. Batching helps the classical path by a further order of
-magnitude (0.0038 ms per transaction at batch 1024) but is unavailable to a per-authorisation
+magnitude (0.0164 ms per transaction at batch 1024) but is unavailable to a per-authorisation
 decision, which is why batch 1 is the figure quoted.
 
 ## 6. Circuit structure, for near-term hardware feasibility
