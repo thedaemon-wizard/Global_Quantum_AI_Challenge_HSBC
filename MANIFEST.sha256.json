@@ -29,7 +29,7 @@
     "results/tables/envelope.csv": "f2ea606df51028d851162a79d8b7e7ef113e2713a8b9b0ed891b8957508e588d",
     "results/tables/h5_validation.csv": "26496256782729eec5cad65fd1a2a3dcaa2a38cae531e6f4863e8916a0c48a74",
     "results/tables/label_censoring.csv": "0e8e30d4caa2b518096bebf44ca30b9ef447cbeb5f0d3053497d17e45b4ca118",
-    "results/tables/label_verdict.csv": "19ed4256e03258be80b8d769e78499e2b19971e57afd22c9e4282aea0993042b",
+    "results/tables/label_verdict.csv": "a57ef8de753af8c88383eca491cf01514c2f27863b939db7d12320572773e4d3",
     "results/tables/latency.csv": "3317c4d573728a240da7ff4d6d97fce77abaa2fd232992410b9cd5c9e6ec179e",
     "results/tables/mps_band.csv": "04e414d8c1ca66c0402c97dd470364e9566cc4e288f5e6bfe19a0282b0824818",
     "results/tables/mps_full.csv": "6d79b62b5a3cb59d949f739a1a3b3c9c3e763da7b41f2ce29f24bda26e8a0c96",
@@ -49,18 +49,18 @@
     "results/tables/split_arm_baselines.csv": "21582c1dae1cde2c3bbd6ab0d06ff611014a4e5a1aff4dd04e67cafbe25b878f",
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "ccbfeccb547733f81c9de509895e8d238dfdbac9e0896fc1a8041316cc2082e6",
-    "submission/proposal.pdf": "3c6a429f4291e458c881871d50e542b662cd37e6d4045c1e2b4100ec91710fa0"
+    "submission/appendix.pdf": "852b5939a0d32d62af58e724abec858af7409656655fa2e7e26e40d59d6c89ce",
+    "submission/proposal.pdf": "53bbc0bd6323554702b76f80ecc0429bc426aa2bef1d7428ecb9ba643a5b5a65"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
     "docs/REFERENCES.md": "8e6a0a4cefa9002bfccd511f480fada224ae82e37aa0938924b6ce865958effa",
-    "docs/claims.yaml": "2d7363b3f7585348849b272bd74c50a922b67b4149ea585f086d92a10e531936",
-    "docs/decisions.md": "e3819e412adf82a273f9f9fb02158bf88b5b768717c97e67e7c616584f9941ce",
-    "docs/protocol.lock.json": "21b61cdb4ced3d54c418f2906db1362cb6d29841b47607f440cdbf78ef82d97d",
+    "docs/claims.yaml": "aa910bde93951801f8d768740f705c9ae8222013c0fc6a7307059a192bd97bd3",
+    "docs/decisions.md": "4f45f2d7b5566d8eb866992803e36a3e266731c3c49bc8b726ebc5473d81fda5",
+    "docs/protocol.lock.json": "3b6eebd87a5a8fae363e97cf3aa2e5975f0d9ae8b510c70f4c64052f715f4805",
     "docs/protocol.md": "f3ec1668d887d043adb6b96165f6856f787b3d51add26ec823d62aff0771e471",
     "docs/tables.yaml": "733fc794c24427f54e68901b97de12461deb806cf4acadcf6d1a26bf39a4c8b7",
-    "results/tables/decision_log.csv": "105cc00d5368334bd75ece79901f9d023acfc980f0fb8e92a2f77bca27839597",
+    "results/tables/decision_log.csv": "5b0ebe29d3bd0d3159f2fb9f04fac3fb3854c7a1d07db57128383c3246132e83",
     "results/tables/test_access.json": "e83c79936cc9c734e823cc30f9dc44462c089466c255a59dc4a109ed30a5a448"
   }
 }

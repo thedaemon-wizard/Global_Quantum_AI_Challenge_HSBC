@@ -88,7 +88,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     cfg = load_config(args.config)
-    seed = args.seed or cfg.split.seeds[0]
+    # `or` treats --seed 0 as absent and silently substitutes the configured seed,
+    # which is then written into the output's `seed` column as though it were asked for.
+    seed = cfg.split.seeds[0] if args.seed is None else args.seed
 
     scores = pd.read_parquet(
         require_run_artefact(

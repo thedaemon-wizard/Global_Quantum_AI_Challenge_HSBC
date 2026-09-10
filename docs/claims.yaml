@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 150
+    value: 152
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -887,7 +887,7 @@ claims:
     note: Mann-Kendall trend statistic over the per-bucket fraud rate. No monotone trend.
 
   - key: CensoringP
-    value: 0.3988
+    value: 0.1994
     source: results/tables/label_verdict.csv
     column: mann_kendall_p
     tolerance: 0.00005
@@ -915,7 +915,8 @@ claims:
   # been volume arithmetic ("a few percent of traffic") with no timing behind it.  These bind it.
   #
   # The two classical figures are from the 1-thread CPU profile, which is the per-request
-  # serving shape.  The all-core rows in the table are ~250x slower at batch 1 and are kept
+  # serving shape.  The all-core rows in the table are far slower at batch 1 -- 124x for the
+  # classical scorer on the 2026-09-06 reading, and unstable between runs -- and are kept
   # there as the documented trap: XGBoost defaults its thread count to the core count, and
   # synchronising 20 threads over one row costs far more than the prediction.  See D-063.
   #

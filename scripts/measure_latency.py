@@ -17,19 +17,26 @@ This times it.
 That is this script's main finding, and it was nearly reported the other way round. XGBoost
 defaults its thread count to the core count. On a one-row payload the OpenMP barrier costs about
 19 ms on this 20-thread machine while the prediction it synchronises costs about 0.05 ms -- so the
-default configuration is roughly 380 times slower than a single thread, and the penalty is
+default configuration is far slower than a single thread, and the penalty is largely
 independent of device, feature count and batch size. Two orders and not three: the heading
-above said "three orders of magnitude", which asserts a factor of 1000, while the largest
-ratio anywhere in this file is the 380 below, and dividing the all-core rows of the table
-this script writes by the 1-thread rows gives 236x for the classical scorer and 261x for the
-in-band re-scorer. The finding is unchanged by the correction, but the wording would not have
-survived a reviewer dividing two columns of the artefact it cites. Measured on a fitted
-booster, one row:
+above said "three orders of magnitude", which asserts a factor of 1000, and no ratio in the
+table this script writes reaches it. The finding is unchanged by the correction, but the
+wording would not have survived a reviewer dividing two columns of the artefact it cites.
+
+**The ratio is not stable across runs, and that is stated rather than smoothed.** Dividing the
+all-core rows by the 1-thread rows gave 236x and 261x for the two classical components on the
+2026-08-30 reading, and gives **124x and 1.3x** on the 2026-09-06 one. The in-band re-scorer's
+parameters are identical in both -- 400 trees, depth 6, eight features -- so a two-order move in
+its all-core figure is not a model change. **Needs confirmation:** what decides whether XGBoost
+parallelises a payload this small has not been established here, and no claim in this study is
+bound to an all-core row, so the anomaly is recorded rather than resolved. Every bound latency
+claim selects the 1-thread profile, which is the per-request serving shape and is stable to
+about a fifth between the two runs. Measured on a fitted booster, one row:
 
     nthread=1   0.051 ms      nthread=4   0.051 ms      nthread=20   19.33 ms
 
 An earlier version of this script swept only device and batch size, and produced a table where
-CPU and GPU were indistinguishable, a 431-feature model cost the same as an 8-feature one, and
+CPU and GPU were indistinguishable, a 439-feature model cost the same as an 8-feature one, and
 batch 1 cost two thirds of batch 1024. Every one of those anomalies was the same barrier. Taken
 at face value it would have put the classical scorer at tens of milliseconds against a residual
 budget of about 170 ms -- attributing a threading default to model complexity, in a section whose
@@ -102,10 +109,10 @@ BATCH_SIZES = (1, 32, 1024)
 # thread count to the core count, and on a one-row payload that barrier costs more than two
 # orders of magnitude more than the prediction it synchronises -- so an unconfigured scorer
 # reports tens of milliseconds per authorisation and invites the reader to blame the model.
-# "Two orders" and not "three" for the reason given in the module docstring: the rows this
-# tuple produces divide to 236x and 261x, so the stronger word was never supported by the
-# table it describes.  A per-request scorer wants one thread, because concurrency comes from
-# serving many authorisations at once rather than from splitting one across cores.
+# "Two orders" and not "three" for the reason given in the module docstring, where the measured
+# ratios and their instability between runs are set out. No bound claim reads an all-core
+# row.  A per-request scorer wants one thread, because concurrency comes from serving many
+# authorisations at once rather than from splitting one across cores.
 #
 # ``None`` means "leave the library default", which is what an unconfigured deployment gets.
 PROFILES = (
@@ -302,7 +309,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     cfg = load_config(args.config)
-    seed = args.seed or cfg.split.seeds[0]
+    # `or` treats --seed 0 as absent and silently substitutes the configured seed,
+    # which is then written into the output's `seed` column as though it were asked for.
+    seed = cfg.split.seeds[0] if args.seed is None else args.seed
 
     scores = pd.read_parquet(
         require_run_artefact(

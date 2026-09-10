@@ -1028,3 +1028,54 @@ def test_every_decision_cross_reference_resolves_on_github() -> None:
     referenced = {frag for _, frag in re.findall(r"\]\(([^)\s]*)#(d-\d+)\)", text)}
     dangling = sorted(referenced - anchors)
     assert not dangling, f"decision reference(s) point at anchors that do not exist: {dangling}"
+
+
+def test_no_module_under_src_is_orphaned() -> None:
+    """A module nothing imports is read by a reviewer as live code, and it is not.
+
+    `src/hsbcfraud/telemetry.py` was 685 lines with **zero importers and zero tests**, describing
+    an append-only run-record design that `progress.py` implements differently -- two
+    implementations of one subsystem, one of them dead, including two `format_duration`s that
+    disagree on non-finite input. Nothing referenced it from the README, `docs/`, or the
+    Makefile, so nothing would ever have failed.
+
+    Both it and the unused `progress.reporting` helper were removed. This is what stops the next
+    one: every module under `src/` must be imported somewhere in the tree, so a subsystem that
+    stops being used has to be deleted deliberately rather than left to be mistaken for shipped
+    work.
+    """
+    package = REPO / "src" / "hsbcfraud"
+    modules = {
+        path.relative_to(package).with_suffix("").as_posix().replace("/", ".")
+        for path in package.rglob("*.py")
+        if path.name != "__init__.py"
+    }
+
+    imported: set[str] = set()
+    for directory in SOURCE_DIRS:
+        for path in (REPO / directory).rglob("*.py"):
+            try:
+                tree = ast.parse(path.read_text(encoding="utf-8"))
+            except SyntaxError:  # pragma: no cover - a syntax error is another test's problem
+                continue
+            for node in ast.walk(tree):
+                # Both spellings reach a module, and only one puts its name in `node.module`.
+                # `from hsbcfraud.metrics import f` names it there; `from hsbcfraud import
+                # metrics` names it in the aliases, and reading only the first flagged a module
+                # two scripts import on every run. A gate that accuses live code is worse than
+                # no gate, because it gets deleted rather than obeyed.
+                if isinstance(node, ast.ImportFrom) and node.module:
+                    imported.add(node.module.removeprefix("hsbcfraud."))
+                    for alias in node.names:
+                        imported.add(f"{node.module}.{alias.name}".removeprefix("hsbcfraud."))
+                        imported.add(alias.name)
+                elif isinstance(node, ast.Import):
+                    for alias in node.names:
+                        imported.add(alias.name.removeprefix("hsbcfraud."))
+
+    orphaned = sorted(m for m in modules if m not in imported)
+    assert not orphaned, (
+        f"{len(orphaned)} module(s) under src/hsbcfraud are imported nowhere in src/, scripts/ "
+        f"or tests/: {orphaned}. Delete them, or wire them in. A module that ships without a "
+        f"caller reads as live code to anyone auditing this repository."
+    )

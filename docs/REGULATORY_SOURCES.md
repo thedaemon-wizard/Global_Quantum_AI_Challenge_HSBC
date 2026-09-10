@@ -131,10 +131,26 @@ amendment was live. Verifying a date on the issuer's page is not the same as che
 version that page is serving.
 
 What this project takes from SS1/23 is the scope argument in paragraphs 1.2 to 1.4, and the
-amendment is a low-impact finalisation rather than a rewrite. **Needs confirmation:** the
-paragraphs relied on were read in the 2023 text, and no claim is made here about what LIAF01/26
-altered in them, because the amendment itself has not been read line by line. See
-[D-140](decisions.md).
+amendment is a low-impact finalisation rather than a rewrite.
+
+**Settled 2026-09-06, and the marker is closed.** This entry carried a **Needs confirmation**
+saying the paragraphs relied on had been read only in the 2023 text and that no claim was made
+about what LIAF01/26 altered in them. Both versions have now been fetched from the Bank of
+England and the three paragraphs compared word by word:
+
+| Paragraph | 2023 text vs April 2026 text |
+|---|---|
+| 1.2 -- scope limited to firms with internal model approval | **identical**, 677 characters both |
+| 1.3 -- all models, in-house or vendor, including financial reporting | **identical**, 738 characters both |
+| 1.4 -- five principles "across all model and risk types" | **identical** body, to "in its own right" |
+
+The only difference the comparison surfaced in 1.4 was a footnote that the 2026 PDF's text layer
+places inline and the 2023 one does not -- a typesetting artefact, not an amendment. So the scope
+argument this project makes stands on the **current** version, and the paragraph numbers it cites
+still point at the text it quotes.
+
+Sources: `liaf0126app5.pdf` (current, April 2026) and `ss123.pdf` (past, May 2023), both from the
+publication page above. See [D-140](decisions.md) and [D-151](decisions.md).
 
 **Settled 2026-08-30 — the applicability sentence.** `REFERENCES.md` previously stated SS1/23
 was "confirmed by the PRA to apply to fraud models". No such confirmation exists at the issuing

@@ -228,7 +228,9 @@ def main(argv: list[str] | None = None) -> int:
         f"{'adequately powered' if powered else 'UNDERPOWERED, a null result is uninformative'}"
     )
 
-    seed = args.seed or cfg.split.seeds[0]
+    # `or` treats --seed 0 as absent and silently substitutes the configured seed,
+    # which is then written into the output's `seed` column as though it were asked for.
+    seed = cfg.split.seeds[0] if args.seed is None else args.seed
     scores = pd.read_parquet(
         require_run_artefact(
             args.runs / f"scores_{args.arm}_{seed}.parquet", produced_by="baseline"

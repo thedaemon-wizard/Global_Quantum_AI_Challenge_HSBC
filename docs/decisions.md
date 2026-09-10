@@ -4934,3 +4934,66 @@ the author's identity as given.
 here reads as a senior certification; *Associate* is retained because it is part of the published
 name, not because it is the level.
 
+<a id="d-151"></a>
+### D-151 The superseded-version marker closed against both texts, not one
+
+[D-140](#d-140) found that RG-5 cited SS1/23 from the May 2023 edition while the Bank of England
+had served an April 2026 edition as current since LIAF01/26, and that the entry had recorded its
+dates as verified on 2026-08-30 -- four months after the amendment went live. Verifying a date on
+the issuer's page is not the same as checking which version that page serves.
+
+The entry was corrected then, but it kept a **Needs confirmation**: the paragraphs the project
+relies on -- 1.2 for scope, 1.3 and 1.4 for coverage across model and risk types -- had been read
+only in the 2023 text, and nothing was claimed about what the amendment did to them.
+
+**Both PDFs have now been fetched from the publication page and the three paragraphs compared
+word by word. All three are unchanged**: 1.2 and 1.3 identical at 677 and 738 characters, 1.4
+identical through to "in its own right". The single difference the comparison threw up was a
+footnote the 2026 PDF's text layer places inline, which is typesetting rather than amendment --
+and it was worth chasing rather than reporting, because a naive extraction reads it as a
+363-character change to the paragraph carrying the project's coverage argument.
+
+The current version was also re-read in a browser on 2026-09-06 and states "Published 23 April
+2026. Effective from 23 April 2026 -- Following LIAF01/26". The scope argument therefore rests on
+the edition in force, and the paragraph numbers cited still point at the sentences quoted.
+
+**One note for anyone re-running this.** The planning notes for this submission recorded the
+amendment as 16 April 2026. The issuer says 23 April. The repository had the right date because
+it was taken from the issuer rather than from the note, which is the only reason the discrepancy
+was harmless.
+
+<a id="d-152"></a>
+### D-152 A one-sided rule was reading a two-sided p-value
+
+`label_audit.py` declares terminal censoring only when **both** witnesses agree:
+
+    detected = tau < 0 and tau_p < alpha and two_proportion_p < alpha
+
+The Fisher arm is explicitly `alternative="less"`. The Mann-Kendall arm called
+`stats.kendalltau` with no `alternative`, which returns a **two-sided** p. Under a rule that
+already requires `tau < 0`, a two-sided p is a test at alpha/2 -- so the two halves of one
+conjunction were being evaluated at different levels, and a trailing series with a one-sided p
+of 0.03 would have been reported as no censoring at a stated alpha of 0.05.
+
+Corrected to `alternative="less"`. On this data the p moves from 0.3988 to **0.1994** and the
+verdict does not: "not detected" either way, and the Fisher arm returns 1.000 in both, which is
+what actually carries the conjunction. `RESULTS.md` says so rather than quietly printing the new
+number.
+
+**A second inaccuracy in the same function, found while checking the first.** `trailing_days`
+is subtracted from the last day to get a cutoff, and buckets are then selected by their **start**
+-- so a 120-day request over 14-day buckets realises 111 days, days 70 to 181, while
+`label_verdict.csv` recorded 120 and the verdict string printed "over the trailing 120 days".
+Days 61 to 69 fall in the *reference* group despite sitting inside the maturity window the test
+is about.
+
+**The window was not moved, and the reason is the direction of the bias.** Selecting overlapping
+buckets instead gives 125 days and a one-sided p of 0.060 -- still not detected -- but it puts
+partly-censored buckets into the reference arm, which makes the two groups more alike and biases
+the comparison towards finding nothing. The shorter window is the conservative one. What changed
+is the reporting: `CensoringVerdict` now carries `trailing_days_realised` alongside the request,
+and the verdict string prints "over the trailing 111 days (requested 120)".
+
+Both alternatives were computed before choosing, and both verdicts recorded, so the choice is
+visible rather than asserted.
+

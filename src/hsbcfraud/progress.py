@@ -622,20 +622,3 @@ def run_log(
         logger.removeHandler(handler)
         warnings_logger.removeHandler(handler)
         handler.close()
-
-
-@contextmanager
-def reporting(
-    task: str,
-    total: int,
-    *,
-    stream: TextIO | None = sys.stdout,
-    log_path: Path | None = None,
-    **kwargs: object,
-) -> Iterator[ProgressReporter]:
-    """Convenience wrapper for the common script-side case."""
-    reporter = ProgressReporter(task, total, stream=stream, log_path=log_path, **kwargs)  # type: ignore[arg-type]
-    try:
-        yield reporter
-    finally:
-        reporter.close()

@@ -107,9 +107,12 @@ stand-in** rather than the 1000-tree, depth-10 model that ships. The scorer is 1
 this table used to say, and both figures derived from it move **against** this study's own
 argument -- see the feasibility note below.
 
-**The serving profile matters more than the model, by more than two orders of magnitude.** XGBoost
-defaults its thread count to the core count. On a one-row payload the OpenMP barrier costs about
-19 ms across these 20 threads while the prediction it synchronises costs about 0.05 ms:
+**The serving profile matters more than the model, by two orders of magnitude.** XGBoost defaults
+its thread count to the core count. On a one-row payload the OpenMP barrier costs about 19 ms
+across these 20 threads while the prediction it synchronises costs a fraction of a millisecond.
+The all-core figure is unstable between runs -- the in-band re-scorer's, on unchanged parameters,
+moved from 19.154 ms to 0.075 ms between 2026-08-30 and 2026-09-06 -- so it is reported as the
+documented trap rather than relied on. No bound claim reads an all-core row:
 
 | `nthread` | 1 | 4 | 20 (default) |
 |---|---|---|---|

@@ -53,6 +53,7 @@ class CensoringVerdict:
     """The outcome of the censoring test, in enough detail to be checked."""
 
     trailing_days: int
+    trailing_days_realised: int
     n_buckets_trailing: int
     mann_kendall_tau: float
     mann_kendall_p: float
@@ -65,7 +66,8 @@ class CensoringVerdict:
         verdict = "DETECTED" if self.censoring_detected else "not detected"
         return (
             f"terminal label censoring {verdict}: Mann-Kendall tau={self.mann_kendall_tau:+.3f} "
-            f"(p={self.mann_kendall_p:.3f}) over the trailing {self.trailing_days} days; "
+            f"(p={self.mann_kendall_p:.3f}) over the trailing {self.trailing_days_realised} "
+            f"days (requested {self.trailing_days}); "
             f"trailing fraud rate {self.trailing_rate:.4f} vs {self.earlier_rate:.4f} earlier "
             f"(p={self.two_proportion_p:.3f})"
         )
@@ -123,6 +125,13 @@ def audit_label_censoring(
     last_day = int(frame["day"].max())
     cutoff = last_day - trailing_days
 
+    # Selection is by bucket **start**, so the window the test actually covers is a whole
+    # number of buckets and is generally shorter than the one requested: at 14-day buckets over
+    # 182 days, a requested 120 lands mid-bucket and the realised window is 111. That is
+    # reported rather than corrected, because moving the boundary would put partly-censored
+    # buckets into the *reference* group, which biases the comparison towards finding nothing.
+    # Selecting overlapping buckets instead was tried and changes neither arm's verdict here
+    # (Kendall one-sided p 0.199 against 0.060, Fisher 1.000 either way).
     trailing = buckets[buckets["bucket"] >= cutoff]
     earlier = buckets[buckets["bucket"] < cutoff]
     if len(trailing) < 3:
@@ -133,7 +142,15 @@ def audit_label_censoring(
 
     # Mann-Kendall via Kendall's tau against bucket order.  A negative tau is the direction
     # censorship would produce; a positive one is evidence against it.
-    tau, tau_p = stats.kendalltau(trailing["bucket"], trailing["count_rate"])
+    #
+    # `alternative="less"` because the rule below is one-sided: it fires on `tau < 0` at level
+    # alpha.  Scipy defaults to a two-sided p, which under that rule is a test at alpha/2 -- so
+    # a trailing series with a one-sided p of 0.03 returned 0.06 and was reported as no
+    # censorship at a stated alpha of 0.05.  The Fisher arm on the same verdict was already
+    # explicitly one-sided, so the two halves of `detected` were testing at different levels.
+    tau, tau_p = stats.kendalltau(
+        trailing["bucket"], trailing["count_rate"], alternative="less"
+    )
     tau = float(tau)
     tau_p = float(tau_p)
 
@@ -160,6 +177,7 @@ def audit_label_censoring(
 
     verdict = CensoringVerdict(
         trailing_days=trailing_days,
+        trailing_days_realised=int(last_day - int(trailing["bucket"].min())),
         n_buckets_trailing=len(trailing),
         mann_kendall_tau=tau,
         mann_kendall_p=tau_p,

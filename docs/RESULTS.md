@@ -102,12 +102,27 @@ proposal's sample-starved sentence used to blur.
 
 The censoring control in full. The trailing-window fraud rate is 3.666 % against 3.281 %
 earlier -- higher, not lower, which is the opposite of what unresolved chargebacks would
-produce. The Mann-Kendall trend statistic over the per-bucket rates is -0.2857 at p = 0.3988.
+produce. The Mann-Kendall trend statistic over the per-bucket rates is -0.2857 at p = 0.1994.
 
 **That is not evidence of no trend, and the sign is worth noting.** The statistic is *negative*,
-which is the direction unresolved chargebacks would produce, and p = 0.3988 over **eight**
+which is the direction unresolved chargebacks would produce, and p = 0.1994 over **eight**
 buckets is far from significant either way -- an eight-point test has very little power against
-a mild trend. So the two statistics point in opposite directions: the rate comparison is the
+a mild trend.
+
+*The p-value was 0.3988 until 2026-09-06, and the change is a correction rather than a new
+measurement.* `stats.kendalltau` returns a **two-sided** p by default, and the decision rule it
+feeds is one-sided -- it fires only on `tau < 0` -- so the trend arm was being tested at
+alpha/2 while the Fisher arm beside it was explicitly one-sided at alpha. The one-sided p is
+0.1994 on the same data. The verdict does not move: it was "not detected" and remains so, and
+the Fisher arm returns 1.000 either way, which is what actually carries the conjunction
+([D-152](decisions.md)).
+
+**The window the trend is measured over is 111 days, not the 120 requested.** Buckets are
+selected by start day, so a 120-day request over 14-day buckets lands mid-bucket and realises
+the largest whole number of buckets inside it. `label_verdict.csv` now records both figures.
+Selecting overlapping buckets instead would give 125 days and a one-sided p of 0.060, and would
+still not change the verdict -- but it would move partly-censored buckets into the *reference*
+group, which biases the comparison towards finding nothing, so the shorter window is kept. So the two statistics point in opposite directions: the rate comparison is the
 one that carries weight, and the trend statistic neither supports censoring nor rules it out.
 `label_audit.py`'s own verdict string is "not detected", not "absent", and the proposal now uses
 that word too.
