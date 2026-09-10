@@ -5134,3 +5134,37 @@ that looked cosmetic. It was not: two of those copies had drifted into fitting d
 and the drift sat under the study's headline negative result. The audit finding was filed as
 duplication; what it actually was is a fairness gap.
 
+<a id="d-156"></a>
+### D-156 The IBM certification is recorded and not listed
+
+[D-144](#d-144) put *IBM Certified Quantum Computation using Qiskit v2.X Developer - Associate*
+into section 8 in place of the Qiskit Advocate, on the ground that the Advocate had no
+reviewer-side verification route and the certification does. [D-150](#d-150) then confirmed the
+holder and issue date in a browser. Both steps were about **whether the credential could be
+checked**. Neither asked whether it belonged there.
+
+**It does not.** Team Capability is 10 % of the Phase 1 score and asks whether the team is
+"well-positioned to execute this proposal"; the Submission Guidelines ask for "relevant
+expertise" and "prior experience with quantum computing". Measured against that, the badge's own
+metadata grades it **Foundational** -- "a fundamental knowledge of quantum computing concepts" --
+and it sits in a paragraph that also carries three pull requests merged into CUDA-Q and QuEST,
+the split-conformal calibration authorship this deliverable's machinery rests on, a
+matrix-product-state attack merged upstream, a quantum-kernel competition placement, and VQC and
+QSVM run on `ibm_fez`. The last of those already demonstrates the Qiskit stack on real hardware,
+which an exam pass does not add to.
+
+So the certification was the weakest item in the section and the only one that is a
+qualification rather than a result. Section 8 has been corrected four times for exactly this
+shape of inflation, and adding a foundational certificate beside merged upstream contributions
+is the same move.
+
+**Removed from the proposal, kept in the repository.** `CREDENTIALS.md` section 8 carries the
+badge URL, the verified holder, issuer, date and exam number. Nothing is hidden; it is simply not
+spending six pages' worth of scarce space on the thing in the section that argues least.
+
+**The space went to model-risk governance.** Section 6's threshold-change paragraph had lost the
+clause explaining why recalibration is approved quarterly -- that it matches the rolling window
+the fraud-rate definition already uses -- to pay for the fairness disclosure in
+[D-155](#d-155). It is restored. For a reviewer drawn from an enterprise sponsor, a stated
+governance cadence argues more than a certificate.
+

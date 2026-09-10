@@ -21,8 +21,9 @@ one change that would make it informative here; Section~\ref{sec:quantum} report
 what happens when it is not.
 
 \textbf{Threshold change management.} $\lambda$ moves on every recalibration, so it needs an
-owner and a cadence rather than a rerun. Model risk approves each move quarterly, and out of
-cycle whenever realised in-band risk crosses the certified $\alpha$. If a recalibration fails to certify, the rule falls back to
+owner and a cadence rather than a rerun. Model risk approves each move quarterly, matching the
+rolling window the fraud-rate definition already uses, and out of cycle whenever realised
+in-band risk crosses the certified $\alpha$. If a recalibration fails to certify, the rule falls back to
 the previously certified $\lambda$, and failing that to the incumbent scorer with the band
 closed --- today's behaviour, not an uncertified threshold. Phase~II runs the challenger in
 shadow first, scoring every authorisation and acting on none.
