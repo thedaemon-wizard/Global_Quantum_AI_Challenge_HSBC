@@ -68,6 +68,7 @@ repository:
 | [`docs/PROVENANCE.md`](docs/PROVENANCE.md) | Where every algorithm and dataset came from |
 | [`docs/CREDENTIALS.md`](docs/CREDENTIALS.md) | Every biographical claim in the team section, what backs it, and what is unresolved |
 | [`docs/FACTCHECK_LOG.md`](docs/FACTCHECK_LOG.md) | What was checked, against which source, on what date, and which claims the check overturned |
+| [`docs/OPEN_FINDINGS.md`](docs/OPEN_FINDINGS.md) | What the audit found and did **not** fix, with the reason: latent, deferred, or unexplained. Includes two findings reproduced and then withdrawn |
 | [`docs/CLEANROOM.md`](docs/CLEANROOM.md) | Reproducing from an empty directory: the procedure, what it costs, and which steps were actually exercised |
 | [`docs/SUBMISSION_CHECKLIST.md`](docs/SUBMISSION_CHECKLIST.md) | The pre-submission verification list |
 | [`docs/VERIFICATION_CHECKLIST.md`](docs/VERIFICATION_CHECKLIST.md) | Which official documents and external artefacts were checked against the submission, and which checks remain open |
