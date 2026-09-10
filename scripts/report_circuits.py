@@ -34,6 +34,7 @@ from pathlib import Path
 import pandas as pd
 from qiskit import transpile
 
+from hsbcfraud.config import load_config
 from hsbcfraud.paths import display_path
 from hsbcfraud.quantum.featuremaps import build_feature_map
 
@@ -47,9 +48,17 @@ TRANSPILE_SEED = 20260828
 TRANSPILE_LEVEL = 3
 
 
-def measure(name: str, n_features: int, entanglement: str) -> dict[str, object]:
-    """Structural properties of one encoding, before and after decomposition."""
-    circuit = build_feature_map(name, n_features, entanglement=entanglement)
+def measure(name: str, n_features: int, entanglement: str, reps: int) -> dict[str, object]:
+    """Structural properties of one encoding, before and after decomposition.
+
+    ``reps`` is passed rather than defaulted, and recorded in the row.  Depth and gate counts
+    are close to linear in it, and neither this table nor ``screens.csv`` used to say which
+    value produced them -- so a config setting ``quantum.reps: 3`` would have made
+    ``screen_kernels.py`` (which does read it) describe three-repetition circuits while this
+    table reported two-repetition depths, with nothing in either artefact to show the
+    disagreement.
+    """
+    circuit = build_feature_map(name, n_features, reps=reps, entanglement=entanglement)
     decomposed = transpile(
         circuit,
         basis_gates=list(PORTABLE_BASIS),
@@ -61,6 +70,7 @@ def measure(name: str, n_features: int, entanglement: str) -> dict[str, object]:
         "encoding": name,
         "n_features": n_features,
         "entanglement": entanglement,
+        "reps": reps,
         "n_qubits": circuit.num_qubits,
         "logical_depth": circuit.depth(),
         "logical_gates": circuit.size(),
@@ -72,6 +82,7 @@ def measure(name: str, n_features: int, entanglement: str) -> dict[str, object]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--tables", type=Path, default=REPO / "results" / "tables")
     args = parser.parse_args(argv)
 
@@ -88,8 +99,12 @@ def main(argv: list[str] | None = None) -> int:
         .sort_values(["name", "n_features", "entanglement"], ignore_index=True)
     )
 
+    cfg = load_config(args.config)
     frame = pd.DataFrame(
-        [measure(row.name, int(row.n_features), row.entanglement) for row in grid.itertuples()]
+        [
+            measure(row.name, int(row.n_features), row.entanglement, cfg.quantum.reps)
+            for row in grid.itertuples()
+        ]
     )
     target = args.tables / "circuits.csv"
     frame.to_csv(target, index=False)

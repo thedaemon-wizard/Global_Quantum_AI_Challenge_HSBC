@@ -170,7 +170,8 @@ def main(argv: list[str] | None = None) -> int:
 
     rendered = [
         build_feature_map(
-            row["encoding"], int(row["n_features"]), entanglement=row["entanglement"]
+            row["encoding"], int(row["n_features"]),
+            reps=int(row["reps"]), entanglement=row["entanglement"],
         )
         .draw("text", fold=-1)
         .single_string()

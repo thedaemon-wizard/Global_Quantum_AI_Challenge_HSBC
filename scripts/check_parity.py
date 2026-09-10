@@ -33,6 +33,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from hsbcfraud.config import load_config
 from hsbcfraud.paths import display_path
 from hsbcfraud.quantum.featuremaps import build_feature_map
 from hsbcfraud.quantum.kernel import BACKENDS, KernelBackendError, fidelity_gram
@@ -66,16 +67,21 @@ SEED = 20260828
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--out", type=Path, default=REPO / "results" / "tables")
     parser.add_argument("--points", type=int, default=N_POINTS)
     args = parser.parse_args(argv)
 
+    cfg = load_config(args.config)
+    # The parity check compares backends on the circuit the screens actually ran, so the
+    # repetition count comes from the config rather than from build_feature_map's default.
+    reps = cfg.quantum.reps
     rng = np.random.default_rng(SEED)
     rows: list[dict[str, object]] = []
     unavailable: dict[str, str] = {}
 
     for name, n_features, entanglement in CONFIGURATIONS:
-        circuit = build_feature_map(name, n_features, entanglement=entanglement)
+        circuit = build_feature_map(name, n_features, reps=reps, entanglement=entanglement)
         x = rng.uniform(0.0, 1.0, size=(args.points, n_features))
         reference = fidelity_gram(circuit, x, backend=REFERENCE)
 

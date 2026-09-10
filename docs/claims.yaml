@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 153
+    value: 154
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -843,14 +843,24 @@ claims:
 
   # ---------------------------------- E11 backend parity, E12 attribution (STMT 5.2, 5.3)
   - key: ParityWorstDifference
-    value: 3.442e-15
+    value: 2.887e-15
     source: results/tables/parity.csv
     reduce: {op: max, column: max_abs_difference}
-    tolerance: 1.0e-17
+    tolerance: 5.0e-16
     note: >
       Worst disagreement between any simulator backend and the exact statevector reference,
       over four encodings.  D-022 quoted 2.6e-15 to 4.8e-13 from an uncommitted measurement;
       this is the committed one, and it is tighter.
+
+      The tolerance is 5e-16 rather than the 1e-17 it carried, because **this statistic is not
+      bit-reproducible** and a claim pinned below its own noise cannot survive a reproduction.
+      Aer and Braket reduce in a thread-dependent order, so the individual comparisons move at
+      the 1e-15 scale between runs on one machine: five consecutive runs gave 2.886580e-15
+      exactly, an earlier one 2.997602e-15, and the previously committed table 3.441691e-15.
+      The tolerance spans that observed range with margin.  What the claim is *for* survives
+      untouched -- every comparison agrees five orders of magnitude inside the 1e-10 tolerance
+      the script enforces -- and that verdict is checked separately by `agrees`, which is exact.
+      See D-154.
 
   - key: ParityComparisons
     value: 12

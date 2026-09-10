@@ -57,11 +57,19 @@ def certified_configuration(riskcontrol: pd.DataFrame) -> pd.Series:
 
     Ties on alpha are broken by the widest band budget, because that is the configuration with
     the largest calibration block behind it and therefore the one a reader should be shown.
+
+    ``alpha_fn`` is the third key, ascending, so the tightest false-negative constraint wins.
+    It changes nothing today -- exactly one ``alpha_fn`` certifies -- but two rows can share an
+    ``(alpha, budget)`` pair and differ in it, and with only two keys that pair was resolved by
+    whichever row pandas happened to return first.  A wider ``alpha_fn_grid`` would then have
+    moved ``selected_lambda`` and every exported decision without anything recording why.
     """
     certified = riskcontrol[riskcontrol["certified"].astype(bool)]
     if certified.empty:
         raise SystemExit("no certified configuration in riskcontrol.csv; nothing to export")
-    ordered = certified.sort_values(["alpha", "budget"], ascending=[True, False])
+    ordered = certified.sort_values(
+        ["alpha", "budget", "alpha_fn"], ascending=[True, False, True]
+    )
     return ordered.iloc[0]
 
 

@@ -359,7 +359,9 @@ def main(argv: list[str] | None = None) -> int:
 
     # The quantum kernel, priced per in-band row against its support set.  The screens rejected
     # it, so this is what it *would* have cost, and it is the figure the band argument turns on.
-    circuit = build_feature_map("zz", args.band_features, entanglement="linear")
+    circuit = build_feature_map(
+        "zz", args.band_features, reps=cfg.quantum.reps, entanglement="linear"
+    )
     support = x_band[: min(SUPPORT_ROWS, len(x_band))]
 
     components = (

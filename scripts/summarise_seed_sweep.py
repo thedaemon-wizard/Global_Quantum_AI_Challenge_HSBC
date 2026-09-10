@@ -109,10 +109,19 @@ def main(argv: list[str] | None = None) -> int:
     ):
         across = float(summary[across_column].iloc[0])
         widest = float(summary[spread_column].max())
-        print(
-            f"\n{label}: seed noise is {widest / across:.2f} times the capacity signal "
-            f"({widest:.4f} against {across:.4f})"
-        )
+        # A sweep over one bond dimension has no capacity signal to compare against, and the
+        # ratio below divided by it.  The table is written before this line, so `make summaries`
+        # aborted with a traceback on output that was already correct.
+        if across > 0:
+            print(
+                f"\n{label}: seed noise is {widest / across:.2f} times the capacity signal "
+                f"({widest:.4f} against {across:.4f})"
+            )
+        else:
+            print(
+                f"\n{label}: seed spread {widest:.4f}; no capacity signal to compare it against "
+                f"(the sweep covers a single bond dimension)"
+            )
     print(f"Wrote {display_path(target)}")
     return 0
 

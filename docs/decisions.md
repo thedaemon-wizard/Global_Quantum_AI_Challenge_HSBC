@@ -5047,3 +5047,38 @@ to document, and no figure from them is quoted as a quantity -- the docstring's 
 261x" is withdrawn, because a reviewer dividing two columns of the artefact would not have
 reproduced it.
 
+<a id="d-154"></a>
+### D-154 A claim was pinned five orders below the noise of the thing it measured
+
+`ParityWorstDifference` carried `tolerance: 1.0e-17` on a statistic that moves at **1e-15**.
+
+The nondeterminism is real and was measured rather than assumed. Aer and Braket reduce in a
+thread-dependent order, so the per-comparison maxima wobble between runs on one machine. Five
+consecutive runs gave `2.886580e-15` exactly; an earlier run in the same session gave
+`2.997602e-15`; the previously committed table held `3.441691e-15`, which reproduces on neither.
+So the quantity is *mostly* stable with occasional jumps, which is the worst shape for a tight
+tolerance -- it passes often enough to look fine and fails without warning.
+
+**Who this would have failed.** [D-135](#d-135) stopped `check_parity.py` overwriting the
+committed twelve-row table with the four rows a default environment produces. That protects the
+**default** path. A reviewer who follows `make venv-gpu` -- which this repository documents --
+has all four backends, produces twelve rows, does *not* take the skip branch, and writes a table
+whose worst difference differs in the fifteenth decimal place. `make check` then fails
+`ParityWorstDifference`. The fix for the narrow environment left the wide one exposed, and the
+clean-room passes never caught it because none of them installs the optional extra.
+
+The tolerance is now `5.0e-16`, spanning the observed range with margin, and the value is the one
+five runs reproduce.
+
+**Widening a tolerance is the move this project is most suspicious of, so what it costs is worth
+being explicit about.** The claim's purpose is that four independent implementations of one
+overlap agree. That is not carried by the fifteenth decimal place: it is carried by every
+comparison sitting five orders of magnitude inside the `1e-10` tolerance `check_parity.py`
+enforces, and by the `agrees` column, which is a boolean and is exact. Nothing about the
+agreement is loosened -- what is loosened is a claim that a float would be reproduced bit for
+bit, which was never true.
+
+**Found by running the script six times rather than once.** The first re-run after an unrelated
+change reported a different worst value, which is the only reason this was looked at; a single
+re-run would have been read as a one-off.
+
