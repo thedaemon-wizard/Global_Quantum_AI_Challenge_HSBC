@@ -85,32 +85,17 @@ this is not urgent.
 
 **Fix:** a `configuration_digest(cfg)` helper beside `TestFoldGuard` in `data/splits.py`.
 
-### M6 -- The latency table prices the deployed hyperparameters on a different feature matrix
+### M6 -- CLOSED 2026-09-11: the latency table now prices the shipped feature matrix
 
-`measure_latency.py` now imports `run_baselines.XGBOOST_PARAMS`, so the classical-scorer rows are
-timed on the model that ships -- 1000 trees at depth 10, not the 400-tree, depth-6 stand-in they
-used to use ([D-147](decisions.md)). The **feature matrix is still its own**: 431 raw numeric
-columns, against the 439 `run_baselines.py` fits through `encode_strings`,
-`add_entity_aggregates(causal=True)` and `select_model_columns`. It is the same defect
-`tune_baseline.py` had, in the second of the two scripts that describe the deployed scorer.
+`measure_latency.py` timed the deployed hyperparameters on 431 raw numeric columns against the
+439 `run_baselines.py` fits. It now imports `BASE_COLUMNS`, `encode_strings`,
+`add_entity_aggregates` and `select_model_columns` from the script that owns the model, and the
+table was retaken on an idle host once the clean-room reproduction released the machine.
 
-**Status: deferred, and the residue is small but unmeasured.** Tree traversal cost depends on
-depth and tree count far more than on input width, so eight columns in 439 should be a small
-effect beside the 1.8x the hyperparameter correction produced. That is an argument, not a
-measurement. `latency.csv` records `n_features = 431` so the gap is visible in the artefact
-rather than only in this file, and `ENVIRONMENT.md` says 431 in the table for the same reason.
-
-**Why it was not closed with the rest.** Closing it means re-measuring, and a latency
-measurement is only worth taking on an idle host -- the first attempt at the 2026-09-06
-re-measurement was discarded because this session was editing documents while it ran, and
-`CLEANROOM.md` records an earlier reading taken at load 33 that moved the same figures by a
-factor of four. The machine has been running a full clean-room reproduction since, so no quiet
-window has been available.
-
-**Fix:** import the pipeline as `tune_baseline.py` now does, re-measure on an idle host, and
-update the six bound latency claims. Expect the scorer rows to rise slightly and
-`LatencyKernelVersusScorer` to fall further, which continues to move against this project's own
-argument.
+The scorer's 1-thread p50 moved 0.154 to 0.162 ms -- so the eight columns were worth about 5 %,
+which is inside this measurement's own noise floor and was worth establishing rather than
+assuming. `LatencyKernelVersusScorer` is 568x and `LatencyKernelBudgetShare` 66.8 %. See
+[D-153](decisions.md).
 
 ---
 
@@ -149,18 +134,25 @@ change `selected_lambda` and every exported decision.
 
 ## Needs confirmation
 
-### N1 -- The all-core latency figure moved two orders of magnitude between runs
+### N1 -- Which configuration pays the OpenMP barrier is not reproducible
 
-The in-band re-scorer's all-core p50 was 19.154 ms on 2026-08-30 and 0.075 ms on 2026-09-06, on
-**identical** model parameters (400 trees, depth 6, eight features). The classical scorer's
-all-core figure stayed near 19 ms across both. What decides whether XGBoost parallelises a
-payload this small has not been established.
+Three measurements of identical code, all-core p50 at batch 1:
 
-**Why it is recorded rather than resolved.** No bound claim reads an all-core row -- every
-latency claim selects the 1-thread profile, which is the per-request serving shape and is stable
-to about a fifth across the two runs. The all-core rows are kept in the table as the documented
-trap they were always meant to be ([D-063](decisions.md)), and the docstring now states the
-instability instead of quoting one run's ratio as a property.
+| | 2026-08-30 | 2026-09-06 | 2026-09-11 |
+|---|---|---|---|
+| Classical scorer | 19.854 ms | 19.061 ms | **0.315 ms** |
+| In-band re-scorer | 19.154 ms | **0.075 ms** | 19.051 ms |
+
+The ~19 ms penalty appears in every run and lands on a **different component each time**. The
+earlier framing of this entry -- that one component's figure had moved and needed explaining --
+was wrong: the first run, where both paid it, was the coincidence. What decides whether XGBoost
+parallelises a given payload has not been established here.
+
+**Why it is recorded rather than resolved.** It reaches no result. All six bound latency claims
+select `profile: 1-thread CPU`, which is the per-request serving shape and which reproduces to
+within 5 % across the two runs that priced the right model. The all-core rows stay in the table
+as the trap [D-063](decisions.md) wrote them to document, and no figure from them is quoted as a
+quantity -- the docstring's "236x and 261x" is withdrawn for that reason.
 
 ---
 

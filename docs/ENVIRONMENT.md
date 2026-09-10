@@ -95,27 +95,35 @@ complexity* as a bottleneck. Per single authorisation, batch size 1:
 
 | Component | Serving profile | p50 | p99 |
 |---|---|---|---|
-| Classical scorer, 431 features | 1-thread CPU | **0.154 ms** | 0.385 ms |
-| In-band re-scorer, 8 features | 1-thread CPU | 0.057 ms | 0.174 ms |
-| Quantum kernel (screened out) | CPU (unconstrained) | **76.843 ms** | 104.207 ms |
-| Classical scorer, 431 features | all-core CPU | 19.061 ms | 20.297 ms |
-| Classical scorer, 431 features | GPU | 19.815 ms | 26.839 ms |
+| Classical scorer, 439 features | 1-thread CPU | **0.162 ms** | 0.311 ms |
+| In-band re-scorer, 8 features | 1-thread CPU | 0.058 ms | 0.177 ms |
+| Quantum kernel (screened out) | CPU (unconstrained) | **92.062 ms** | 113.507 ms |
+| Classical scorer, 439 features | all-core CPU | 0.315 ms | 19.489 ms |
+| Classical scorer, 439 features | GPU | 19.437 ms | 24.620 ms |
+| In-band re-scorer, 8 features | all-core CPU | 19.051 ms | 23.358 ms |
 
-Re-measured 2026-09-06, on a host at 0.15 load per core, after a correction described in
-[D-147](decisions.md): the classical-scorer rows had been priced on a **400-tree, depth-6
-stand-in** rather than the 1000-tree, depth-10 model that ships. The hyperparameters now come
-from `run_baselines.XGBOOST_PARAMS`; the **feature matrix still does not** -- 431 raw numeric
-columns here against the 439 the scorer fits -- which is why the row says 431 and not 439. That
-residue is [M6 in OPEN_FINDINGS.md](OPEN_FINDINGS.md). The scorer is 1.8x slower than
-this table used to say, and both figures derived from it move **against** this study's own
-argument -- see the feasibility note below.
+Re-measured 2026-09-11 on an idle host, after two corrections ([D-147](decisions.md),
+[D-153](decisions.md)). The classical-scorer rows had been priced on a **400-tree, depth-6
+stand-in** on **431 raw numeric columns**; both the hyperparameters and the feature pipeline now
+come from `run_baselines.py`, so the rows describe the 1000-tree, depth-10 model on the 439
+features that ship.
 
-**The serving profile matters more than the model, by two orders of magnitude.** XGBoost defaults
-its thread count to the core count. On a one-row payload the OpenMP barrier costs about 19 ms
-across these 20 threads while the prediction it synchronises costs a fraction of a millisecond.
-The all-core figure is unstable between runs -- the in-band re-scorer's, on unchanged parameters,
-moved from 19.154 ms to 0.075 ms between 2026-08-30 and 2026-09-06 -- so it is reported as the
-documented trap rather than relied on. No bound claim reads an all-core row:
+**An unconfigured serving profile can cost two orders of magnitude more than the model, and
+which configuration pays it is not reproducible.** XGBoost defaults its thread count to the core
+count, and on a one-row payload the OpenMP barrier costs about 19 ms across these 20 threads
+against a prediction of a fraction of a millisecond. Three measurements of the same code:
+
+| all-core p50, batch 1 | 2026-08-30 | 2026-09-06 | 2026-09-11 |
+|---|---|---|---|
+| Classical scorer | 19.854 ms | 19.061 ms | **0.315 ms** |
+| In-band re-scorer | 19.154 ms | **0.075 ms** | 19.051 ms |
+
+The penalty is real in every run and lands on a **different component each time**. What decides
+that has not been established here, so the all-core rows are kept as the documented trap they
+were always meant to be and **no bound claim reads one** -- every latency claim selects the
+1-thread profile, which is the per-request serving shape and which reproduces to within 5 %
+across the last two runs. The `nthread` micro-benchmark below is a separate, direct measurement
+of the same barrier:
 
 | `nthread` | 1 | 4 | 20 (default) |
 |---|---|---|---|
@@ -131,25 +139,24 @@ process, through `Booster.inplace_predict`. It is not production latency: a depl
 behind a service boundary with serialisation, feature retrieval and network hops that dominate
 everything above, on the issuer's hardware rather than this one.
 
-**The feasibility consequence.** The classical core is not the latency risk — it uses 0.23 % of
-the residual budget at its tail. The kernel is: at 76.8 ms it costs about 498× a classical score,
-and its tail takes 61.3 % of the residual budget. That figure prices a **64-row support set**
+**The feasibility consequence.** The classical core is not the latency risk — it uses 0.18 % of
+the residual budget at its tail. The kernel is: at 92.1 ms it costs about 568× a classical score,
+and its tail takes 66.8 % of the residual budget. That figure prices a **64-row support set**
 (`SUPPORT_ROWS` in `scripts/measure_latency.py`) and is linear in it, so the in-band training
-block of 2,916 rows would cost some 3.5 s per authorisation.
+block of 2,916 rows would cost some 4.2 s per authorisation.
 
-**Both of those numbers used to be larger, and the correction weakens this study's own case.**
-The ratio was quoted as 1,148x and the budget share as 75.9 %. The ratio fell because the
-denominator was wrong -- the classical scorer really costs 0.154 ms, not 0.084 -- and the share
-fell because this measurement was taken on a quieter host than the previous one. 498x and 61.3 %
-still say the kernel cannot sit in a per-authorisation path, so the conclusion is unchanged; but
-it is a weaker version of it than was published, and it is stated here rather than left for a
-reviewer to find by re-running the script.
+**Both numbers used to be larger, and the correction weakens this study's own case.** The ratio
+was quoted as 1,148x and the budget share as 75.9 %. The ratio fell because the denominator was
+wrong: the classical scorer costs 0.162 ms, not the 0.084 a 400-tree stand-in produced. 568x and
+66.8 % still say the kernel cannot sit in a per-authorisation path, so the conclusion is
+unchanged -- but it is a weaker version of it than was published, and it is stated here rather
+than left for a reviewer to find by re-running the script.
 
-**The measurement's own noise floor, now that it has been measured twice.** The in-band
-re-scorer and the quantum kernel use *identical* code in both runs, and moved by 23 % and 20 %
-respectively between them. Any reading of this table finer than about a fifth is host variation,
-not model cost. That is why the claims bound to it are quoted to three or four figures but
-argued to one. Rationing bounds aggregate
+**The measurement's own noise floor, now that it has been taken three times.** The quantum kernel
+runs identical code in all three and its p50 reads 96.6, 76.8 and 92.1 ms -- a spread of about a
+fifth. The classical 1-thread figure is tighter, 0.154 and 0.162 ms across the two runs that
+priced the right model. **Any reading of this table finer than about a fifth is host variation,
+not model cost**, which is why the bound claims are quoted to four figures but argued to one. Rationing bounds aggregate
 kernel compute, not per-request latency: a transaction that lands in the band pays the tail
 whether the band is 2 % of traffic or all of it. Per-request feasibility separately requires
 holding the support set to order 100. Batching helps the classical path by a further order of

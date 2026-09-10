@@ -4997,3 +4997,53 @@ and the verdict string prints "over the trailing 111 days (requested 120)".
 Both alternatives were computed before choosing, and both verdicts recorded, so the choice is
 visible rather than asserted.
 
+<a id="d-153"></a>
+### D-153 The latency table's third reading, and what three runs settled
+
+[D-147](#d-147) fixed the hyperparameters `measure_latency.py` timed. It left the **feature
+matrix**: 431 raw numeric columns against the 439 `run_baselines.py` fits through
+`encode_strings`, `add_entity_aggregates(causal=True)` and `select_model_columns`, over a
+restricted `BASE_COLUMNS` read. So the table priced the deployed hyperparameters on a matrix
+eight columns short of the deployed one, and it was carried as M6 in
+[OPEN_FINDINGS.md](OPEN_FINDINGS.md) because closing it needs an idle host and the machine was
+running a clean-room reproduction. The reproduction finished; the pipeline is now imported and
+the measurement retaken at 0.03 load per core.
+
+| | 2026-08-30 | 2026-09-06 | **2026-09-11** |
+|---|---|---|---|
+| Priced | 400 trees, depth 6, 431 feat | 1000/10, 431 feat | **1000/10, 439 feat** |
+| Scorer p50 | 0.084 ms | 0.154 ms | **0.162 ms** |
+| Kernel p50 | 96.577 ms | 76.843 ms | **92.062 ms** |
+| Kernel vs scorer | 1,148x | 498x | **568x** |
+| Kernel tail / budget | 75.9 % | 61.3 % | **66.8 %** |
+
+**The headline correction still runs against this project's argument.** 568x and 66.8 % are
+smaller than the 1,148x and 75.9 % that shipped, and section 5 argues from them that the kernel
+cannot sit in an authorisation path. It still cannot. But the published version overstated the
+case, and the overstatement was in the direction the study wanted.
+
+**Three readings of identical code give the noise floor, so it is measured rather than asserted.**
+The quantum kernel's p50 reads 96.6, 76.8 and 92.1 ms -- a spread of about a fifth, on code that
+did not change. The classical 1-thread figure is tighter, 0.154 against 0.162 across the two runs
+that priced the right model. Nothing in this table should be read finer than about a fifth.
+
+**And they resolve the anomaly [D-147](#d-147) left open.** That entry recorded the in-band
+re-scorer's all-core figure moving from 19.154 ms to 0.075 ms on unchanged parameters and marked
+it *Needs confirmation*. The third run moves it back to 19.051 ms -- and drops the **classical**
+scorer's to 0.315 ms instead:
+
+    all-core p50, batch 1     2026-08-30   2026-09-06   2026-09-11
+    classical scorer            19.854       19.061        0.315
+    in-band re-scorer           19.154        0.075       19.051
+
+So the OpenMP penalty is real in every run and lands on a **different component each time**. The
+first reading, where both paid it, was the coincidence. What decides it is still not established
+and stays marked as such.
+
+**It reaches no result, and that is checkable rather than asserted.** Every one of the six bound
+latency claims selects `profile: 1-thread CPU`, which is the per-request serving shape; not one
+reads an all-core row. The all-core rows stay in the table as the trap [D-063](#d-063) wrote them
+to document, and no figure from them is quoted as a quantity -- the docstring's old "236x and
+261x" is withdrawn, because a reviewer dividing two columns of the artefact would not have
+reproduced it.
+

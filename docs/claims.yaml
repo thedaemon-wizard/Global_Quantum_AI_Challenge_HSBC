@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 152
+    value: 153
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -926,7 +926,7 @@ claims:
   # scorer claims do.  The ratio between them is therefore not like for like, and section 5
   # says so.  See D-125.
   - key: LatencyScorerMedian
-    value: 0.1542
+    value: 0.1621
     source: results/tables/latency.csv
     reduce:
       op: min
@@ -938,7 +938,7 @@ claims:
       threaded, on all 431 features.  The classical core is not the latency risk.
 
   - key: LatencyScorerTail
-    value: 0.3850
+    value: 0.3110
     source: results/tables/latency.csv
     reduce:
       op: min
@@ -948,7 +948,7 @@ claims:
     note: Tail cost per authorisation for the full-traffic scorer; a tail is what breaks a timeout.
 
   - key: LatencyKernelMedian
-    value: 76.843
+    value: 92.062
     source: results/tables/latency.csv
     reduce:
       op: min
@@ -960,7 +960,7 @@ claims:
       kernel arm survived its screens.  This is the figure the abstention band exists to ration.
 
   - key: LatencyKernelTail
-    value: 104.207
+    value: 113.507
     source: results/tables/latency.csv
     reduce:
       op: min
@@ -997,7 +997,7 @@ claims:
       less the roughly 130 ms it attributes to network response.  Quoted for scale.
 
   - key: LatencyKernelVersusScorer
-    value: 498
+    value: 568
     derived: {op: ratio, of: [LatencyKernelMedian, LatencyScorerMedian]}
     tolerance: 5
     note: >
@@ -1005,7 +1005,7 @@ claims:
       until the thread count was controlled, because the OpenMP barrier dominated both.
 
   - key: LatencyKernelBudgetShare
-    value: 61.3
+    value: 66.8
     derived: {op: ratio, of: [LatencyKernelTail, LatencyBudgetResidualMs]}
     scale: 100
     tolerance: 0.5

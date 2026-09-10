@@ -23,15 +23,19 @@ above said "three orders of magnitude", which asserts a factor of 1000, and no r
 table this script writes reaches it. The finding is unchanged by the correction, but the
 wording would not have survived a reviewer dividing two columns of the artefact it cites.
 
-**The ratio is not stable across runs, and that is stated rather than smoothed.** Dividing the
-all-core rows by the 1-thread rows gave 236x and 261x for the two classical components on the
-2026-08-30 reading, and gives **124x and 1.3x** on the 2026-09-06 one. The in-band re-scorer's
-parameters are identical in both -- 400 trees, depth 6, eight features -- so a two-order move in
-its all-core figure is not a model change. **Needs confirmation:** what decides whether XGBoost
-parallelises a payload this small has not been established here, and no claim in this study is
-bound to an all-core row, so the anomaly is recorded rather than resolved. Every bound latency
-claim selects the 1-thread profile, which is the per-request serving shape and is stable to
-about a fifth between the two runs. Measured on a fitted booster, one row:
+**Which configuration pays the barrier is not reproducible, and that is stated rather than
+smoothed.** All-core p50 at batch 1, same code, three runs:
+
+    classical scorer   19.854 ms   19.061 ms    0.315 ms
+    in-band re-scorer  19.154 ms    0.075 ms   19.051 ms
+
+The penalty appears in every run and lands on a different component each time.  **Needs
+confirmation:** what decides whether XGBoost parallelises a given payload has not been
+established here.  It does not reach any result -- **no claim in this study is bound to an
+all-core row**, every latency claim selects the 1-thread profile, and that profile reproduces to
+within 5 % across the two runs that priced the right model.  So the all-core rows stay in the
+table as the trap they were written to document, and none of them is quoted as a quantity.
+Measured on a fitted booster, one row:
 
     nthread=1   0.051 ms      nthread=4   0.051 ms      nthread=20   19.33 ms
 
@@ -81,6 +85,7 @@ from xgboost import Booster, XGBClassifier
 from hsbcfraud.config import load_config
 from hsbcfraud.data.ieee_cis import IEEE_CIS_ZIP, load_ieee_cis
 from hsbcfraud.features.band import band_edges, prepare, rows_in_band, select_band_features
+from hsbcfraud.features.engineering import add_entity_aggregates, select_model_columns
 from hsbcfraud.paths import display_path, require_run_artefact
 from hsbcfraud.progress import ProgressReporter
 from hsbcfraud.quantum.featuremaps import build_feature_map
@@ -89,7 +94,7 @@ from hsbcfraud.quantum.kernel import fidelity_gram
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "scripts"))
 
-from run_baselines import XGBOOST_PARAMS  # noqa: E402
+from run_baselines import BASE_COLUMNS, XGBOOST_PARAMS, encode_strings  # noqa: E402
 from run_mps import IN_BAND_CONTROL_PARAMS  # noqa: E402
 
 # The authorisation budget the challenge statement states, and the network share it attributes
@@ -144,15 +149,11 @@ PERCENTILES = (50, 95, 99)
 #
 # Both dicts are now imported from the scripts that own the models.
 #
-# **One difference remains, and it is stated rather than papered over.**  This script selects raw
-# numeric columns -- 431 of them -- while `run_baselines.py` fits 439 through `encode_strings`,
-# `add_entity_aggregates(causal=True)` and `select_model_columns`.  So the timing prices the
-# deployed *hyperparameters* on a feature matrix eight columns short of the deployed one.  Tree
-# traversal cost depends on depth and tree count far more than on the width of the input, so the
-# effect is small beside the 1.8x the hyperparameter correction produced -- but "small" is an
-# argument, not a measurement, and `n_features` in `latency.csv` records 431 so a reader can see
-# it.  Closing it means importing the same pipeline `tune_baseline.py` now imports and
-# re-measuring on a quiet host; it is carried in docs/OPEN_FINDINGS.md until then.
+# The **feature matrix** comes from the same place for the same reason.  This script used to
+# select raw numeric columns -- 431 of them -- against the 439 `run_baselines.py` fits through
+# `encode_strings`, `add_entity_aggregates(causal=True)` and `select_model_columns`, so it priced
+# the deployed hyperparameters on a matrix eight columns short of the deployed one.  Both halves
+# of "the deployed model" now come from the script that owns it.
 def fit_scorer(x: np.ndarray, y: np.ndarray, seed: int, params: dict) -> XGBClassifier:
     """Fit on the GPU, as the pipeline does.  Serving device is chosen later."""
     model = XGBClassifier(device="cuda", random_state=seed, **params)
@@ -328,16 +329,13 @@ def main(argv: list[str] | None = None) -> int:
             args.runs / f"scores_{args.arm}_{seed}.parquet", produced_by="baseline"
         )
     )
-    frame = load_ieee_cis(args.zip, None, with_identity=True).frame
-    for column in frame.columns:
-        if frame[column].dtype == "object" or str(frame[column].dtype) == "str":
-            frame[column] = frame[column].astype("category").cat.codes.astype("int32")
-
-    numeric = [
-        c
-        for c in frame.select_dtypes(include=[np.number]).columns
-        if c not in {"isFraud", "day", "TransactionDT", "TransactionID"}
-    ]
+    # BASE_COLUMNS as well as the pipeline: `run_baselines.py` restricts the read, and loading
+    # every column here would put a different matrix through the same selection.
+    frame = load_ieee_cis(args.zip, BASE_COLUMNS, with_identity=True).frame
+    frame = encode_strings(frame)
+    causal = add_entity_aggregates(frame, causal=True)
+    numeric = select_model_columns(causal)
+    frame = causal
     labels = frame["isFraud"].to_numpy()
     train_rows = scores[scores["block"] == "train"]["row"].to_numpy()
 

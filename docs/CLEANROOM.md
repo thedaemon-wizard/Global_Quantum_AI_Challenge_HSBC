@@ -301,3 +301,53 @@ claim check that followed was therefore committed-claims against committed-table
 true, and briefly written up as though it meant something. It did not. This pass was re-run
 from scratch for that reason, and the table above is a direct file diff, not an inference from
 a log.
+
+## 2e. Fifth run, 2026-09-11: a fresh clone of HEAD, start to finish
+
+The fourth pass ran against a working tree. This one starts from `git clone` of `origin/main` at
+commit `c196644`, stages only the dataset -- which the licence forbids committing -- and then
+follows section 7 of the README verbatim: `make venv`, `make smoke`, `make walkthrough`,
+`make reproduce`, `make check`. Three hours thirty-two minutes, unattended.
+
+```
+=== EXIT-VENV 0 ===        1m28s, torch cu130 first
+=== EXIT-SMOKE 0 ===       S0-S8, all 9 checks accounted for
+=== EXIT-WALKTHROUGH 0 === every assertion holds against the committed tables
+=== EXIT-REPRODUCE 0 ===   3h31m
+=== EXIT-CHECK 0 ===       All 102 claims agree; 51 scientific artefacts match the manifest
+=== EXIT-PYTEST 0 ===      212 passed, 1 skipped
+```
+
+**Zero errors or tracebacks** across the whole reproduction log.
+
+**What reproduced, diffed directly rather than read off the log.** All 35 committed tables were
+compared column by column against the clean room's own, separating measured values from
+wall-clock ones:
+
+| | Tables |
+|---|---|
+| Byte-identical | **30** |
+| Identical in every measured value, differing only in a timing column | **5** |
+| **Differing in a measured value** | **0** |
+
+**Thirty-one of the thirty-five were actually rewritten**, which matters more than the totals: a
+file that is never touched cannot fail a comparison. The four the run did not regenerate are the
+four it is designed not to, each for a reason a reviewer can check:
+
+| Table | Why it was not rewritten |
+|---|---|
+| `latency.csv` | opt-in by design; the run printed "NOT re-measuring latency" and said why |
+| `parity.csv` | the `gpu-crosscheck` extra is absent, so 4 comparisons ran against 12 committed, and the wider table is kept |
+| `mps_seed_sweep.csv` | the 13-GPU-hour sweep, excluded from `make reproduce` and run by `make seedsweep` |
+| `mps_seed_spread.csv` | the documented producerless exemption ([PROVENANCE.md](PROVENANCE.md) section 1.4) |
+
+**The built documents are bit-reproducible.** `proposal.pdf`, `appendix.pdf`, `method.png` and
+`certified_region.png` rebuilt to SHA-256 digests identical to the committed ones, at 6 and 3
+pages. A reviewer following the README gets the same bytes, not merely the same numbers.
+
+**The parity gate was exercised on the path that used to be wrong.** `check_parity.py` took its
+skip branch -- four Braket rows against twelve committed -- and printed "Every comparison that did
+run agreed with the reference." That sentence is now true by construction: [D-148](decisions.md)
+moved the agreement check above the skip, so the branch can no longer return 0 on a disagreement.
+This run is the first to exercise it in the environment the documented procedure produces.
+
