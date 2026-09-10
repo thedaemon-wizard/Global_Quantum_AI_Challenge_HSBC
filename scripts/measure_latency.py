@@ -36,7 +36,7 @@ about a fifth between the two runs. Measured on a fitted booster, one row:
     nthread=1   0.051 ms      nthread=4   0.051 ms      nthread=20   19.33 ms
 
 An earlier version of this script swept only device and batch size, and produced a table where
-CPU and GPU were indistinguishable, a 439-feature model cost the same as an 8-feature one, and
+CPU and GPU were indistinguishable, a 431-feature model cost the same as an 8-feature one, and
 batch 1 cost two thirds of batch 1024. Every one of those anomalies was the same barrier. Taken
 at face value it would have put the classical scorer at tens of milliseconds against a residual
 budget of about 170 ms -- attributing a threading default to model complexity, in a section whose
@@ -143,6 +143,16 @@ PERCENTILES = (50, 95, 99)
 # scorer makes the quantum kernel a smaller multiple of it, not a larger one.
 #
 # Both dicts are now imported from the scripts that own the models.
+#
+# **One difference remains, and it is stated rather than papered over.**  This script selects raw
+# numeric columns -- 431 of them -- while `run_baselines.py` fits 439 through `encode_strings`,
+# `add_entity_aggregates(causal=True)` and `select_model_columns`.  So the timing prices the
+# deployed *hyperparameters* on a feature matrix eight columns short of the deployed one.  Tree
+# traversal cost depends on depth and tree count far more than on the width of the input, so the
+# effect is small beside the 1.8x the hyperparameter correction produced -- but "small" is an
+# argument, not a measurement, and `n_features` in `latency.csv` records 431 so a reader can see
+# it.  Closing it means importing the same pipeline `tune_baseline.py` now imports and
+# re-measuring on a quiet host; it is carried in docs/OPEN_FINDINGS.md until then.
 def fit_scorer(x: np.ndarray, y: np.ndarray, seed: int, params: dict) -> XGBClassifier:
     """Fit on the GPU, as the pipeline does.  Serving device is chosen later."""
     model = XGBClassifier(device="cuda", random_state=seed, **params)

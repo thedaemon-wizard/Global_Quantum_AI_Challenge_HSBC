@@ -71,8 +71,8 @@ bound claim.
 
 | Stage | Scale | Wall clock | Device |
 |---|---|---|---|
-| Tuned GBDT, full feature set | 431 features, 356,216 train rows | **15.9 – 18.8 s** | GPU |
-| Tuned GBDT, in-band | 8 features, 2,916 band rows | **0.28 s** | GPU |
+| Gradient-boosted scorer, full feature set | 439 features, 356,216 train rows | **15.9 – 18.8 s** | GPU |
+| Gradient-boosted control, in-band | 8 features, 2,916 band rows | **0.28 s** | GPU |
 | Tensor network, in-band | 8 sites, $\chi \in \lbrace 4, 8, 16, 32 \rbrace$ | **0.69 – 1.91 s** per fit | GPU |
 | Tensor network, full scale | 431 sites, 356,216 rows, 30 epochs | **2,747 – 3,145 s** per fit | GPU |
 | Full-scale seed sweep | 16 fits, 4 bond dimensions $\times$ 4 seeds | **13.0 GPU-hours** total | GPU |
@@ -95,15 +95,18 @@ complexity* as a bottleneck. Per single authorisation, batch size 1:
 
 | Component | Serving profile | p50 | p99 |
 |---|---|---|---|
-| Classical scorer, 439 features | 1-thread CPU | **0.154 ms** | 0.385 ms |
+| Classical scorer, 431 features | 1-thread CPU | **0.154 ms** | 0.385 ms |
 | In-band re-scorer, 8 features | 1-thread CPU | 0.057 ms | 0.174 ms |
 | Quantum kernel (screened out) | CPU (unconstrained) | **76.843 ms** | 104.207 ms |
-| Classical scorer, 439 features | all-core CPU | 19.061 ms | 20.297 ms |
-| Classical scorer, 439 features | GPU | 19.815 ms | 26.839 ms |
+| Classical scorer, 431 features | all-core CPU | 19.061 ms | 20.297 ms |
+| Classical scorer, 431 features | GPU | 19.815 ms | 26.839 ms |
 
 Re-measured 2026-09-06, on a host at 0.15 load per core, after a correction described in
 [D-147](decisions.md): the classical-scorer rows had been priced on a **400-tree, depth-6
-stand-in** rather than the 1000-tree, depth-10 model that ships. The scorer is 1.8x slower than
+stand-in** rather than the 1000-tree, depth-10 model that ships. The hyperparameters now come
+from `run_baselines.XGBOOST_PARAMS`; the **feature matrix still does not** -- 431 raw numeric
+columns here against the 439 the scorer fits -- which is why the row says 431 and not 439. That
+residue is [M6 in OPEN_FINDINGS.md](OPEN_FINDINGS.md). The scorer is 1.8x slower than
 this table used to say, and both figures derived from it move **against** this study's own
 argument -- see the feasibility note below.
 

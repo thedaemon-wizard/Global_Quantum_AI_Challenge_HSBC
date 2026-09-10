@@ -139,8 +139,11 @@ verdicts are now named constants read in both places.
 | `test_results_tables_are_tracked` | same | same |
 
 Every other collected test either passes or is a recorded expected failure. At the last
-measurement, **2026-09-06**, the tree collected 210: these three, **no strict `xfail`s at all**,
-209 that pass and one skipped. The five `xfail`s the previous measurement recorded on 2026-09-02
+measurement, **2026-09-06**, the tree collected 213: these three, **no strict `xfail`s at all**,
+212 that pass and one skipped. The three named in the table above are counted among the 212,
+because in a clone with `make pdf` run first they pass; the table says what makes them fail
+otherwise. The one skip is a parametrised case with an empty argument set, which is what an
+empty defect registry looks like. The five `xfail`s the previous measurement recorded on 2026-09-02
 have all cleared, and they cleared by the defects being fixed rather than by the entries being
 deleted: `scripts/run_coverage_arms.py` now produces the two producerless tables, and
 `audit_labels.py`, `run_explain.py` and `run_power.py` each open a `run_log`. Both registries --

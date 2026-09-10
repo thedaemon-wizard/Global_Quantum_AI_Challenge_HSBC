@@ -85,6 +85,33 @@ this is not urgent.
 
 **Fix:** a `configuration_digest(cfg)` helper beside `TestFoldGuard` in `data/splits.py`.
 
+### M6 -- The latency table prices the deployed hyperparameters on a different feature matrix
+
+`measure_latency.py` now imports `run_baselines.XGBOOST_PARAMS`, so the classical-scorer rows are
+timed on the model that ships -- 1000 trees at depth 10, not the 400-tree, depth-6 stand-in they
+used to use ([D-147](decisions.md)). The **feature matrix is still its own**: 431 raw numeric
+columns, against the 439 `run_baselines.py` fits through `encode_strings`,
+`add_entity_aggregates(causal=True)` and `select_model_columns`. It is the same defect
+`tune_baseline.py` had, in the second of the two scripts that describe the deployed scorer.
+
+**Status: deferred, and the residue is small but unmeasured.** Tree traversal cost depends on
+depth and tree count far more than on input width, so eight columns in 439 should be a small
+effect beside the 1.8x the hyperparameter correction produced. That is an argument, not a
+measurement. `latency.csv` records `n_features = 431` so the gap is visible in the artefact
+rather than only in this file, and `ENVIRONMENT.md` says 431 in the table for the same reason.
+
+**Why it was not closed with the rest.** Closing it means re-measuring, and a latency
+measurement is only worth taking on an idle host -- the first attempt at the 2026-09-06
+re-measurement was discarded because this session was editing documents while it ran, and
+`CLEANROOM.md` records an earlier reading taken at load 33 that moved the same figures by a
+factor of four. The machine has been running a full clean-room reproduction since, so no quiet
+window has been available.
+
+**Fix:** import the pipeline as `tune_baseline.py` now does, re-measure on an idle host, and
+update the six bound latency claims. Expect the scorer rows to rise slightly and
+`LatencyKernelVersusScorer` to fall further, which continues to move against this project's own
+argument.
+
 ---
 
 ## LOW
