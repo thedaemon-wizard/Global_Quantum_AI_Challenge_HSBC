@@ -30,11 +30,38 @@ MUTUAL_INFORMATION_PROBE_ROWS = 20_000
 def band_edges(
     band_scores: np.ndarray, decline_budget: float, traffic_budget: float
 ) -> tuple[float, float]:
-    """The abstention band's lower and upper score thresholds.
+    """The step-up band, which sits entirely BELOW the decline threshold.
 
-    Both are quantiles of ``D_band`` and of nothing else.  Deriving them from the block that
-    later certifies would make band membership a data-dependent event and break the
-    exchangeability argument the guarantee rests on.
+    The three regions are contiguous and disjoint::
+
+        score >= tau_hi              decline
+        tau_lo <= score < tau_hi     step up  (the band)
+        score <  tau_lo              approve
+
+    so ``tau_hi`` is the decline threshold and the band occupies the next ``traffic_budget``
+    of traffic beneath it.
+
+    An earlier version centred the band *on* the decline threshold and extended it in both
+    directions.  That double-counts: the upper half of such a band lies above ``tau_hi``,
+    where the decision is already decline, so the in-band scorer was being asked to re-rank
+    transactions that were not routed to it.  With the decline threshold at the 98th
+    percentile the upper edge also clipped to the maximum score for any budget above 4 %,
+    making the band a half-open region rather than a band.
+
+    Both edges are quantiles of ``D_band`` and of nothing else.  They are deliberately **not**
+    recomputed as quantiles of the deployment stream: a predicate estimated from the data it
+    is applied to is data-dependent, which is exactly the selective-inference break that
+    freezing the band exists to avoid.  The cost is that the routed volume drifts -- measured
+    at 4.20 % of ``D_cal`` for a band budgeted at 5.0 % of ``D_band`` -- and that drift is
+    reported rather than engineered away.
+
+    **A lower quantile below zero raises rather than clamping.**  ``run_conformal.py`` kept a
+    private copy of this function whose lower edge was ``max(0.0, hi_q - band_budget)``, so a
+    configuration whose budgets sum past 1 silently produced a band starting at the minimum
+    score instead of failing.  No shipped configuration reaches it -- ``decline_rate_budget``
+    is 0.05 and the widest ``budget_grid`` entry 0.10 -- but a clamp that turns an impossible
+    request into a plausible answer is the kind of fallback this project removes rather than
+    documents.  ``np.quantile`` refuses the out-of-range value, which is the behaviour kept.
     """
     high = float(np.quantile(band_scores, 1.0 - decline_budget))
     low = float(np.quantile(band_scores, 1.0 - decline_budget - traffic_budget))

@@ -4,7 +4,7 @@
 
 Most steps below were executed in this study on public data
 (Section~\ref{sec:results}); the power-sized evaluation block and the change-management cadence
-describe Phase~II and were not. A PoC sprint changes the data, not the protocol. Some pre-registered items were \emph{not} executed --- two kernel hypotheses and the
+describe Phase~II and were not. Some pre-registered items were \emph{not} executed --- two kernel hypotheses and the
 entanglement ablation, closed by the screens, and amendment~A7's drift measurements --- and the
 appendix enumerates them, because a plan that cannot say which steps ran is not one.
 
@@ -21,12 +21,11 @@ one change that would make it informative here; Section~\ref{sec:quantum} report
 what happens when it is not.
 
 \textbf{Threshold change management.} $\lambda$ moves on every recalibration, so it needs an
-owner and a cadence rather than a rerun. Model risk approves each move quarterly, matching the
-rolling window the fraud-rate definition already uses, and out of cycle whenever realised in-band
-risk crosses the certified $\alpha$. If a recalibration fails to certify, the rule falls back to
+owner and a cadence rather than a rerun. Model risk approves each move quarterly, and out of
+cycle whenever realised in-band risk crosses the certified $\alpha$. If a recalibration fails to certify, the rule falls back to
 the previously certified $\lambda$, and failing that to the incumbent scorer with the band
-closed --- degrading to today's behaviour, not to an uncertified threshold. Phase~II runs
-the challenger in shadow first, scoring every authorisation and acting on none.
+closed --- today's behaviour, not an uncertified threshold. Phase~II runs the challenger in
+shadow first, scoring every authorisation and acting on none.
 
 \textbf{What keeps the plan honest.} Grids, splits and thresholds are hashed before any model is
 fitted, the hypotheses are frozen with dated amendments, and every retraction is recorded ---

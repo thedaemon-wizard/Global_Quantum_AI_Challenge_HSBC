@@ -340,6 +340,42 @@ tensor network is worse.
 
 ## At full scale: sixteen fits, no readable capacity signal, two failures
 
+### Is the full-scale comparison like for like?
+
+**The two arms do not see the same columns, and that had not been said anywhere.** `run_mps.py`
+selects raw numeric columns and gets **431**; `run_baselines.py` runs `encode_strings`, then
+`add_entity_aggregates(causal=True)`, then `select_model_columns`, and gets **439**. The 439 are
+a strict superset: the extra eight are entity aggregates, four keyed on `card1` and four on
+`addr1` --
+
+    card1_count_past  card1_amt_mean_past  card1_amt_std_past  card1_amt_ratio
+    addr1_count_past  addr1_amt_mean_past  addr1_amt_std_past  addr1_amt_ratio
+
+-- and card-level history is usually among the strongest signal in card-fraud data. So the
+classical arm carried an advantage the quantum arm did not, in the direction of this study's own
+conclusion.
+
+**Measured rather than argued.** The baseline was refitted on exactly the 431 columns the tensor
+network sees, everything else identical -- same rows, same seed, same
+`run_baselines.XGBOOST_PARAMS`, scored on the same held-out block:
+
+| Gradient-boosted baseline | Features | AP | ROC AUC |
+|---|---|---|---|
+| As it ships | 439 | 0.5114 | 0.8837 |
+| On the tensor network's columns | 431 | **0.5083** | 0.8805 |
+| **Difference** | 8 aggregates | **0.0031** | 0.0032 |
+
+The eight aggregates are worth **0.0031 AP**. The tensor network's best full-scale draw is
+0.2512 against a baseline near 0.51, a deficit of about **0.26** -- so the feature asymmetry
+accounts for roughly **one part in eighty** of the gap it would have to close. The comparison is
+not perfectly like for like, and correcting it moves the conclusion by nothing that can be seen
+at the precision the conclusion is stated to.
+
+*Reproduce it with the snippet in [D-155](decisions.md); it is a single fit and takes about
+fifteen seconds. It is deliberately **not** a committed table: it would be an eleventh script
+reading the held-out block, and amendment A8's disclosure table exists so that number stays
+small and deliberate. What it checks is a property of the comparison, not a result of the study.*
+
 Four bond dimensions at four seeds each, all 431 features, scored once on $D_{\mathrm{test}}$:
 
 | $\chi$ | ROC AUC (mean) | AP (mean) | AP range across seeds | Never left chance |

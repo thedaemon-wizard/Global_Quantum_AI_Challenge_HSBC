@@ -16,13 +16,18 @@ risk stated. *Needs confirmation* means the behaviour is reproduced but not expl
 
 ## MEDIUM
 
-### M1 -- Four implementations of the split-conformal order statistic
+### M1 -- CLOSED 2026-09-11: four implementations of the split-conformal order statistic
 
 `conformal/split.py:96` is the validated one. `run_conformal.py:266` and
 `validate_certificate.py:104` each re-derive it with `np.ceil` and `np.sort`.
 
-**Status: deferred.** The fourth copy, in `conformal/coverage.py`, was the one that mattered and
-is fixed: it accepted NaN calibration scores that `conformal_threshold` refuses, and certified a
+**Closed.** All four now share one definition. `run_conformal.py` calls `conformal_threshold`;
+`validate_certificate.py` calls a new `order_index(n, alpha)` beside it, because it holds only a
+count from a committed table and not the scores. Its `min(k, n_cal)` clamp is gone -- it defeated
+the guard that raises on `k > n`, returning the tail for a *different* order index under the
+original one's name. `riskcontrol.csv`, `coverage.csv`, `envelope.csv` and `h5_validation.csv`
+all reproduce byte-identically. The fourth copy, in `conformal/coverage.py`, was the one that
+mattered and was fixed earlier: it accepted NaN calibration scores that `conformal_threshold` refuses, and certified a
 corrupted block as clean coverage ([D-148](decisions.md)). The two remaining copies sit in
 scripts that read score files this pipeline produces, so the NaN path is not reachable from
 `make reproduce`. Consolidating them means touching the certificate producer, and the
@@ -31,19 +36,16 @@ certificate is the deliverable.
 **Fix:** call `conformal_threshold(scores, alpha)` at both sites and use the returned
 `(qhat, k, n)`. One line each, plus a check that `riskcontrol.csv` reproduces byte-identically.
 
-### M2 -- `run_conformal.py` keeps a private `band_edges`
+### M2 -- CLOSED 2026-09-11: `run_conformal.py` kept a private `band_edges`
 
 Four scripts import `hsbcfraud.features.band.band_edges`, whose docstring calls itself "the
 single definition". `run_conformal.py:52-82` -- the script that writes `band_lo` and `band_hi`
 into `riskcontrol.csv` -- has its own.
 
-**Status: latent.** Both return `(0.900, 0.950)` on the shipped configuration. They diverge only
-where the library raises and the copy clamps: with `decline_rate_budget = 0.05` and a budget of
-`0.98`, the library refuses a quantile outside `[0, 1]` and the private copy silently returns
-`(0.0, 0.950)`. No shipped configuration reaches it.
-
-**Fix:** delete the private copy and import the library one. The clamp-versus-raise question then
-gets decided once, in the place that documents itself as the single definition.
+**Closed.** The private copy is deleted and its (better) documentation moved into the library,
+which keeps the raise: a clamp that turns an impossible budget into a plausible band is the kind
+of fallback this project removes rather than documents. `riskcontrol.csv`, `coverage.csv` and
+`envelope.csv` reproduce byte-identically.
 
 ### M3 -- `select_model_columns` and `encode_strings` are copied across six scripts
 
@@ -61,18 +63,15 @@ divergence is currently latent rather than active.
 **Fix:** move `encode_strings` into `features/engineering.py` and have every script import both.
 Then re-run `make reproduce` and confirm every science column is unchanged.
 
-### M4 -- `reps` is read from the config at one call site of five
+### M4 -- CLOSED 2026-09-11: `reps` was read from the config at one call site of five
 
 `screen_kernels.py:171` passes `reps=cfg.quantum.reps`. `report_circuits.py`, `plot_circuits.py`,
 `measure_latency.py` and `check_parity.py` take `build_feature_map`'s default of 2.
 
-**Status: latent.** `cfg.quantum.reps` is 2, so every site agrees today. A config setting `reps:
-3` would make `screens.csv` describe three-repetition circuits while `circuits.csv` reports
-two-repetition depths, silently -- and `report_circuits.py`'s claim that it "cannot drift from the
-arm it describes" would become false.
-
-**Fix:** pass `reps=cfg.quantum.reps` at all five sites, or drop the parameter's default so the
-caller must choose.
+**Closed, and it was worse than filed.** Neither `circuits.csv` nor `screens.csv` *recorded*
+which repetition count produced them, so the drift would have been invisible in the artefacts as
+well as in the call sites. All five sites now pass it, and `circuits.csv` carries a `reps`
+column; every pre-existing column is unchanged.
 
 ### M5 -- The `TestFoldGuard` configuration digest is hand-copied
 
@@ -101,15 +100,13 @@ assuming. `LatencyKernelVersusScorer` is 568x and `LatencyKernelBudgetShare` 66.
 
 ## LOW
 
-### L1 -- `summarise_seed_sweep.py` divides by a zero spread
+### L1 -- CLOSED 2026-09-11: `summarise_seed_sweep.py` divided by a zero spread
 
 `ap_across_chi_spread` is 0.0 when the sweep has one bond dimension, and the division that
 reports "seed noise is N times the capacity signal" is unguarded. The output file is written
 *before* the division, so `make summaries` aborts on a table that is already correct.
 
-**Status: latent.** Reachable only via `run_seed_sweep.py --bonds 4`; the shipped sweep has four.
-
-**Fix:** guard on `across > 0` and print "single bond dimension, no capacity signal".
+**Closed.** Guarded, with the single-bond-dimension case reported rather than raised.
 
 ### L2 -- `run_conformal.py` writes no run log
 
@@ -122,13 +119,14 @@ producer, and a durable log of the run that produces the deliverable is worth ha
 
 **Fix:** wrap `main` in `run_log("conformal", directory=args.runs)`.
 
-### L3 -- `export_predictions.py` breaks ties by row order
+### L3 -- CLOSED 2026-09-11: `export_predictions.py` broke ties by row order
 
 Ties on `(alpha, budget)` across `alpha_fn` are resolved by whichever row pandas returns first.
 Exactly one `alpha_fn` certifies today, so nothing is ambiguous; a wider grid would silently
 change `selected_lambda` and every exported decision.
 
-**Fix:** make the tie-break explicit and record it in the protocol.
+**Closed.** `alpha_fn` is now the third sort key, ascending, so the tightest false-negative
+constraint wins. `predictions.csv` reproduces byte-identically.
 
 ---
 

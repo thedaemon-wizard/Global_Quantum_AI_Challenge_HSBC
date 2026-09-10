@@ -69,6 +69,21 @@ def degeneracy_floor(alpha: float) -> float:
     return (1.0 / alpha) - 1.0
 
 
+def order_index(n: int, alpha: float) -> int:
+    """The split-conformal order index ``k = ceil((1 - alpha)(n + 1))``.
+
+    Extracted so the two places that need it cannot drift.  `conformal_threshold` below has the
+    scores and returns the quantile; `validate_certificate.py` has only ``n`` from a committed
+    table and needs the index alone, and was recomputing this expression with its own ``np.ceil``.
+
+    ``k > n`` is a real answer -- the calibration set is too small to certify at this level -- and
+    is returned as such.  Callers decide what to do with it; none of them should clamp.
+    """
+    if not 0.0 < alpha < 1.0:
+        raise ValueError(f"alpha must lie in (0, 1), got {alpha!r}")
+    return math.ceil((1.0 - alpha) * (n + 1))
+
+
 def conformal_threshold(scores: np.ndarray, alpha: float) -> tuple[float, int, int]:
     """The split-conformal threshold, its order index, and the calibration size.
 
@@ -93,7 +108,7 @@ def conformal_threshold(scores: np.ndarray, alpha: float) -> tuple[float, int, i
 
     ordered = np.sort(values)
     n = int(ordered.size)
-    k = math.ceil((1.0 - alpha) * (n + 1))
+    k = order_index(n, alpha)
     qhat = math.inf if k > n else float(ordered[k - 1])
     return qhat, k, n
 

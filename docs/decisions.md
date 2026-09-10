@@ -5082,3 +5082,55 @@ bit, which was never true.
 change reported a different worst value, which is the only reason this was looked at; a single
 re-run would have been read as a one-off.
 
+<a id="d-155"></a>
+### D-155 The two arms of the full-scale comparison did not see the same columns
+
+Consolidating the duplicated feature selection turned up a difference that was not a duplication
+at all. `run_mps.py` selects raw numeric columns and fits on **431**. `run_baselines.py` runs
+`encode_strings`, `add_entity_aggregates(causal=True)` and `select_model_columns` and fits on
+**439**. The 439 are a strict superset; the extra eight are entity aggregates:
+
+    card1_count_past  card1_amt_mean_past  card1_amt_std_past  card1_amt_ratio
+    addr1_count_past  addr1_amt_mean_past  addr1_amt_std_past  addr1_amt_ratio
+
+Card-level history is usually among the strongest signal in card-fraud data, so the classical arm
+of the headline full-scale comparison carried an advantage the quantum arm did not -- **in the
+direction of this study's own conclusion**, and stated nowhere. Proposal section 4 says "on all
+431 features" of the tensor network and does not say the baseline it is measured against saw
+439.
+
+**The in-band comparison was never affected.** H4, the pre-registered hypothesis, is computed
+inside `run_mps.py`, which fits its own gradient-boosted control on the identical eight band
+features and identical rows. `MpsDeltaApBestChi`'s note already says "on identical rows and
+features", and that is true. Only the descriptive full-scale contrast crossed scripts.
+
+**How much it is worth, measured.** The baseline refitted on exactly the tensor network's 431
+columns -- same rows, same seed, same `XGBOOST_PARAMS`, same held-out block:
+
+| Baseline | Features | AP | ROC AUC |
+|---|---|---|---|
+| As it ships | 439 | 0.5114 | 0.8837 |
+| On the arm's columns | 431 | 0.5083 | 0.8805 |
+
+**0.0031 AP.** The tensor network's best full-scale draw is 0.2512 against a baseline near 0.51,
+so the asymmetry accounts for about **one part in eighty** of the deficit. The conclusion does
+not move at the precision it is stated to.
+
+**Reported rather than removed, and not made a committed table.** Making it one would add an
+eleventh script reading `D_test`, and amendment A8's disclosure table exists so that number stays
+small and deliberate. It checks a property of the comparison, not a result of the study, so it
+lives in `RESULTS.md` with the fit that produces it:
+
+    frame  = encode_strings(load_ieee_cis(zip, BASE_COLUMNS, with_identity=True).frame)
+    causal = add_entity_aggregates(frame, causal=True)
+    full   = select_model_columns(causal)
+    without = [c for c in full if not c.endswith(
+        ("_count_past", "_amt_mean_past", "_amt_std_past", "_amt_ratio"))]
+    # fit XGBOOST_PARAMS on blocks["train"], score blocks["test"], for each column set
+
+**The reason this was found is worth recording.** It surfaced while consolidating
+`select_model_columns` and `encode_strings`, which are copied into six scripts -- a DRY complaint
+that looked cosmetic. It was not: two of those copies had drifted into fitting different models,
+and the drift sat under the study's headline negative result. The audit finding was filed as
+duplication; what it actually was is a fairness gap.
+

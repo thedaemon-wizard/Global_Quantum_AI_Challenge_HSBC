@@ -36,8 +36,13 @@ from hsbcfraud.conformal.riskcontrol import (
     learn_then_test,
     missed_fraud_rate,
 )
-from hsbcfraud.conformal.split import degeneracy_floor, mondrian_thresholds
+from hsbcfraud.conformal.split import (
+    conformal_threshold,
+    degeneracy_floor,
+    mondrian_thresholds,
+)
 from hsbcfraud.data.splits import TestFoldGuard
+from hsbcfraud.features.band import band_edges
 from hsbcfraud.paths import display_path, require_run_artefact
 
 REPO = Path(__file__).resolve().parents[1]
@@ -47,39 +52,6 @@ REPO = Path(__file__).resolve().parents[1]
 # lambda is *reported*.  `max_recall` takes the lowest admissible threshold, which flags the
 # most among points that already certify.
 REPORTED_SELECTION_RULE = "max_recall"
-
-
-def band_edges(
-    scores: np.ndarray, decline_budget: float, band_budget: float
-) -> tuple[float, float]:
-    """The step-up band, which sits entirely BELOW the decline threshold.
-
-    The three regions are contiguous and disjoint::
-
-        score >= tau_hi              decline
-        tau_lo <= score < tau_hi     step up  (the band)
-        score <  tau_lo              approve
-
-    so ``tau_hi`` is the decline threshold and the band occupies the next ``band_budget`` of
-    traffic beneath it.
-
-    An earlier version centred the band *on* the decline threshold and extended it in both
-    directions.  That double-counts: the upper half of such a band lies above ``tau_hi``,
-    where the decision is already decline, so the in-band scorer was being asked to re-rank
-    transactions that were not routed to it.  With the decline threshold at the 98th
-    percentile the upper edge also clipped to the maximum score for any budget above 4 %,
-    making the band a half-open region rather than a band.
-
-    The edges are score values fixed on ``D_band``.  They are deliberately **not**
-    recomputed as quantiles of the deployment stream: a predicate estimated from the data it
-    is applied to is data-dependent, which is exactly the selective-inference break that
-    freezing the band exists to avoid.  The cost is that the routed volume drifts -- measured
-    here at 4.20 % of ``D_cal`` for a band budgeted at 5.0 % of ``D_band`` -- and that drift is
-    reported rather than engineered away.
-    """
-    hi_q = 1.0 - decline_budget
-    lo_q = max(0.0, hi_q - band_budget)
-    return float(np.quantile(scores, lo_q)), float(np.quantile(scores, hi_q))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -265,10 +237,13 @@ def main(argv: list[str] | None = None) -> int:
     cov_rows = []
     for alpha in cfg.risk.alpha_grid:
         legit_cal = s_cal[y_cal == 0]
-        qhat_index = int(np.ceil((1 - alpha) * (legit_cal.size + 1)))
-        if qhat_index > legit_cal.size:
+        # `conformal_threshold` rather than an inline ceil-and-sort: it is the same order
+        # statistic, and it also validates.  The copy in `conformal/coverage.py` looked
+        # identical and was not -- with a NaN among the calibration scores it sorted the NaN
+        # last, took it as the threshold, and reported zero errors as clean coverage (D-148).
+        qhat, qhat_index, n_legit_cal = conformal_threshold(legit_cal, alpha)
+        if qhat_index > n_legit_cal:
             continue
-        qhat = float(np.sort(legit_cal)[qhat_index - 1])
         legit_test = s_test[y_test == 0]
         errors = int((legit_test >= qhat).sum())
         verdict = cov.verify(

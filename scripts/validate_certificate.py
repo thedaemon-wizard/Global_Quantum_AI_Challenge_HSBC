@@ -36,12 +36,12 @@ import hashlib
 import json
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from scipy import stats
 
 from hsbcfraud.config import load_config
 from hsbcfraud.conformal.coverage import tail_probability
+from hsbcfraud.conformal.split import order_index
 from hsbcfraud.data.splits import TestFoldGuard
 from hsbcfraud.paths import display_path, require_run_artefact
 
@@ -101,10 +101,17 @@ def main(argv: list[str] | None = None) -> int:
         # The pre-registered statistic, reported for the comparison. n and k are the
         # calibration size and order index the split-conformal law would use.
         n_cal = int(row.n_legit_band_cal)
-        k = int(np.ceil((n_cal + 1) * (1 - row.alpha)))
+        k = order_index(n_cal, float(row.alpha))
+        # `min(k, n_cal)` used to sit in the call below, which defeated the guard in
+        # `coverage._require_order_index_within_calibration`: that raises on k > n because there
+        # is no exact Beta-Binomial law there, and clamping returned the tail for a *different*
+        # order index under the original one's name. No shipped configuration reaches it -- the
+        # smallest `n_legit_band_cal` on the budget grid is 847 against a k of about 806 -- but a
+        # silent substitution is not what "reported rather than silently clipped" means, which is
+        # what `conformal_threshold` promises three files away.
         beta_binomial_tail = (
-            float(tail_probability(n=n_cal, k=min(k, n_cal), m=m, observed=declined))
-            if m and n_cal
+            float(tail_probability(n=n_cal, k=k, m=m, observed=declined))
+            if m and n_cal and k <= n_cal
             else float("nan")
         )
 
