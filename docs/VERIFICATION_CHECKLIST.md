@@ -76,6 +76,20 @@ had ever regenerated. It backs `SweepBestAp` directly and, through
 | `[x]` | Sixteen full-scale fits reproduce their measured columns from a fresh clone | clean-room clone at `41c52f7`, idle GPU, 2026-09-11 09:13 to 21:19 | **Exact on every fit**: `max \|delta\| = 0.000e+00` for ROC AUC, average precision and final loss across all 16. Summary table byte-identical. `gpu_contended = False`, so the timings are quotable |
 | `[x]` | The same code path reproduces at smaller scale | clean-room pass of 2026-09-11 | `mps_full.csv` -- four full-scale fits, 431 sites -- reproduced every measured column exactly. The sweep is the same path at four seeds |
 
+**Does the sweep verification still cover the shipped code?** It was run against `41c52f7` and
+the tree has moved since, so the question is not rhetorical. Two files the sweep touches changed:
+
+| File | Change | Can it alter the sweep's output? |
+|---|---|---|
+| `scripts/run_seed_sweep.py` | text inside the `raise SystemExit` on the GPU guard's refusal path | **No.** That path is not taken on an idle GPU, which is the condition the run was made under |
+| `src/hsbcfraud/data/splits.py` | **19 insertions, 0 deletions** -- `configuration_digest` added | **No.** Purely additive; no existing function changed |
+
+`git diff --stat 41c52f7..HEAD -- src/hsbcfraud/data/splits.py` gives `19 +++++++++++++++++++`
+with no deletions, and the `run_seed_sweep.py` diff is confined to the message string. So the
+16-of-16 result stands for the submitted code and **the twelve hours are not repeated**: a
+re-run would exercise the same code on the same inputs and could only reproduce what is already
+recorded.
+
 **Two things the attempt established before it ran.**
 
 The guard refused the first launch: `1 process(es) hold the GPU`. It was **Firefox**, holding a
