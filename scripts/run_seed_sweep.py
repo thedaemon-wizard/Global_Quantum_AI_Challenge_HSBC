@@ -89,8 +89,18 @@ def require_idle_gpu(*, allow_shared: bool = False) -> bool:
     # docstring above says the guard exists to stop.
     if len(listing) > 0:
         if not allow_shared:
+            # Naming the flag matters: the listing counts *any* compute context, including a
+            # browser's compositing, so on a workstation this fires on a 284 MiB Firefox and
+            # the run stops with no stated way forward.  The guard is still right to fire --
+            # it cannot tell a browser from a training job -- but a reviewer who hits it needs
+            # to know the diagnostic path exists and what it costs.
             raise SystemExit(
-                f"{len(listing)} processes hold the GPU ({listing}); fit_seconds would be wrong"
+                f"{len(listing)} process(es) hold the GPU ({listing}); fit_seconds would be "
+                f"wrong, so this run would report a timing it cannot support.\n"
+                f"  Free the device and re-run, which is the only way to get quotable "
+                f"fit_seconds.\n"
+                f"  Or pass --allow-shared-gpu to measure the science anyway: every row is "
+                f"stamped gpu_contended=True and its fit_seconds must not be quoted."
             )
         return True
     return False

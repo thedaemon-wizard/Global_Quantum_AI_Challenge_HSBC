@@ -64,6 +64,31 @@ rather than what this repository assumes about it:
 title block resolves once the repository goes public on 2026-09-15. Neither can be automated
 from here.
 
+## 2c. The full-scale seed sweep
+
+`make reproduce` deliberately excludes `make seedsweep` -- sixteen full-scale tensor-network fits,
+about **13 GPU-hours** -- so `mps_seed_sweep.csv` is the one committed table no clean-room pass
+had ever regenerated. It backs `SweepBestAp` directly and, through
+`mps_seed_sweep_summary.csv`, the seed-spread and capacity figures section 4 argues from.
+
+| | Check | Run | Result |
+|---|---|---|---|
+| `[ ]` | Sixteen full-scale fits reproduce their measured columns from a fresh clone | **started 2026-09-11 09:13**, clean-room clone at `41c52f7`, GPU idle | in progress, about 13 hours |
+| `[x]` | The same code path reproduces at smaller scale | clean-room pass of 2026-09-11 | `mps_full.csv` -- four full-scale fits, 431 sites -- reproduced every measured column exactly. The sweep is the same path at four seeds |
+
+**Two things the attempt established before it ran.**
+
+The guard refused the first launch: `1 process(es) hold the GPU`. It was **Firefox**, holding a
+284 MiB compositing context. The guard is right to fire -- it cannot tell a browser from a
+training job, and a contended run reports `fit_seconds` wrong by a factor of three -- but its
+message named no way forward. It now names `--allow-shared-gpu` and states the cost, which is
+that every row is stamped `gpu_contended=True` and its timings must not be quoted.
+
+**The committed table predates its own producer.** It has no `gpu_contended` column; the current
+`run_seed_sweep.py` always writes one. So the committed sweep could not have been reproduced by
+the shipped code under *any* GPU condition -- a schema difference, not a measurement one, and
+invisible until something tried to regenerate it. This run is what closes that.
+
 ## 3. Reproduction
 
 | | Check | Run | Result |
