@@ -54,14 +54,26 @@ scripts inline the same selection, and the copies use `select_dtypes(include=[np
 the library uses `is_numeric_dtype` -- which differ on boolean columns. `encode_strings` exists
 in six copies and in no library module.
 
-**Status: deferred, and one instance of it was a real defect.** `tune_baseline.py` used a copy
-and therefore searched 400 raw columns instead of the 439 the scorer ships with, so the tuning
-study answered its question about a model nobody deploys ([D-147](decisions.md)). That one is
-fixed by importing. The rest describe models whose committed tables already reproduce, so the
-divergence is currently latent rather than active.
+**Two of the copies were real defects and both are fixed.** `tune_baseline.py` searched 400 raw
+columns instead of the 439 the scorer ships with, so the tuning study answered its question about
+a model nobody deploys ([D-147](decisions.md)); `measure_latency.py` priced the deployed
+hyperparameters on the same wrong matrix ([D-153](decisions.md)). Both now import the pipeline.
 
-**Fix:** move `encode_strings` into `features/engineering.py` and have every script import both.
-Then re-run `make reproduce` and confirm every science column is unchanged.
+**Status: will not fix in the remaining two, and the reason changed on 2026-09-11.** The
+remaining copies are in `run_mps.py` and `run_seed_sweep.py`, which fit 431 columns where
+`run_baselines.py` fits 439. That difference is **not** duplication drift to be tidied away -- it
+is the feature asymmetry [D-155](decisions.md) measured at 0.0031 AP, one part in eighty of the
+gap, and disclosed in proposal section 4. Changing the selection would refit the tensor network on
+a different matrix, which is new science rather than a refactor.
+
+**And it would discard a verification that cost twelve GPU-hours.** The full sweep was
+regenerated from a fresh clone on an idle GPU and reproduces ROC AUC, average precision and final
+loss to the last digit on all sixteen fits ([D-158](decisions.md)). That result is a statement
+about *this* code. Editing the two scripts it exercised would invalidate it and require the
+twelve hours again, to change a headline number by a quantity already measured as immaterial.
+
+**If it is ever done**, the honest form is not a refactor but an experiment: refit the arm on the
+matched 439 columns, report both, and say which is the pre-registered one.
 
 ### M4 -- CLOSED 2026-09-11: `reps` was read from the config at one call site of five
 

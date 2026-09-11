@@ -228,7 +228,7 @@ and average precision across a fresh virtual environment, a rebuilt CUDA stack a
 process; only the seconds they took differ. So does the 120-configuration screen, and so do all
 15 baseline fits.
 
-Of the 103 bound claims, **94 passed and 9 failed**, and every one of the 9 belongs to the two
+Of the 103 bound claims **as they stood on that date**, **94 passed and 9 failed**, and every one of the 9 belongs to the two
 tables in the "did not reproduce" row.
 
 **Defect one: a latency benchmark measures the host.** Six timing claims failed. The scorer
