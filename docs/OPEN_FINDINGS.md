@@ -1,16 +1,23 @@
 # Open findings
 
-What a full audit of this repository turned up and **did not fix**, with the reason in each case.
-Everything confirmed and fixed is in [decisions.md](decisions.md); this file is the residue.
+What a full audit of this repository turned up beyond what the decision log records, with the
+current status of each. It exists because a submission that lists only what it repaired invites
+the reader to assume the list is complete.
 
-It exists because a submission that lists only what it repaired invites the reader to assume the
-list is complete. Each row below was reproduced before being written down, and each says what
-would change if it were acted on.
+**Where it stands on 2026-09-11.** Of the ten findings opened here, **seven are closed**, each
+with the tables it touches reproducing byte-identically; one will not be fixed and says why; one
+is deferred; one is reproduced but unexplained. Two further findings were reproduced and then
+**withdrawn**, and are kept at the foot so the same ground is not covered twice.
 
-**Status values.** *Latent* means the defect cannot occur with the shipped configuration and
-needs a config a reviewer would have to write by hand. *Deferred* means it is real under the
-shipped configuration and was judged not worth the change this close to the deadline, with the
-risk stated. *Needs confirmation* means the behaviour is reproduced but not explained.
+Every entry was reproduced before being written down. The closed ones keep their original
+description rather than being deleted, because a list of defects that quietly loses its entries
+as they are fixed is no more trustworthy than one that never had them.
+
+**Status values.** *Closed* means fixed and verified. *Latent* means the defect cannot occur with
+the shipped configuration and needs a config a reviewer would have to write by hand. *Deferred*
+means it is real under the shipped configuration and was judged not worth the change this close
+to the deadline, with the risk stated. *Will not fix* means acting on it would change results
+rather than tidy code. *Needs confirmation* means the behaviour is reproduced but not explained.
 
 ---
 
