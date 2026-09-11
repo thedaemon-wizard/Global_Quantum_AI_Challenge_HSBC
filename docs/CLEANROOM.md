@@ -163,7 +163,7 @@ extract, and all three run.
 | `make walkthrough` | ~1 s, no GPU | Is what the submission reports internally consistent? Recomputes the block partition, the certified set, the held-out validation, the coverage directions and both quantum arms from `results/tables/` and asserts each |
 | `make check` | seconds | Does every number in the documents still resolve to its table, does every citation resolve, is the protocol lock intact, does the manifest match? |
 | `make reproduce` | minutes plus the data load | Do the tables regenerate from the source? |
-| `make seedsweep` | **13 GPU-hours** | Does the full-scale tensor-network arm regenerate? Excluded from `reproduce` deliberately — a reviewer checking the certificate should not have to spend a day re-deriving a result the frozen manifest already covers |
+| `make seedsweep` | **12.1 GPU-hours** | Does the full-scale tensor-network arm regenerate? Excluded from `reproduce` deliberately — a reviewer checking the certificate should not have to spend a day re-deriving a result the frozen manifest already covers |
 
 A reviewer who wants to check the **certificate** rather than the tensor-network arm can stop
 after `make walkthrough` and `make check`.

@@ -460,9 +460,15 @@ turn at epoch 1 and 2 and climb back to $\ln 2$. The per-epoch AUC shows the sam
 shown a flat curve and left open whether it was slow learning or none
 ([D-039](decisions.md), [D-040](decisions.md)).
 
-Note: The re-run's `fit_seconds` are stamped `gpu_contended` and must not be quoted as timings.
+*The caveat that used to sit here is retired.* These four rows came from a contended diagnostic
+re-run, whose `fit_seconds` were stamped `gpu_contended` and could not be quoted. The clean
+full-sweep re-run of 2026-09-11 carries `loss_initial`, `loss_min` and `epoch_of_min` natively and
+reproduces all four rows exactly -- the same AUCs, average precisions and turning epochs -- with
+`gpu_contended = False`. So the table above is now sourced from
+[`mps_seed_sweep.csv`](../results/tables/mps_seed_sweep.csv) and its timings are quotable
+([D-158](decisions.md)).
 
-**And the fit time is flat across $\chi$**: the sixteen jobs took 2747 to 3145 seconds,
+**And the fit time is flat across $\chi$**: the sixteen jobs took 2685 to 2783 seconds,
 against the sixty-four-fold spread a $\chi^2$ cost model predicts. A 431-site chain is bound
 by the launch overhead of its sequential contractions, not by their arithmetic; the competing
 predictions were written down before the measurement ([D-032](decisions.md)). Capacity

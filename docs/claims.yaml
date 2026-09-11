@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 157
+    value: 158
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -773,14 +773,14 @@ claims:
   # Feasibility is scored on whether the resource requirements are realistic.  These are
   # measured on this study's own runs rather than estimated, which is the whole argument.
   - key: SweepSecondsMin
-    value: 2747
+    value: 2685
     source: results/tables/mps_seed_sweep.csv
     reduce: {op: min, column: fit_seconds}
     tolerance: 0.5
     note: Fastest of the sixteen full-scale tensor-network fits, one GPU, 431 sites.
 
   - key: SweepSecondsMax
-    value: 3145
+    value: 2783
     source: results/tables/mps_seed_sweep.csv
     reduce: {op: max, column: fit_seconds}
     tolerance: 0.5

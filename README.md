@@ -86,9 +86,9 @@ not penalise.
 | Classical baseline | 356,216 train rows, 431 features, one fit per seed | 15.9 – 18.8 s | GPU |
 | Quantum kernel screens | 120 configurations, 300 rows each | 17.5 s total | CPU |
 | Tensor network, in-band | 8 sites, four bond dimensions | 0.69 – 1.91 s per fit | GPU |
-| Tensor network, full scale | 431 sites, 356,216 rows, 30 epochs | 2,747 – 3,145 s per fit | GPU |
+| Tensor network, full scale | 431 sites, 356,216 rows, 30 epochs | 2,685 – 2,783 s per fit | GPU |
 | Conformal calibration | a sort and a grid scan | seconds | CPU |
-| Full sweep (`make seedsweep`) | 16 fits, four bond dimensions x four seeds | ~13 GPU-hours | GPU |
+| Full sweep (`make seedsweep`) | 16 fits, four bond dimensions x four seeds | 12.1 GPU-hours | GPU |
 
 `make reproduce` excludes the sweep. Everything else completes in well under an hour.
 [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) carries the pinned versions, the per-stage detail
@@ -404,7 +404,7 @@ make walkthrough  # trace the certificate against the committed tables (seconds,
 from `results/tables/` and asserts each step. It refits nothing, so it costs about a second and
 answers *is what is reported internally consistent?* `make reproduce` refits everything and
 answers *do the tables regenerate?* The full-scale tensor-network sweep is deliberately excluded
-from `reproduce` at 13 GPU-hours; run it with `make seedsweep`.
+from `reproduce` at 12.1 GPU-hours; run it with `make seedsweep`.
 
 The procedure for reproducing from an empty directory, and what it was measured to cost, is in
 [`docs/CLEANROOM.md`](docs/CLEANROOM.md).

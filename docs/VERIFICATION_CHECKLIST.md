@@ -73,7 +73,7 @@ had ever regenerated. It backs `SweepBestAp` directly and, through
 
 | | Check | Run | Result |
 |---|---|---|---|
-| `[ ]` | Sixteen full-scale fits reproduce their measured columns from a fresh clone | **started 2026-09-11 09:13**, clean-room clone at `41c52f7`, GPU idle | in progress, about 13 hours |
+| `[x]` | Sixteen full-scale fits reproduce their measured columns from a fresh clone | clean-room clone at `41c52f7`, idle GPU, 2026-09-11 09:13 to 21:19 | **Exact on every fit**: `max \|delta\| = 0.000e+00` for ROC AUC, average precision and final loss across all 16. Summary table byte-identical. `gpu_contended = False`, so the timings are quotable |
 | `[x]` | The same code path reproduces at smaller scale | clean-room pass of 2026-09-11 | `mps_full.csv` -- four full-scale fits, 431 sites -- reproduced every measured column exactly. The sweep is the same path at four seeds |
 
 **Two things the attempt established before it ran.**
@@ -97,7 +97,7 @@ invisible until something tried to regenerate it. This run is what closes that.
 | `[x]` | Clean-room, second pass covering the four producers written afterwards | 2026-08-31 | All five derived tables byte-identical; found one defect, a verdict literal that had drifted between a row builder and its summary. [`CLEANROOM.md`](CLEANROOM.md) §2b |
 | `[x]` | Every committed table has a producer | continuous, `tests/test_repo_hygiene.py` | **One table has none, and it is the documented exemption.** `mps_seed_spread.csv` ([`PROVENANCE.md`](PROVENANCE.md) §1.4). This row read "one documented exemption" when the true figure was three, because the gate behind it searched for the file name anywhere in `scripts/` and `src/` and so counted the three scripts that *read* `coverage_by_arm.csv` as producing it. The gate was corrected, which exposed `coverage_by_arm.csv` and `coverage_by_arm_seeds.csv` as producerless; both were carried as strict xfails until `scripts/run_coverage_arms.py` was written, and `TABLES_WHOSE_PRODUCER_IS_MISSING` is now empty. Both tables reproduce byte-identically ([D-132](decisions.md)) |
 | `[x]` | Walkthrough against the committed tables | `make walkthrough` | Every assertion holds |
-| `[ ]` | Full-scale sweep re-run | not re-run | 13 GPU-hours; the frozen manifest covers it and no claim depends on re-deriving it |
+| `[x]` | Full-scale sweep re-run | `make seedsweep` in the clean-room clone, 2026-09-11, idle GPU | **All 16 fits reproduce ROC AUC, average precision and final loss to the last digit** -- `max \|delta\| = 0.000e+00` on each -- and the derived summary table is byte-identical. 12.1 GPU-hours |
 
 ## 4. The two governing documents, and how thinly they had been checked
 
