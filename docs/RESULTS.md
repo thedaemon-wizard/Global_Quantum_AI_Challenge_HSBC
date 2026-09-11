@@ -316,6 +316,41 @@ against the gradient-boosted baseline — see [`mps_band.csv`](../results/tables
 | 16 | 0.1183 | 0.1407 | -0.0225 | [-0.0613, +0.0136] | 0.884 | not rejected |
 | 32 | 0.1235 | 0.1407 | -0.0172 | [-0.0582, +0.0200] | 0.806 | not rejected |
 
+**What those four numbers are worth against the floor, which the table above does not show.**
+Average precision cannot fall below the positive rate, and the in-band evaluation block is
+**10.96 %** positive. So the column reads:
+
+| | AP | lift over the 0.1096 floor | ROC AUC |
+|---|---|---|---|
+| MPS, $\chi = 4$ | 0.1202 | +0.0106 | 0.5231 |
+| MPS, $\chi = 8$ | 0.1173 | +0.0077 | 0.5051 |
+| MPS, $\chi = 16$ | 0.1183 | +0.0087 | 0.5098 |
+| MPS, $\chi = 32$ | 0.1235 | +0.0139 | 0.5211 |
+| **GBDT control** | **0.1407** | **+0.0311** | **0.5643** |
+
+**Both arms are close to random inside the band, and that is a property of the band rather than
+a defect in either model.** The tensor network's ROC AUC runs 0.505 to 0.523 against a chance
+value of 0.500; the gradient-boosted control, refitted on band rows alone, reaches 0.5643. The
+control earns about three times the tensor network's lift over the floor, and both are small in
+absolute terms.
+
+**This is what an abstention band is.** The band is the score interval immediately below the
+decline threshold -- the region the incumbent scorer has already declined to separate. Routing
+into it works: the band is 10.96 % positive against 3.41 % for the block as a whole, a
+**threefold enrichment**, so the scorer is good at saying *where* it is unsure. What almost no
+model does well is rank *within* that region, because the rows there are the ones whose scores
+the incumbent could not tell apart in the first place.
+
+**Two consequences, and the second matters more than this study's quantum result.** First, it
+explains why neither arm wins here: there is little rankable signal for either to find, which is
+why H4 comes back underpowered rather than negative. Second, and this bears directly on Phase II
+design, **re-scoring the band has limited headroom for *any* model** -- the classical control
+buys 0.031 AP over random on its own home ground. A proposal to put a better ranker in the band,
+quantum or otherwise, should be sized against that number rather than against the full-block
+gap. The certificate is unaffected either way: it bounds a false-decline **rate** at a chosen
+threshold, which is a different property from ranking quality and does not require the band to
+be separable.
+
 Every interval contains zero, so the correct reading is **not** "the MPS is worse" — it is
 that the comparison cannot separate them. Note also that AP does **not** increase with $\chi$:
 the ordering here is 0.1202, 0.1173, 0.1183, 0.1235, and the full-scale section below shows why no

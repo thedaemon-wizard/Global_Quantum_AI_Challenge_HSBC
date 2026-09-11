@@ -5168,3 +5168,47 @@ the fraud-rate definition already uses -- to pay for the fairness disclosure in
 [D-155](#d-155). It is restored. For a reviewer drawn from an enterprise sponsor, a stated
 governance cadence argues more than a certificate.
 
+<a id="d-157"></a>
+### D-157 The in-band table had no floor, so two low numbers looked like two working models
+
+Table~\ref{tab:mps} is the pre-registered hypothesis's headline table. It prints average
+precision of **0.1235** for the tensor network against **0.1407** for the gradient-boosted
+control and the paired difference between them, and nothing else. Read cold, that is two models
+that work, one slightly better.
+
+**Average precision cannot fall below the positive rate, and the in-band block is 10.96 %
+positive.** So the honest reading of the same two numbers is +0.0139 and +0.0311 over a floor
+neither table nor prose stated. ROC AUC says it more plainly still: 0.505 to 0.523 for the
+tensor network against a chance value of 0.500, and 0.5643 for the control. **Both arms are
+close to random inside the band.**
+
+The floor was not absent from the proposal -- `ClaimBandFraudRate` appears four lines later --
+but it appears there to explain why the in-band and full-scale *shares* are not comparable
+([D-124](#d-124)), not as the reference point for these two figures. Nothing put it beside them,
+and `RESULTS.md` did not carry the in-band ROC AUC at all, though `mps_band.csv` has always had
+the column.
+
+**Stated, because the honest framing is the favourable one.** This is what an abstention band
+is: the score interval immediately below the decline threshold, which is to say the rows the
+incumbent scorer has already declined to separate. The routing works -- the band is 10.96 %
+positive against 3.41 % for the block, a **threefold enrichment**, so the scorer is good at
+saying *where* it is unsure. What no model here does well is rank *within* that region.
+
+Two consequences, and the second outlives this study's quantum result:
+
+* It is why H4 comes back **underpowered rather than negative**. There is little rankable signal
+  for either arm to find, so the comparison has little to separate.
+* **Re-scoring the band has limited headroom for any model.** The classical control, refitted on
+  band rows alone, buys 0.031 AP over random on its own home ground. A Phase II proposal to put
+  a better ranker in the band -- quantum or otherwise -- should be sized against that number and
+  not against the full-block gap. This is the most useful thing the negative result produces.
+
+**The certificate does not depend on it.** It bounds a false-decline *rate* at a chosen
+threshold, which is a different property from ranking quality and does not require the band to
+be separable. That distinction is why the deliverable survived two failed quantum arms, and it
+is worth being explicit that it also survives a band that is hard to rank.
+
+`RESULTS.md` now carries the floor, the lift and the ROC AUC for all five rows; proposal section
+4 states the floor and the headroom consequence in one sentence, which fit without displacing
+anything.
+

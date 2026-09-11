@@ -36,7 +36,10 @@ f_\ell(\mathbf{x}) = \sum_{\{s\}} \bigl[A^{s_1} \cdots A^{s_N}\bigr]_\alpha W_{\
 where $W$ is the head that closes the final bond into the two class logits $\ell$, sweeping the
 bond dimension $\chi$ rather than tuning it. In the band, on identical rows and features, it reaches average
 precision \ClaimMpsApBestChi{} at the largest bond dimension against \ClaimGbdtApBand{} for
-the gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi.
+the gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi. Both sit near
+the \ClaimBandFraudRate\,\% floor average precision cannot fall below, and neither ranks the
+band far above chance --- the band is the region the incumbent scorer already could not
+separate, so re-scoring it has limited headroom for \emph{any} model.
 
 \input{generated/table-mps}
 
