@@ -51,6 +51,16 @@ rather than what this repository assumes about it:
 | Resource documents | Submission guidelines, Assessment Criteria and Terms all under `/uploads/2026/04/` | The three governing documents have not moved since April |
 | Submission form fields | a file input and nothing else -- no team-name, title or description field | Whatever the account's registration holds is what the organisers see; the form offers no place to state a trading name at upload time |
 
+**Re-checked 2026-09-12, and one thing on the page changed.** The HSBC panel is unchanged --
+`0 uploaded - 5 slots left`, the same allowed-format list, the upload control present, and the
+statement still resolving under `/uploads/2026/08/`. What changed is a **different track**: the
+Airbus challenge now reads **Submitted**, with its button changed from `START` to `VIEW`. That is
+a separate entry and does not touch this submission, but it is worth recording for two reasons --
+it confirms the portal renders a filed track distinguishably, so the HSBC panel's `Not submitted`
+is a positive statement rather than a default; and it establishes that one account may hold
+submissions to several problem statements, which the Submission Guidelines section 4.2 permits
+("A team may submit to multiple problem statements, but each must be a separate submission").
+
 **The four Expected Outcomes the portal lists for this challenge, against what ships:**
 
 | Portal wording | Where it is answered |
