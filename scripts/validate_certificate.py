@@ -32,8 +32,6 @@ Writes ``results/tables/h5_validation.csv``.
 from __future__ import annotations
 
 import argparse
-import hashlib
-import json
 from pathlib import Path
 
 import pandas as pd
@@ -42,7 +40,7 @@ from scipy import stats
 from hsbcfraud.config import load_config
 from hsbcfraud.conformal.coverage import tail_probability
 from hsbcfraud.conformal.split import order_index
-from hsbcfraud.data.splits import TestFoldGuard
+from hsbcfraud.data.splits import TestFoldGuard, configuration_digest
 from hsbcfraud.paths import display_path, require_run_artefact
 
 REPO = Path(__file__).resolve().parents[1]
@@ -77,9 +75,7 @@ def main(argv: list[str] | None = None) -> int:
     # would make the guard refuse, and rightly: two distinct configurations touching the test
     # fold is exactly what it exists to stop.  Verified by it doing so when this script first
     # used its own label.
-    config_digest = hashlib.sha256(
-        json.dumps(cfg.model_dump(), sort_keys=True, default=str).encode()
-    ).hexdigest()
+    config_digest = configuration_digest(cfg)
     guard = TestFoldGuard(args.out / "test_access.json")
     guard.authorise("ieee_cis", config_digest)
 

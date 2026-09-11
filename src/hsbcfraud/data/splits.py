@@ -40,6 +40,7 @@ an entity cannot appear on both sides.
 
 from __future__ import annotations
 
+import hashlib
 import itertools
 import json
 from dataclasses import dataclass
@@ -207,6 +208,24 @@ def card_disjoint_blocks(entity: pd.Series, cfg: SplitConfig, seed: int) -> Bloc
     if empty:
         raise SplitError(f"card-disjoint split left blocks empty: {empty}")
     return Blocks(arm="card_disjoint", **{k: np.sort(np.asarray(v)) for k, v in filled.items()})
+
+
+def configuration_digest(cfg: object) -> str:
+    """The digest that keys :class:`TestFoldGuard`.
+
+    Three identical lines of ``hashlib`` and ``json.dumps`` lived in ``run_conformal.py`` and
+    ``validate_certificate.py``.  They *must* agree -- the guard refuses a second evaluation
+    under a different key -- so a difference between them would not be a drifting number but a
+    run that stops with "a second evaluation was requested for Y".  Loud rather than silent, and
+    still no reason for the expression to exist twice next to the thing it keys.
+
+    ``sort_keys`` and ``default=str`` are both load-bearing: dictionary order must not change the
+    digest, and the configuration carries ``Fraction`` and ``Path`` values that JSON will not
+    serialise on its own.
+    """
+    return hashlib.sha256(
+        json.dumps(cfg.model_dump(), sort_keys=True, default=str).encode()
+    ).hexdigest()
 
 
 class TestFoldGuard:

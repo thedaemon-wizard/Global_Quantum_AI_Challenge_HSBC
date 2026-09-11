@@ -19,8 +19,6 @@ on ``D_cal``; ``D_test`` is touched once, through the access guard.
 from __future__ import annotations
 
 import argparse
-import hashlib
-import json
 from pathlib import Path
 
 import numpy as np
@@ -41,7 +39,7 @@ from hsbcfraud.conformal.split import (
     degeneracy_floor,
     mondrian_thresholds,
 )
-from hsbcfraud.data.splits import TestFoldGuard
+from hsbcfraud.data.splits import TestFoldGuard, configuration_digest
 from hsbcfraud.features.band import band_edges
 from hsbcfraud.paths import display_path, require_run_artefact
 
@@ -227,9 +225,7 @@ def main(argv: list[str] | None = None) -> int:
             )
 
     # ----------------------------------------------- E6: exact coverage on the test fold
-    config_digest = hashlib.sha256(
-        json.dumps(cfg.model_dump(), sort_keys=True, default=str).encode()
-    ).hexdigest()
+    config_digest = configuration_digest(cfg)
     TestFoldGuard(args.out / "test_access.json").authorise("ieee_cis", config_digest)
 
     y_test = test_df["y"].to_numpy()

@@ -73,16 +73,15 @@ which repetition count produced them, so the drift would have been invisible in 
 well as in the call sites. All five sites now pass it, and `circuits.csv` carries a `reps`
 column; every pre-existing column is unchanged.
 
-### M5 -- The `TestFoldGuard` configuration digest is hand-copied
+### M5 -- CLOSED 2026-09-11: the `TestFoldGuard` configuration digest was hand-copied
 
 `run_conformal.py:256` and `validate_certificate.py:80` each compute the digest that keys the
 single-evaluation ledger. They must agree or `authorise` refuses.
 
-**Status: deferred.** They do agree. If they stopped agreeing the failure is loud and
-self-describing -- "a second evaluation was requested for Y" -- rather than silent, which is why
-this is not urgent.
-
-**Fix:** a `configuration_digest(cfg)` helper beside `TestFoldGuard` in `data/splits.py`.
+**Closed.** `configuration_digest(cfg)` now sits beside `TestFoldGuard` in `data/splits.py` and
+both scripts call it. The digest is unchanged -- `e9fc0d4c...`, the same key the committed ledger
+holds, checked before and after -- and `riskcontrol.csv`, `coverage.csv`, `envelope.csv` and
+`h5_validation.csv` all reproduce byte-identically.
 
 ### M6 -- CLOSED 2026-09-11: the latency table now prices the shipped feature matrix
 
