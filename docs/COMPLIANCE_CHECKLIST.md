@@ -125,17 +125,19 @@ Sections A to E track what the submission must *contain*. This one tracks what i
 on, which no other section did -- the criteria were mapped in prose in the README and in D8's
 note, and never as a checklist.
 
-Share of body text measured from `proposal.pdf` on 2026-09-02 by locating each section heading
-in the extracted text. It is a proxy for pages, not a page count.
+Share of body text measured from `proposal.pdf` by locating each section heading in the extracted
+text. It is a proxy for pages, not a page count. **Re-measured 2026-09-11**, after section 4
+gained the feature-asymmetry and in-band-floor disclosures and section 8 lost the Qiskit
+certification; the 2026-09-02 figures are in the second column so the drift is visible.
 
-| | Criterion | Weight | Answered in | Share of body | Gap |
-|---|---|---|---|---|---|
-| F1 | Problem Relevance and Impact | **25 %** | §1 | 16.5 % | **−8.5** |
-| F2 | Technical Approach and Innovation | **25 %** | §2 and §4 | 30.9 % | +5.9 |
-| F3 | Feasibility | **20 %** | §5 | 14.4 % | −5.6 |
-| F4 | Validation Plan | **15 %** | §3 and §6 | 27.4 % | **+12.4** |
-| F5 | Hybrid / Cross-Domain | **5 %** | §7 | 5.2 % | +0.2 |
-| F6 | Team Capability | **10 %** | §8 | 4.6 % | −5.4 |
+| | Criterion | Weight | Answered in | 2026-09-02 | **2026-09-11** | Gap |
+|---|---|---|---|---|---|---|
+| F1 | Problem Relevance and Impact | **25 %** | §1 | 16.5 % | **16.5 %** | **−8.5** |
+| F2 | Technical Approach and Innovation | **25 %** | §2 and §4 | 30.9 % | **32.1 %** | +7.1 |
+| F3 | Feasibility | **20 %** | §5 | 14.4 % | **14.8 %** | −5.2 |
+| F4 | Validation Plan | **15 %** | §3 and §6 | 27.4 % | **27.0 %** | **+12.0** |
+| F5 | Hybrid / Cross-Domain | **5 %** | §7 | 5.2 % | **5.1 %** | +0.1 |
+| F6 | Team Capability | **10 %** | §8 | 4.6 % | **4.5 %** | −5.5 |
 
 **Read the gaps with one caveat, which is large.** The mapping is not a partition. §3 reports
 the results, and those results are simultaneously the evidence for Technical (the two quantum
@@ -145,11 +147,37 @@ scoring Technical will read §3 too. The honest statement is that the *reported*
 over-weights the sections that carry measurements and under-weights the two that carry argument,
 §1 and §5.
 
-**What is worth acting on, and what is not.** F1 at 16.5 % against the joint-highest weight is
-the one real finding here. F6 at 4.6 % is not: §8 is a credentials list, every line of it is
-bound to a verified artefact in [`CREDENTIALS.md`](CREDENTIALS.md), and padding it would add
-words rather than evidence. F5 is at its weight. F2's surplus already narrowed once, when a
-paragraph duplicated between §4 and §5 was removed ([D-112](decisions.md)).
+**What is worth acting on, and what is not.** F1 at 16.5 % against the joint-highest weight was
+carried here as the one real finding. **It was re-read line by line on 2026-09-11 and the finding
+does not survive the reading.** Section 1 already does all of this, with no sentence spare:
+
+* frames the decision as three actions rather than two, and says why the middle one is what makes
+  the problem tractable at issuer volume;
+* engages four conformal papers *specifically* -- Singh, Zhu, Nayak and Bushara, Chen -- and says
+  what each does and does not condition on, rather than gesturing at a literature;
+* states what a successful PoC would demonstrate, and admits this study meets it only at loose
+  levels ($\alpha \ge 0.10$);
+* prices a day of traffic: **86.72 % approved, 9.35 % stepped up, 3.93 % declined**, and names
+  the middle number as the whole argument;
+* gives three impact consequences, **none of which needs a quantum result**;
+* quotes the statement's own cost figures and then **attaches none of its own**, because the
+  issuer-side cost is not public;
+* says both quantum arms failed, and how they failed differently;
+* closes with what is *not* claimed.
+
+The low share is a property of density, not of absence -- the section is the most compressed in
+the document. Adding words to reach 25 % would dilute an argument that currently has no filler,
+and the mapping is not a partition anyway: a reviewer scoring Impact reads the traffic split in
+§1 **and** the held-out results in §3.
+
+F6 at 4.5 % is likewise not a finding: §8 is a credentials list, every line bound to a verified
+artefact in [`CREDENTIALS.md`](CREDENTIALS.md), and it got *shorter* on 2026-09-11 when a
+Foundational-level certificate was removed for arguing less than the results beside it
+([D-156](decisions.md)). Padding it would add words rather than evidence. F5 is at its weight.
+F2's surplus already narrowed once, when a paragraph duplicated between §4 and §5 was removed
+([D-112](decisions.md)), and widened again on 2026-09-11 for two disclosures that had to be made
+([D-155](decisions.md), [D-157](decisions.md)) -- surplus spent on honesty rather than on
+argument.
 
 **Both PDFs are at their limits**, 6/6 and 3/3, and neither may grow. Any move toward F1 has
 to displace something, and the project's rule is that displacement goes to

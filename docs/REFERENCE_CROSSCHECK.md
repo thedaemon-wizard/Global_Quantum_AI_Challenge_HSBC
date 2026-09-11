@@ -29,10 +29,10 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **CP-9** | Conformal Risk Control | `docs/REFERENCE_IMPLEMENTATION.md`, `NOTICE`, `README.md`, `docs/decisions.md`, `docs/protocol.md`, `src/hsbcfraud/conformal/riskcontrol.py` and 1 more |
 | **CP-10** | Conformal Prediction Under Covariate Shift | `docs/REFERENCE_IMPLEMENTATION.md`, `NOTICE`, `README.md`, `docs/decisions.md`, `docs/protocol.md`, `src/hsbcfraud/conformal/split.py` and 1 more |
 | **CP-15** | When Is a Conformal Guarantee Fair? Auditing Silent Subgroup Under-Coverage in Alzheimer's Disease Longitudinal Prediction | `docs/decisions.md` |
-| **FR-1** | Cost-Sensitive Conformal Prediction and Human-in-the-Loop Abstention for Imbalanced High-Stakes Decision Support: A Multi-Domain Benchmark | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/protocol.md`, `submission/content/01-problem.tex` |
-| **FR-2** | Uncertainty-Aware Fraud Detection Using Hybrid Transformer With Gated Token Mixing and Conformal Risk Control | `docs/decisions.md`, `submission/content/01-problem.tex` |
-| **FR-3** | DISCO: Decoupling representation learning and risk control for reliable credit card fraud detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/protocol.md`, `submission/content/01-problem.tex` |
-| **FR-5** | Temporal Graph Prototype-conditioned Conformal Prediction for Fraud Detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `submission/content/01-problem.tex` |
+| **FR-1** | Cost-Sensitive Conformal Prediction and Human-in-the-Loop Abstention for Imbalanced High-Stakes Decision Support: A Multi-Domain Benchmark | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/protocol.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
+| **FR-2** | Uncertainty-Aware Fraud Detection Using Hybrid Transformer With Gated Token Mixing and Conformal Risk Control | `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
+| **FR-3** | DISCO: Decoupling representation learning and risk control for reliable credit card fraud detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/protocol.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
+| **FR-5** | Temporal Graph Prototype-conditioned Conformal Prediction for Fraud Detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
 | **FR-6** | Non-exchangeable Conformal Prediction for Temporal Graph Neural Networks | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
 | **CP-17** | Conformal Risk Control under Non-Monotone Losses: Theory and Finite-Sample Guarantees | `docs/FACTCHECK_LOG.md`, `docs/decisions.md` |
 | **CP-18** | Selective Conformal Risk Control | `docs/decisions.md`, `submission/content/01-problem.tex` |
