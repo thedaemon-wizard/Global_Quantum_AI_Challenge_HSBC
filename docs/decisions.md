@@ -5325,3 +5325,37 @@ is the property the guard actually enforces; the README linked `submission/porta
 `.gitignore` excludes, so it 404s on the public tree; and a table of four portfolio differences
 was introduced as three.
 
+<a id="d-160"></a>
+### D-160 Two clean-room runs raced on one tree, and the result would have looked fine
+
+A verification run was started at 10:02 on 2026-09-12 and was inside the full-scale
+tensor-network fits. A second was launched at 11:55 against what was believed to be an empty
+directory; its `git clone` **overwrote the tree the first was still writing into**, and both kept
+running. `lsof` on the results directory caught them with one process appending to
+`results/runs/mps_full_chi16_20260828.jsonl` and the other to `results/runs/ablations.log`.
+
+**Neither would have failed.** The second run would have completed, printed `EXIT-REPRODUCE 0`
+and `EXIT-CHECK 0`, and produced a table set that was a *mixture* -- some files written by the
+first execution, some by the second, with nothing marking which. A diff against the committed
+tables would then have been comparing against something no single execution ever produced, and
+it would have been reported here as a clean reproduction. **The failure mode of a reproduction
+harness is not that it errors; it is that it succeeds on the wrong thing.**
+
+It was found because the runs were asked about. Nothing in the harness raised, and nothing would
+have.
+
+**The contaminated tree was discarded unread.** Not diffed, not partially salvaged, not mined for
+the files that looked untouched -- a mixture cannot be separated after the fact, and picking the
+plausible-looking half is how a wrong result acquires evidence. The run was restarted once, from
+a fresh clone.
+
+**The harness now takes a lock.** `mkdir` on a lock directory is atomic, so a second launch
+against the same tree refuses with the path and the command to check before clearing it, and a
+trap releases it on exit. Verified by launching twice: the second prints `REFUSING to start` and
+exits 1.
+
+**This is a defect in the verification, not in the submission**, and that distinction is why it is
+recorded rather than quietly fixed. Six earlier passes are unaffected -- each ran alone, and
+[section 2f](CLEANROOM.md) records their process-level evidence. What changed is that the
+procedure no longer depends on remembering whether something is already running.
+

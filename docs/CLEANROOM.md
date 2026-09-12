@@ -351,6 +351,32 @@ run agreed with the reference." That sentence is now true by construction: [D-14
 moved the agreement check above the skip, so the branch can no longer return 0 on a disagreement.
 This run is the first to exercise it in the environment the documented procedure produces.
 
+## One run per tree, and why that is written down
+
+**Two clean-room launches raced on the same directory on 2026-09-12.** A first run had been
+started at 10:02 and was inside the full-scale tensor-network fits; a second was launched at
+11:55 against what was believed to be an empty directory, and its `git clone` **overwrote the
+tree the first was still writing into**. Both kept going. `lsof` caught them a few minutes later
+with one process appending to `results/runs/mps_full_chi16_20260828.jsonl` and the other to
+`results/runs/ablations.log`, in the same tree.
+
+**What makes this worth a section rather than a footnote.** Neither run would have failed. The
+second would have finished, printed `EXIT-REPRODUCE 0`, and produced a table set that was a
+*mixture* of two runs -- some files from the first, some from the second, with no marker
+distinguishing them. A diff against the committed tables would then have been comparing against
+something no single execution ever produced. The failure mode of a reproduction harness is not
+that it errors; it is that it succeeds on the wrong thing.
+
+It was found because the runs were asked about, not because anything raised. The contaminated
+tree was discarded unread -- not diffed, not partially salvaged -- because a mixture cannot be
+separated after the fact.
+
+**The procedure now takes a lock.** `mkdir` on a lock directory is atomic, so a second launch
+against the same tree refuses and says how to clear it, and the lock is released on exit by a
+trap. Tested by launching twice: the second prints `REFUSING to start` and exits 1. A run that
+has to be started twice is a run whose result cannot be trusted, and the harness should say so
+rather than quietly interleave.
+
 ## 2f. Sixth run, 2026-09-12: the final tree, and the sweep that had never been checked
 
 The fifth pass validated commit `c196644`. Between it and this one the code changed
