@@ -14,8 +14,9 @@ evidence that produced them.
 
 ## 1. Deliverables
 
-The five files uploaded to the portal, produced by `make submission` and staged in
-`submission/portal/` (`submission/portal/`, a local staging directory that `make submission` writes and `.gitignore` excludes; every file in it is a byte-identical copy of a tracked artefact). The portal accepts PDF, PNG, JPG, WEBP, GIF, PY,
+The five files uploaded to the portal, produced by `make submission` into
+`submission/portal/` -- a local staging directory `.gitignore` excludes, so it is absent from
+the public tree; every file in it is a byte-identical copy of a tracked artefact. The portal accepts PDF, PNG, JPG, WEBP, GIF, PY,
 JSON, JS, XLS, XLSX, CSV, DOC and DOCX, in five slots, with a 20 MB cap; `assemble_submission.py`
 refuses to stage anything outside that list.
 
