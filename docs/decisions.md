@@ -5249,3 +5249,79 @@ reproducible from a fresh clone by the shipped code, which is the strongest stat
 about the evidence behind the study's headline negative result. It does not make the arm better:
 every one of the sixteen still loses, and the two that diverged still diverge, at the same epochs.
 
+<a id="d-159"></a>
+### D-159 What a seven-way pre-freeze audit found, on a submission six passes had already cleared
+
+Fifty-six agents audited the figures, the 35 tables, both PDFs, every document, the loggers and
+reproduction machinery, the remaining code and the file hierarchy, each finding then re-checked
+by an independent verifier told to refute it. **Thirty-five findings survived; fourteen were
+dropped as style, dated history, or already disclosed.** Six clean-room passes had not found
+these, because none of them reads prose against the tables it describes.
+
+**Two of the three HIGH findings were sentences written in the previous two turns**, which is the
+useful part of the result.
+
+* `VERIFICATION_CHECKLIST.md` said `baselines.csv` holds "XGBoost **and** LightGBM". It holds 45
+  rows and every one is `xgboost`. This is not a new error -- [D-008](#d-008) and
+  [D-092](#d-092) removed exactly this claim from the README -- so a corrected falsehood was
+  reintroduced into a *different* file while recording the portal's Expected Outcomes. The
+  statement asks for "at least one classical baseline", which one satisfies.
+* `CLEANROOM.md` closed with "every committed table in this repository has been regenerated from
+  a fresh clone at least once". Three have not: `mps_seed_spread.csv` has **no producer at all**,
+  and `latency.csv` and `parity.csv` are preserved by design in every pass. The true figure is
+  thirty-two of thirty-five. It was written the day the sweep landed -- a universal quantifier
+  asserted from a strong result rather than counted, which is the failure that file exists to
+  record.
+
+**The third HIGH was a real gap in the shipped PDF, and it could not be fixed there.** Section 1
+prints "3.93 % declined", which is the outer-threshold routing share; the certified lambda then
+declines 1,007 more of the challenged transactions, so **4.80 %** is the terminal rate -- the one
+a false-decline guarantee is about. `operating_point.csv` has always carried both. Adding the
+qualifier was attempted and measured: a **two-character net edit moved six lines across a page
+boundary** and pushed the proposal to seven pages, and putting the sentence in the appendix
+pushed that to four. Neither could be paid for without cutting substantive content, and the
+routing split is not false -- it partitions traffic and sums to 100. So the correction went to
+`RESULTS.md` in full, and what *was* wrong was fixed: the `OperatingDeclineShare` claim's note
+asserted it counted "both the outer threshold and the in-band rule" when its selector reads the
+outer row alone. **The note described a different quantity from the one the claim reads.**
+
+**`audit_labels.py` was missing from amendment A8's census**, which is the third correction to
+that count. It never mentions a block -- it loads the whole file and buckets fraud rates by
+14-day window -- so the completeness gate, which looks for `blocks["test"]` and two sibling
+patterns, was structurally unable to see it. It is disclosed now because what it reads *includes*
+the held-out rows and because its verdict **was used**: it is the evidence that the final block
+needs no maturity buffer. Nothing is selected on it, but "the analysis that justified using the
+last block as the test fold looked at the last block" is what A8 exists to say out loud. Eleven
+scripts and nine unguarded.
+
+**Two artefacts could never have satisfied the contract they were filed under.**
+`results/tables/smoke.json` sat in the scientific class, which promises byte-identity across
+machines, while recording this machine's driver, device name and CUDA build. And
+`plot_circuits.py` wrote its PDF through the same `savefig` call as its PNG, so it never received
+the `metadata={"CreationDate": None}` that `make_figures.py` passes -- `circuits.pdf` was the one
+figure that embedded a wall-clock timestamp and could not reproduce. Both fixed; re-running the
+producer three times now yields identical bytes.
+
+**Stale numbers, each from a superseded measurement of this project's own:** the kernel budget
+share quoted at 61.3 % in two places when the committed value is 66.8 %; the tuning ratio at "one
+forty-sixth" nine lines below its own corrected "29 times"; the sweep cost at thirteen GPU-hours
+in a script docstring and a checklist when it is 12.1; the batch-1024 latency at 0.0164 ms
+against a committed 0.0173; and README's resource table calling the classical baseline
+431-feature when it fits 439 -- 431 is the tensor network's site count, which is the very
+asymmetry [D-155](#d-155) exists to disclose.
+
+**And one unmerged paste of my own.** `RESULTS.md`'s tuning section stated the refit argument
+twice, the second copy beginning "Doing so" with no antecedent, because a [D-147](#d-147) edit
+was laid on top of the [D-142](#d-142) text without removing it. Repairing the equivalent
+sentence in `PROVENANCE.md` produced the same defect a second time within the hour, which is
+worth recording: the failure mode is not carelessness about facts, it is replacing a sentence
+without reading what follows it.
+
+Smaller corrections: `.gitignore` credited a `scripts/fetch_data.py` that has never existed;
+`PROVENANCE.md` claimed every table has a producer, contradicting its own section 1.4 eighty-six
+lines earlier; `SUBMISSION_CHECKLIST.md` ticked `evaluations: 1` when the counter reads 6 and
+increments on every reproduction, so the row now asserts the configuration digest instead, which
+is the property the guard actually enforces; the README linked `submission/portal`, which
+`.gitignore` excludes, so it 404s on the public tree; and a table of four portfolio differences
+was introduced as three.
+

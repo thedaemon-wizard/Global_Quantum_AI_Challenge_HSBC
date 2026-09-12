@@ -130,6 +130,41 @@ that word too.
 The proposal states the two rates; the trend statistics are here, which is why this file rather
 than the six-page body carries them.
 
+## What the rule finally declines, which is not the number section 1 prints
+
+Section 1 gives the operating point as **86.72 % approved outright, 9.35 % routed to a 3-D Secure
+challenge, 3.93 % declined**. Those three sum to 100 % because they **partition traffic by where
+the outer thresholds send it**. The third is therefore a routing share, and it is not the decline
+rate.
+
+`operating_point.csv` carries both, and has always carried both:
+
+| Row | Count | Share |
+|---|---|---|
+| `approve` | 100,191 | 86.72 % |
+| `step-up` | 9,796 | 8.48 % |
+| `step-up-declined` | 1,007 | 0.87 % |
+| `decline` | 4,540 | 3.93 % |
+| **`declined overall`** | **5,547** | **4.80 %** |
+| `stepped up overall` | 10,803 | 9.35 % |
+
+**4.80 % is the rate a false-decline guarantee is about.** The certified $\lambda$ declines 1,007
+of the transactions the outer thresholds routed to a challenge, and those are terminal declines
+like any other. A reader who takes 3.93 % as the decline rate is out by nearly a fifth of it.
+
+**Why the proposal still prints 3.93 %, and what was fixed instead.** The routing split is not
+false and it is the number section 1's argument needs -- the paragraph is about *where traffic
+goes*, and the middle figure is the one it calls "the whole argument". Both shipped PDFs are at
+their page limits, and adding the qualifier was measured: a **two-character** net edit moved six
+lines across a page boundary and pushed the proposal to seven pages, while putting the same
+sentence in the appendix pushed that to four. Neither could be paid for without cutting
+substantive content.
+
+What *was* wrong is now fixed. The `OperatingDeclineShare` claim's note asserted it counted
+"both the outer threshold and the in-band rule". It does not -- its selector reads the `decline`
+row, which is the outer threshold alone -- so the note described a different quantity from the
+one the claim reads, and that was the actual defect rather than the prose in section 1.
+
 ## Is the classical baseline tuned enough to be a fair comparator?
 
 The challenge statement's secondary objective 4.2 asks for improvement over "**tuned** classical
@@ -192,11 +227,15 @@ quantum arm's own run-to-run variance, at a single fixed bond dimension, is 20 t
 No hyperparameter choice available here moves the comparison's conclusion, and the classical arm
 is therefore not under-tuned in any sense that bears on it.
 
-**The winner was not adopted, and the reason is a protocol constraint rather than a judgement about materiality.** Refitting the scorer would change the band edges, lambda and the certificate, and therefore every held-out number in this study -- which requires a **second evaluation of `D_test`**. The pre-registration permits one, `TestFoldGuard` enforces it, and it has been spent. A 0.0089 AP improvement cannot be bought with the guarantee that is the deliverable. Doing so would refit the scorer, and with it the
-band edges, lambda, the certificate, `predictions.csv` and ten bound claims -- and it would
-require a second evaluation of the held-out fold, which the pre-registration permits once. That
-is a new campaign, roughly thirteen GPU-hours and the loss of the single-evaluation record, to
-move a number by one forty-sixth of the effect under study. See [D-142](decisions.md).
+**The winner was not adopted, and the reason is a protocol constraint rather than a judgement
+about materiality.** Refitting the scorer would change the band edges, lambda, the certificate,
+`predictions.csv` and ten bound claims -- and therefore every held-out number in this study,
+which requires a **second evaluation of `D_test`**. The pre-registration permits one,
+`TestFoldGuard` enforces it, and it has been spent. That makes adoption a new campaign, 12.1
+GPU-hours and the loss of the single-evaluation record, to move a number by one twenty-ninth of
+the effect under study -- 0.0089 against 0.2602, matching the "29 times" above. It read "one forty-sixth" until 2026-09-12, a ratio computed from the
+0.0057 headroom the pre-[D-147](decisions.md) search produced on the wrong feature matrix. See
+[D-142](decisions.md) and [D-147](decisions.md).
 
 ## The certificate holds on held-out data
 

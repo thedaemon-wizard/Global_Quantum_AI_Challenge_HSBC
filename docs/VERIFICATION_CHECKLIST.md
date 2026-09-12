@@ -67,7 +67,7 @@ submissions to several problem statements, which the Submission Guidelines secti
 |---|---|
 | "Fraud probability scores (float [0,1]) and binary predictions for each transaction" | `predictions.csv`, 115,534 rows: `fraud_probability` spanning [0.0000, 1.0000], `predicted_fraud`, and `decision` carrying the three-valued rule |
 | "Feature attribution analysis explaining individual predictions" | `attribution.csv` and `attribution_examples.csv`, from `scripts/run_explain.py` |
-| "Quantitative comparison with at least one classical baseline (XGBoost, LightGBM, or CatBoost)" | `baselines.csv` -- XGBoost **and** LightGBM, five seeds, three splits |
+| "Quantitative comparison with at least one classical baseline (XGBoost, LightGBM, or CatBoost)" | `baselines.csv` -- a gradient-boosted baseline over five seeds and three splits. **One model, not two:** this cell said "XGBoost **and** LightGBM" until 2026-09-12, which is the falsehood [D-008](decisions.md) and [D-092](decisions.md) already removed from the README -- `baselines.csv` has 45 rows and every one is `xgboost`. The statement asks for "at least one classical baseline", which one satisfies |
 | "Documentation of quantum encoding strategy, circuit design choices, and conditions where quantum methods..." | proposal section 4 and `circuits.csv`; `results/figures/circuits.png` draws the screened encodings |
 
 **Still manual, and still open.** The upload itself, and confirming the repository URL in the
@@ -77,7 +77,7 @@ from here.
 ## 2c. The full-scale seed sweep
 
 `make reproduce` deliberately excludes `make seedsweep` -- sixteen full-scale tensor-network fits,
-about **13 GPU-hours** -- so `mps_seed_sweep.csv` is the one committed table no clean-room pass
+about **12.1 GPU-hours** -- so `mps_seed_sweep.csv` is the one committed table no clean-room pass
 had ever regenerated. It backs `SweepBestAp` directly and, through
 `mps_seed_sweep_summary.csv`, the seed-spread and capacity figures section 4 argues from.
 
@@ -167,8 +167,8 @@ row and a considered-and-null row are indistinguishable to the next reader.
 
 ## 5c. Where the portfolio and the proposal disagree
 
-§8 links the portfolio, so a reviewer can open both. Three differences are worth the author's
-attention, and **none of them is a defect in this submission**. All three live in files outside
+§8 links the portfolio, so a reviewer can open both. Four differences are worth the author's
+attention, and **none of them is a defect in this submission**. All four live in files outside
 this repository and are recorded here because the submission points at them.
 
 | | Portfolio says | The submission says | Which is right |

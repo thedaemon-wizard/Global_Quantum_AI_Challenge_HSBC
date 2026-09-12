@@ -687,7 +687,7 @@ split-integrity work.
 ## Amendment A8 — 2026-08-30, the single-evaluation rule described more than the code enforces
 
 **What changed:** section 2.2 stated that "every sweep, ladder and ablation runs on held-out
-slices of `D_band` or `D_cal`". Ten scripts read the test block, and eight of them do not go
+slices of `D_band` or `D_cal`". Eleven scripts read the test block, and nine of them do not go
 through `TestFoldGuard`:
 
 | Script | What it reads from `D_test` | Guard |
@@ -702,15 +702,28 @@ through `TestFoldGuard`:
 | `export_predictions.py` | the per-transaction decisions staged for the portal | none |
 | `run_rolling_origin.py` | five rolling windows; four read test-block rows and two *calibrate* inside it | none |
 | `make_splits.py` | the `card1` overlap and the cal-against-test two-sample AUC | none |
+| `audit_labels.py` | no block-conditioned read; a whole-file fraud-rate bucketing that *includes* held-out rows, whose censoring verdict decided that the final block needs no maturity buffer | none |
 
-**This count was six and four until 2026-09-05, and the correction is the same defect the
-amendment records.** Four of the ten were missed: two are older than the amendment, and two
+**The count was six and four until 2026-09-05, and ten and eight until 2026-09-12; each
+correction is the same defect the amendment records.** Four of the ten were missed: two are older than the amendment, and two
 were added *after* it -- `export_predictions.py` and `run_coverage_arms.py`, both written during
 this study to close other gaps. An amendment whose purpose is to record that the protocol
 described more than the code enforces had itself drifted from the code. Nothing about the
 guarantee moves: `run_rolling_origin.py` is the only one that calibrates inside `D_test`, it is
 a *diagnostic* of how the deviation depends on where the window falls, and no threshold or
 selection anywhere derives from it. See [D-136](decisions.md).
+
+**`audit_labels.py` is the 2026-09-12 addition, and it is the subtlest of the eleven.** It never
+mentions a block: it loads the whole file and buckets fraud rates by 14-day window, so the
+regex-based completeness gate in `tests/test_repo_hygiene.py` -- which looks for
+`blocks["test"]`, `block"] == "test"` and `REPORTED_BLOCK = "test"` -- could not see it, and
+neither could the two checks that read the table against itself. It is disclosed here because
+what it reads *includes* the held-out rows and because its verdict was **used**: it is the
+evidence that the final block needs no maturity buffer, which is a protocol decision. Nothing is
+selected on it -- the verdict is "not detected" either way and no threshold derives from it --
+but "the analysis that justified using the last block as the test fold looked at the last block"
+is exactly the kind of thing this amendment exists to say out loud rather than leave for a
+reviewer to notice.
 
 **Why the guarantee is unaffected, and why this is still a defect.** The rule that protects a
 finite-sample guarantee is that nothing may be *selected* on the test fold. Nothing was:

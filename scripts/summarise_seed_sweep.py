@@ -8,7 +8,7 @@ in the repository wrote it, so ``make reproduce`` could not regenerate it and
 ``freeze.py --check`` passed it trivially: a file nothing rewrites cannot differ from its hash.
 
 Nothing is measured here.  Every value aggregates ``mps_seed_sweep.csv``, which
-``run_seed_sweep.py`` produces over thirteen GPU-hours, so this file is the arithmetic between
+``run_seed_sweep.py`` produces 12.1 GPU-hours, so this file is the arithmetic between
 that run and the prose.
 
     .venv/bin/python scripts/summarise_seed_sweep.py

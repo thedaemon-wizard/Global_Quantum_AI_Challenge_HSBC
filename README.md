@@ -15,7 +15,7 @@ evidence that produced them.
 ## 1. Deliverables
 
 The five files uploaded to the portal, produced by `make submission` and staged in
-[`submission/portal/`](submission/portal). The portal accepts PDF, PNG, JPG, WEBP, GIF, PY,
+`submission/portal/` (`submission/portal/`, a local staging directory that `make submission` writes and `.gitignore` excludes; every file in it is a byte-identical copy of a tracked artefact). The portal accepts PDF, PNG, JPG, WEBP, GIF, PY,
 JSON, JS, XLS, XLSX, CSV, DOC and DOCX, in five slots, with a 20 MB cap; `assemble_submission.py`
 refuses to stage anything outside that list.
 
@@ -83,7 +83,7 @@ not penalise.
 
 | Stage | Work | Measured cost | Device |
 |---|---|---|---|
-| Classical baseline | 356,216 train rows, 431 features, one fit per seed | 15.9 – 18.8 s | GPU |
+| Classical baseline | 356,216 train rows, 439 features, one fit per seed | 15.9 – 18.8 s | GPU |
 | Quantum kernel screens | 120 configurations, 300 rows each | 17.5 s total | CPU |
 | Tensor network, in-band | 8 sites, four bond dimensions | 0.69 – 1.91 s per fit | GPU |
 | Tensor network, full scale | 431 sites, 356,216 rows, 30 epochs | 2,685 – 2,783 s per fit | GPU |

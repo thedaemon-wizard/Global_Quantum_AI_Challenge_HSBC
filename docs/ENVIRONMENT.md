@@ -160,7 +160,7 @@ not model cost**, which is why the bound claims are quoted to four figures but a
 kernel compute, not per-request latency: a transaction that lands in the band pays the tail
 whether the band is 2 % of traffic or all of it. Per-request feasibility separately requires
 holding the support set to order 100. Batching helps the classical path by a further order of
-magnitude (0.0164 ms per transaction at batch 1024) but is unavailable to a per-authorisation
+magnitude (0.0173 ms per transaction at batch 1024) but is unavailable to a per-authorisation
 decision, which is why batch 1 is the figure quoted.
 
 ## 6. Circuit structure, for near-term hardware feasibility

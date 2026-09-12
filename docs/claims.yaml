@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 158
+    value: 159
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -352,8 +352,18 @@ claims:
     column: share
     tolerance: 0.01
     note: >
-      Share declined, counting both the outer threshold and the in-band rule.  Reported so the
-      operating point can be read against the decline budget the protocol fixes.
+      Declined **at the outer threshold**, which is what the `decline` row of
+      `operating_point.csv` holds.  This note used to say "counting both the outer threshold and
+      the in-band rule", which is what the *table's* `declined overall` row holds and not what
+      this selector picks -- the note described a different quantity from the one the claim
+      reads, and section 1 printed this figure under the bare word "declined".  With
+      `OperatingApproveShare` and `OperatingStepUpShare` it forms a routing split that sums to
+      100 %.  The terminal figure -- every transaction the rule finally declines, outer
+      threshold plus the in-band rows the certified lambda declines after routing them to a
+      challenge -- is the `declined overall` row of the same table, 4.80 %, and is discussed
+      in docs/RESULTS.md.  It is deliberately not a claim: both shipped PDFs are at their page
+      limits, a two-character edit was measured to move six lines across a page boundary, and
+      the routing split section 1 prints is not false -- it partitions traffic and sums to 100.
 
   - key: ScreenConfigs
     value: 120

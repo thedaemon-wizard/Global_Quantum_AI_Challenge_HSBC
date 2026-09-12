@@ -205,8 +205,12 @@ reading `nvidia-smi` rather than by asking the library.
 
 ## 3. Results
 
-Every table in `results/tables/` is produced by a script in `scripts/`, committed, and hashed
-in `MANIFEST.sha256.json`. Every number quoted in the two PDFs is bound to a table row in
+Every table in `results/tables/` is committed and hashed in `MANIFEST.sha256.json`, and every
+one but the single exemption named in section 1.4 -- `mps_seed_spread.csv`, whose producing
+variant is not in the tree -- is produced by a script in `scripts/`. That sentence read "Every
+table ... is produced by a script in `scripts/`" until 2026-09-12, which section 1.4 of this
+same file had contradicted eighty-six lines earlier.
+Every number quoted in the two PDFs is bound to a table row in
 [claims.yaml](claims.yaml) and recomputed by `scripts/check_claims.py`; figures quoted only in
 the markdown record -- protocol amendments, decision entries -- carry their measurement inline
 instead, because `claims.yaml` gates what the submission asserts rather than everything the

@@ -239,8 +239,12 @@ def main(argv: list[str] | None = None) -> int:
     figure.suptitle("\n".join(textwrap.wrap(caption, width=TITLE_WRAP_COLUMNS)), fontsize=9)
 
     args.figures.mkdir(parents=True, exist_ok=True)
-    for suffix in ("png", "pdf"):
-        figure.savefig(args.figures / f"circuits.{suffix}", dpi=200)
+    # The PDF needs CreationDate suppressed or it embeds a wall-clock timestamp and stops being
+    # reproducible; make_figures.py already does this and this script did not, so circuits.pdf
+    # was the one figure that failed a byte-identity re-run.  The PNG takes dpi, the PDF does
+    # not need it, so the options differ per format rather than being shared.
+    for suffix, options in (("png", {"dpi": 200}), ("pdf", {"metadata": {"CreationDate": None}})):
+        figure.savefig(args.figures / f"circuits.{suffix}", **options)
     plt.close(figure)
 
     for row in representatives:

@@ -72,6 +72,7 @@ SPECIFICATION = (
     # records how many times the held-out fold was read as the one artefact under `results/`
     # that no manifest covers.
     "results/tables/test_access.json",
+    "results/tables/smoke.json",
 )
 
 # Members of a SCIENTIFIC pattern that are bookkeeping rather than measurement.  Listed
@@ -88,6 +89,10 @@ SPECIFICATION = (
 SPECIFICATION_UNDER_RESULTS = (
     "results/tables/decision_log.csv",
     "results/tables/test_access.json",
+    # `smoke.json` records what S0-S8 asserted about *this machine* -- driver, device name, CUDA
+    # build.  Under SCIENTIFIC it promised byte-identity across hosts, which it cannot keep by
+    # construction; the same reasoning as `test_access.json` above.
+    "results/tables/smoke.json",
 )
 
 # The two scientific artefacts that `make check` rebuilds before verifying them, because

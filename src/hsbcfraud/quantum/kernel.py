@@ -32,10 +32,14 @@ Cost
 A fidelity Gram matrix has ``n(n-1)/2`` distinct off-diagonal entries, but this
 implementation does not run a circuit per pair.  The statevector route computes each state
 **once** and then forms a single ``(n, 2**q) x (2**q, n)`` product, so the number of circuit
-evaluations is linear in ``n`` and the per-pair cost falls as the band grows.  Measured at
-8 qubits on the 300-point screening block, ``results/tables/screens.csv`` records a mean
-``gram_seconds`` of 0.186 s -- about 0.62 ms per state, or 4.2 microseconds per pair at that
-size -- so a 2,400-point band is a few seconds, not minutes.  The 19.5 microseconds per pair
+evaluations is linear in ``n`` and the per-pair cost falls as the band grows.  Measured on the
+300-point screening block over the **eight-feature** configurations,
+``results/tables/screens.csv`` records a mean ``gram_seconds`` of 0.186 s -- about 0.62 ms per
+state, or 4.2 microseconds per pair at that size -- so a 2,400-point band is a few seconds, not
+minutes.  "Eight-feature" and not "eight-qubit": dense-angle packs two features per qubit, so
+twelve of those thirty rows run on four qubits, and the mean over the eighteen rows that really
+are eight qubits is 0.232 s.  The sentence named the wrong axis for its own number until
+2026-09-12.  The 19.5 microseconds per pair
 recorded in ``docs/decisions.md`` D-006 is a measurement of the pairwise
 ``FidelityStatevectorKernel``, which is no longer in this tree; quoting it against the route
 below would attribute a quadratic loop's cost to the linear one.  The naive route of building
