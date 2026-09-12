@@ -444,3 +444,46 @@ sweep landed, and it is the failure this file exists to record: a universal quan
 from a strong result rather than counted. Two of the three exceptions are announced by the run
 itself in its own output, and the third is named two sections above.
 
+## 2g. Seventh run, 2026-09-12: one locked run, and a difference of one character
+
+The sixth pass validated `c196644`. Since then `freeze.py`, `plot_circuits.py`, `kernel.py` and
+the compliance record changed, so it no longer covered what ships. This run clones `66d4fad`,
+holds the lock described above, and follows README section 7 end to end. **Zero producer files
+changed between that commit and the final tree.**
+
+```
+=== EXIT-VENV 0 ===        1m19s
+=== EXIT-SMOKE 0 ===
+=== EXIT-WALKTHROUGH 0 === every assertion holds against the committed tables
+=== EXIT-REPRODUCE 0 ===   3h12m
+=== EXIT-CHECK 0 ===       102 claims agree; 50 scientific artefacts match the manifest
+=== EXIT-PYTEST 0 ===      212 passed, 1 skipped
+```
+
+**Zero errors or tracebacks.** Six logger files, 611 to 3,234 bytes. The lock was released by its
+trap on exit.
+
+| | Tables |
+|---|---|
+| Byte-identical | **29** |
+| Identical in every measured value, differing only in a timing column | **5** |
+| Differing in a measured value | **0** |
+| Specification file differing legitimately | **1** -- `decision_log.csv`, 159 against 160 |
+
+Thirty-one of thirty-five were rewritten; the four preserved are the four designed to be, each
+announcing itself in the run's own output.
+
+**Both PDFs differ, and the difference is one character.** A text diff of the rendered documents
+returns exactly one opcode each: `159` against `160`. That is `\ClaimDecisionEntries`, and the
+single commit between the clone and the final tree is the one that added
+[D-160](decisions.md) -- the entry recording that two earlier runs had raced. The verification
+differs from the tree by the act of documenting the verification.
+
+**`circuits.pdf` is reproducible now, tested here rather than asserted.** The run re-executed
+`plot_circuits.py` and compared digests: `7feaddc79269...` before and after. Before
+[D-159](decisions.md) that file embedded a wall-clock timestamp and could not match itself.
+
+**What this pass establishes that the earlier six did not.** It is the only one that ran under a
+lock, so it is the only one where "exactly one execution produced this tree" is enforced rather
+than assumed. Given [D-160](decisions.md), that distinction is no longer theoretical.
+
