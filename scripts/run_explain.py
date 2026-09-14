@@ -177,7 +177,33 @@ def main(argv: list[str] | None = None) -> int:
 
         # Per-prediction contributions for the rows the model scores highest, which are the ones a
         # reviewer would ask about: these are the transactions the rule sends to a step-up.
-        top = np.argsort(margin)[::-1][:N_EXAMPLES]
+        #
+        # Ranked by margin, but **deduplicated on the explanation itself** before the cut.  Taking
+        # the top ten by margin alone shipped ten rows carrying three distinct Shapley vectors:
+        # the in-band model reads eight features, `card1` holds roughly three quarters of the
+        # total contribution, and identical feature vectors are ordinary in card data, so the top
+        # of the ranking is degenerate.  A ten-row file with three distinct rows reads as padding
+        # and demonstrates less than it claims.  Rounding to the tolerance the additivity check
+        # already uses keeps "distinct" meaning distinct to the precision this file reports.
+        order = np.argsort(margin)[::-1]
+        seen: set[tuple[float, ...]] = set()
+        chosen: list[int] = []
+        for candidate in order:
+            signature = tuple(np.round(values[candidate], 6))
+            if signature in seen:
+                continue
+            seen.add(signature)
+            chosen.append(int(candidate))
+            if len(chosen) == N_EXAMPLES:
+                break
+        if len(chosen) < N_EXAMPLES:
+            raise SystemExit(
+                f"only {len(chosen)} distinct explanations exist among {len(margin):,} in-band "
+                f"rows, fewer than the {N_EXAMPLES} this table reports. That is a finding about "
+                "the model, not a formatting problem, and it must not be papered over by "
+                "shipping duplicates."
+            )
+        top = np.array(chosen)
         examples = pd.DataFrame(values[top], columns=columns)
         examples.insert(0, "row", explain_rows[top])
         examples.insert(1, "y", labels[explain_rows[top]])

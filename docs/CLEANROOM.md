@@ -309,6 +309,15 @@ commit `c196644`, stages only the dataset -- which the licence forbids committin
 follows section 7 of the README verbatim: `make venv`, `make smoke`, `make walkthrough`,
 `make reproduce`, `make check`. Three hours thirty-two minutes, unattended.
 
+**A note on what follows, because this file is a procedure a reviewer is invited to run.** The
+`=== EXIT-STAGE n ===` markers below, and the single-execution lock described in
+[D-160](decisions.md), are the **operator's own wrapper -- they are not in this repository**.
+`grep -rn "EXIT-VENV" scripts/ Makefile` and `grep -rn "flock\|O_EXCL\|lockfile" scripts/ Makefile`
+both return nothing. A clone gives you the `make` targets and their exit codes; staging those
+exit codes into a transcript, and preventing two runs from racing on one tree, are things the
+runner did around them. They are quoted here because they are how these records were produced,
+not because a reviewer inherits them. See [D-173](decisions.md).
+
 ```
 === EXIT-VENV 0 ===        1m28s, torch cu130 first
 === EXIT-SMOKE 0 ===       S0-S8, all 9 checks accounted for

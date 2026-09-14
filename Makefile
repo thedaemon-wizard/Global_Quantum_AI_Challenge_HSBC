@@ -9,7 +9,7 @@ RUFF    := .venv/bin/ruff
 BOOT    := /usr/bin/python3.12
 
 .PHONY: help venv venv-gpu smoke test fast lint baseline conformal quantum mps explain \
-        latency predictions summaries seedsweep figures walkthrough freeze derived claims tex \
+        latency predictions summaries seedsweep figures walkthrough notebook freeze derived claims tex \
         pdf pdf-draft \
         submission check reproduce clean
 
@@ -19,7 +19,7 @@ help:
 	@echo "test       full pytest suite"
 	@echo "fast       pytest without the slow cases"
 	@echo "lint       ruff"
-	@echo "seedsweep  E10 at full scale: 16 fits over 4 bond dimensions x 4 seeds (13 GPU-hours)"
+	@echo "seedsweep  E10 at full scale: 16 fits over 4 bond dimensions x 4 seeds (12.1 GPU-hours)"
 	@echo "baseline   E1 splits and integrity, E2 label-censoring audit, E3 classical baselines"
 	@echo "conformal  E4 PSD2 envelope, E5 two-sided risk control, E6 coverage"
 	@echo "quantum    E8 a-priori screens, E11 simulator parity, circuit structure"
@@ -30,6 +30,7 @@ help:
 	@echo "summaries  the split-arm, bond-dimension and rolling-origin tables the documents quote"
 	@echo "figures    submission figures, generated from the tables"
 	@echo "walkthrough trace the certificate end to end against the committed tables"
+	@echo "notebook   execute the walkthrough into notebooks/walkthrough.ipynb (needs .[notebook])"
 	@echo "freeze     write the SHA-256 manifest"
 	@echo "claims     recompute every number quoted in prose from its source table, and check"
 	@echo "           that the markdown mathematics survives GitHub's renderer"
@@ -111,7 +112,7 @@ mps:
 	$(PY) scripts/run_mps.py
 
 # The full-scale arm, kept out of `reproduce` deliberately: 16 fits at roughly 3,000 s each is
-# 13 GPU-hours, against seconds for everything else in the pipeline.  A reviewer checking the
+# 12.1 GPU-hours, against seconds for everything else in the pipeline.  A reviewer checking the
 # certificate should not have to spend a day re-deriving the tensor-network result, which the
 # frozen manifest already covers.  It is a target so that it *can* be re-run, and named in
 # `reproduce`'s closing message so its absence is stated rather than silent.
@@ -147,6 +148,15 @@ figures:
 # accepts no .ipynb and all five slots are full.
 walkthrough:
 	$(PY) notebooks/walkthrough.py
+
+# Executes the walkthrough and commits the result as notebooks/walkthrough.ipynb, which GitHub
+# renders inline so a reviewer sees every assertion without cloning.  Needs the optional
+# `.[notebook]` extra, deliberately absent from `.[dev]` so `make venv` and the clean-room
+# procedure are unchanged -- reading the committed notebook needs nothing.  Not wired into
+# `check`: the gate that matters there is the stdlib sync test in tests/test_repo_hygiene.py,
+# which runs everywhere including a clone without the extra.
+notebook:
+	$(PY) scripts/build_notebook.py
 
 freeze:
 	$(PY) scripts/freeze.py
@@ -188,7 +198,7 @@ reproduce: baseline conformal quantum mps explain latency predictions summaries 
 	@echo
 	@echo "Reproduction complete.  Verify a later run against this one with: make check"
 	@echo "Not included: the full-scale tensor-network sweep behind section 4.8, which is"
-	@echo "13 GPU-hours.  Run it with: make seedsweep"
+	@echo "12.1 GPU-hours.  Run it with: make seedsweep"
 
 # Deterministic output so the built PDFs can enter the manifest.
 TEXFLAGS       := -pdf -interaction=nonstopmode -halt-on-error -file-line-error

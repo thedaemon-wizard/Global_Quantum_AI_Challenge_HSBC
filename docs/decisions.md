@@ -5769,3 +5769,116 @@ not a manifest member, so `HASH_CHECKED` had to exempt it -- the upload set is n
 hash-checked for the first time. The implementation stays public in the repository the proposal
 links from its title block.
 
+<a id="d-172"></a>
+### D-172 Section 4 said something checkably wrong about the sponsor's own document
+
+It read *"The statement cites two positive results."* The statement's **§4.1 table lists five**,
+under the heading *"Quantum Examples on Different Data (Published Research)"*, and the two this
+submission engages are **rows 1 and 4 of that same table**.
+
+[D-095](#d-095) shows exactly how it happened: the two figures were taken from the statement's
+**executive summary**, and the *"encouraged to benchmark against these published results"*
+sentence was then quoted from **§4.1**, where "these" refers to the table. The two were
+conflated, and the sentence has read that way ever since.
+
+**This is worse than a missing citation.** A reviewer who works at HSBC and knows their own §4.1
+table reads "cites two" and finds a document that trades on precision getting a checkable fact
+about *their* document wrong. Everything else in section 4 asks to be believed on the strength of
+that precision.
+
+Now reads *"The statement's §4.1 table lists five; we engage two."* **Twelve rendered
+characters**, which is the whole reason it was affordable: source length and rendered length are
+different quantities, and `\Cited{}` expands to its argument with no width of its own. A first
+attempt phrased it as "lists five published results and leads with two" -- +34 rendered -- and
+overflowed to seven pages. Page 6 has **1.70 pt** of slack against a ~12 pt line.
+
+**Paid for by deleting one clause**, *"H4 is reported as underpowered, which the protocol commits
+to"*, which restates its own paragraph heading. That was the only non-load-bearing text left in
+section 4; everything else measured there carries something, including `\ClaimMdeSampleFactor`,
+which appears exactly once in the proposal and is its only forward-looking quantitative
+requirement.
+
+**The three unengaged rows are recorded rather than cited.** Innan (row 2) and Grossi (row 5)
+were already in `REFERENCES.md` §7 with corrections the statement itself lacks -- Innan is *IJQI*
+22(02):2350044, **2024**, not 2023 ([D-108](#d-108) region, `decisions.md:1753`), and Grossi's
+0.789 *"appears nowhere in the paper"*. Ubale (row 3) was genuinely absent and has been added
+there. **Not as numbered entries**: `make_crosscheck.py` requires the `[XX-N]` form and
+`REFERENCE_CROSSCHECK.md` asserts *"0 cited nowhere"*, so three numbered entries reached from
+nothing would regenerate that as "3 cited nowhere" and force an edit to README's public claim.
+§7 exists for exactly this and is exempted by regex. `COMPLIANCE_CHECKLIST.md` C18 now names all
+five and says which are engaged and why the others are not.
+
+<a id="d-173"></a>
+### D-173 CLEANROOM.md documented steps a clone does not provide
+
+It quotes `=== EXIT-VENV 0 ===` style stage markers throughout, and [D-160](#d-160) describes an
+atomic lock stopping two clean-room runs racing on one tree. **Neither is in this repository.**
+`grep -rn "EXIT-VENV" scripts/ Makefile` and `grep -rn "flock\|O_EXCL\|lockfile" scripts/ Makefile`
+both return nothing; they are the operator's own wrapper around `make`.
+
+That matters because `CLEANROOM.md` is a procedure a reviewer is *invited to run*. Presenting
+operator-side scaffolding as though a clone provided it is the same defect class as a
+past-action evidence cell in the compliance checklist: it reads as a property of the artefact
+and is a property of the person who ran it. A note now marks both as the runner's harness.
+
+<a id="d-174"></a>
+### D-174 The walkthrough now ships executed, and byte-stability had to be engineered
+
+`notebooks/walkthrough.py` asserts the certificate chain against the committed tables in about a
+second, but a reviewer browsing the now-public repository had to clone and run it to see any of
+that. `make notebook` executes it into **`notebooks/walkthrough.ipynb`**, which GitHub renders
+inline.
+
+**The toolchain is isolated in `.[notebook]`, not `.[dev]`.** `make venv` installs `.[dev]`, so
+putting jupytext there would have changed the environment the clean-room procedure builds, hours
+before a deadline, in exchange for nothing a reviewer can see -- reading a committed notebook
+needs no tooling at all. Same arrangement `parity.csv` has with `gpu-crosscheck`.
+
+**Three sources of churn had to be removed before this could be a SCIENTIFIC artefact**, and each
+was measured rather than guessed:
+
+* `metadata.language_info.version` -- the interpreter patch level, so it varies by host.
+* `cell.metadata.execution` -- `ExecutePreprocessor` records four wall-clock timestamps per cell
+  by default. **52 timestamps** in this notebook, and by far the largest diff between two runs.
+* `cell.id` -- nbformat 4.5 assigns a *random* identifier per cell.
+
+With all three normalised the file is byte-identical across consecutive builds, verified by
+running `make notebook` twice and comparing digests. Without them the manifest would report a
+scientific artefact changing on every rebuild while nothing measured moved, which is
+[D-080](#d-080)'s alarm-fatigue failure exactly.
+
+**Two things the paired script needed.** `__file__` does not exist in a Jupyter kernel, so
+`REPO = Path(__file__)...` raised on the first cell; it now walks up for `pyproject.toml`, one
+strategy that works in both contexts and raises if the marker is absent. And `__name__` is
+`"__main__"` in a kernel too, so the `raise SystemExit(main())` guard aborted the last cell and
+nbconvert reported a failed notebook **at status 0**; the status is now raised only when
+`__file__` exists, which is what actually distinguishes a script run from a kernel.
+
+**Gated by a stdlib-only sync test**, because `.[notebook]` is deliberately absent from a clean
+clone and a gate that skips when its dependency is missing is not a gate. It compares cell
+sources, mirroring jupytext's handling of the shebang and of commented markdown cells.
+Negative-tested: editing the script without rebuilding fails the suite.
+
+<a id="d-175"></a>
+### D-175 The attribution deliverable shipped ten rows carrying three explanations
+
+`attribution_examples.csv` became upload 4 on 2026-09-14 ([D-171](#d-171)) and is the only
+uploaded evidence for the statement's §5.2 *Feature Attribution* output. It held **10 rows with
+7 duplicating another row's Shapley vector and margin exactly** -- three distinct explanations.
+
+`run_explain.py` took `np.argsort(margin)[::-1][:N_EXAMPLES]`. The in-band model reads eight
+features, `card1` carries **75.8 %** of total contribution, and identical feature vectors are
+ordinary in card data, so the top of that ranking is degenerate. A reviewer opening a ten-row
+file and finding three distinct rows reads it as padding, and `README.md` called them "ten
+individual predictions".
+
+Now deduplicated on the explanation before the cut, rounded to the tolerance the additivity
+check already uses. Ten distinct explanations out of **2,537** available in-band rows, and the
+selection **raises rather than suppresses** if fewer than ten distinct ones exist, because that
+would be a finding about the model rather than a formatting problem. `attribution.csv` -- the
+ranked aggregate the proposal actually cites -- is **unchanged**; only the illustrative selection
+moved.
+
+Safe to regenerate: `run_explain.py` reads `train`/`band`/`cal` and never authorises `D_test`, so
+no evaluation was spent.
+

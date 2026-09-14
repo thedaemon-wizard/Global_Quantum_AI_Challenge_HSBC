@@ -45,6 +45,13 @@ SCIENTIFIC = (
     "results/figures/*",
     "submission/proposal.pdf",
     "submission/appendix.pdf",
+    # The executed walkthrough.  SCIENTIFIC rather than SPECIFICATION because it genuinely is
+    # byte-identical across hosts: `build_notebook.py` strips the interpreter patch level, the
+    # per-cell execution timestamps and nbformat's random cell ids, and
+    # `test_the_committed_notebook_carries_no_machine_fingerprint` holds it to that.  Its
+    # outputs are the committed tables read back, so a table moving without the notebook being
+    # rebuilt is exactly the drift this class is for.
+    "notebooks/walkthrough.ipynb",
 )
 SPECIFICATION = (
     "docs/protocol.md",

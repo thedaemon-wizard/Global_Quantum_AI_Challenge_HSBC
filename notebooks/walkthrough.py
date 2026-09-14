@@ -8,10 +8,15 @@ recomputes rather than reprints: every figure it shows is derived here from
 and a document does not, this fails.
 
 It is a **repository artefact, not a submission artefact.** The portal accepts no ``.ipynb``
-and all five slots are full, so this exists for a reviewer reading the repository. It is a
-paired script rather than a notebook so that it can be linted, tested and diffed like the rest
-of the code; ``make walkthrough`` runs it, and ``jupytext`` will open it as a notebook if that
-is preferred.
+and all five slots are full, so this exists for a reviewer reading the repository -- which is
+public, and linked from the proposal's title block.
+
+**It is paired with a committed, executed notebook.** This file is the source of record: it is
+linted, tested and diffed like the rest of the code, and ``make walkthrough`` runs it in about a
+second. ``make notebook`` executes it into ``walkthrough.ipynb``, which GitHub renders inline so
+a reviewer sees every assertion and value without cloning anything. The two are held together by
+``test_the_executed_notebook_matches_its_paired_script``, so editing this file without rebuilding
+the notebook fails the suite rather than shipping a stale copy.
 
 Deliberately cheap: it reads tables and does arithmetic. Nothing is refitted, so it takes
 about a second and needs no GPU. What it verifies is that the *reported* chain is internally
@@ -27,7 +32,27 @@ from pathlib import Path
 
 import pandas as pd
 
-REPO = Path(__file__).resolve().parents[1]
+
+def _repository_root() -> Path:
+    """Locate the repository from either a script run or a notebook kernel.
+
+    ``__file__`` is defined when this file runs as a script and **absent when the paired
+    notebook runs it in a Jupyter kernel**, so neither `__file__` nor `cwd` alone works in both.
+    Walking up for the file that defines the repository is one strategy that works in both and
+    raises if the marker is missing, rather than a chain of guesses that silently picks a wrong
+    directory and then reads no tables.
+    """
+    start = Path(globals()["__file__"]).resolve() if "__file__" in globals() else Path.cwd()
+    for candidate in (start, *start.resolve().parents):
+        if (candidate / "pyproject.toml").is_file():
+            return candidate
+    raise RuntimeError(
+        f"no pyproject.toml at or above {start}, so the repository root cannot be located; "
+        f"run this from inside the repository"
+    )
+
+
+REPO = _repository_root()
 TABLES = REPO / "results" / "tables"
 
 pd.set_option("display.width", 100)
@@ -223,4 +248,11 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    status = main()
+    # A Jupyter kernel also sets ``__name__ == "__main__"``, so the guard alone does not
+    # distinguish `make walkthrough` from the paired notebook -- and raising SystemExit inside a
+    # kernel aborts the cell, which nbconvert reports as a failed notebook even at status 0.
+    # ``__file__`` is what actually separates the two: it exists when there is a script to exit
+    # from.  So the status is raised for the Makefile and simply returned for the notebook.
+    if "__file__" in globals():
+        raise SystemExit(status)

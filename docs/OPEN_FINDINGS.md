@@ -135,7 +135,17 @@ It is one of four scripts with no progress destination. The existing gate keys o
 so it is not the silent-for-hours case `run_log` exists for. It is still the certificate
 producer, and a durable log of the run that produces the deliverable is worth having.
 
-**Fix:** wrap `main` in `run_log("conformal", directory=args.runs)`.
+**Fix, and the estimate here was wrong.** This entry said "wrap `main` in
+`run_log("conformal", directory=args.runs)`", which reads as a one-line change. Measured
+2026-09-14: `run_log` is a `@contextmanager`, `main()` spans **234 lines**, and it carries
+**seven `print` calls** that would have to become `run.info` for the log to hold anything the
+stdout does not. So it is a re-indentation of the certificate producer plus a call-site
+rewrite -- not a one-liner, and not something to do to the deliverable's producer hours before
+a deadline.
+
+**Still deferred, now for a stated reason rather than an unexamined one.** The honest interim
+is `make reproduce 2>&1 | tee results/runs/<name>.log`, which `results/runs/` being gitignored
+makes safe, and which gives a durable record of the whole pipeline rather than one script.
 
 ### L3 -- CLOSED 2026-09-11: `export_predictions.py` broke ties by row order
 

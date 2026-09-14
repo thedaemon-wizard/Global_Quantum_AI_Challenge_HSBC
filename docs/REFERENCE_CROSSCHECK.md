@@ -53,7 +53,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **QM-15** | Tensor Network Kernel Machines: A JAX Framework for Machine Learning and Nonlinear System Identification | `docs/FACTCHECK_LOG.md`, `docs/OPEN_FINDINGS.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/mps.py` |
 | **QM-16** | Digital Payments Fraud Detection Using Quantum Machine Learning and Amazon Braket | `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/04-quantum.tex` |
 | **QM-17** | Comparative Performance Analysis of Quantum Machine Learning Architectures for Credit Card Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md`, `submission/content/04-quantum.tex` |
-| **QM-18** | Q-SYNTH: Hybrid Quantum-Classical Adversarial Augmentation for Imbalanced Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md` |
+| **QM-18** | Q-SYNTH: Hybrid Quantum-Classical Adversarial Augmentation for Imbalanced Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md` |
 | **QM-19** | Spectral Anatomy of Quantum Gaussian Process Kernels | `docs/decisions.md`, `src/hsbcfraud/quantum/screens.py`, `docs/OPEN_FINDINGS.md`, `submission/content/01-problem.tex` |
 | **QM-20** | The Fourier Wall: Why Public Tabular Datasets Refuse Quantum Advantage, and a Certified Recipe for Where It Lives | `docs/decisions.md` |
 | **QM-21** | A brief review of quantum machine learning techniques for financial services | `docs/decisions.md`, `submission/content/04-quantum.tex` |

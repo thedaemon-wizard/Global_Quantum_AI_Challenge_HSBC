@@ -667,10 +667,11 @@ Recorded because excluding a source is a decision.
 
 **These entries are unnumbered on purpose, and that is why they are counted separately.**
 `REFERENCE_CROSSCHECK.md` reports "0 recorded as deliberately not relied upon", which is true of
-the **numbered** set it enumerates: all 57 of those are reached from the repository. The sources
+the **numbered** set it enumerates: all 62 of those are reached from the repository. The sources
 below carry no `[XX-N]` key, so the generator does not see them and the count does not include
-them. There are **seven** -- six of long standing, plus the no-free-lunch result added on
-2026-09-12 -- and each says what it was consulted for and why it is not used.
+them. There are **eight** -- six of long standing, the no-free-lunch result added on
+2026-09-12, and Ubale et al. added on 2026-09-14 -- and each says what it was consulted for and
+why it is not used.
 
 **Wu, J.-C., Ye, Q., Deng, D.-L. and Yu, L.-W.** "No-Free-Lunch Theories for Tensor-Network
 Machine Learning Models". arXiv:2412.05674, 7 December 2024 (v1 only; no journal reference).
@@ -727,6 +728,19 @@ statevector-simulator row of Table 7, on a balanced subsample of about 2,500 row
 proprietary data (1,500 train, 1,000 test); the paper's own noisy-simulation row is
 0.55 +/- 0.10. *Corrected 2026-08-30: 0.789 appears nowhere in the paper, and 1,000 rows is
 the test split rather than the subsample.*
+
+**Ubale, R., Sujan K.K., Deshpande, S. and Byrd, G. T.** "Toward Practical Quantum Machine
+Learning: A Novel Hybrid Quantum LSTM for Fraud Detection". arXiv:2505.00137, 30 April 2025
+(v1, the only version; abstract read 2026-09-14). The third row of the challenge statement's
+section 4.1 table, and the only one of its five that was absent from this file.
+
+**Not relied upon, and its own abstract gives the reason.** The pipeline is used to "clean,
+encode, **balance**, and normalize a credit card fraud dataset", and the comparator is "a
+conventional LSTM baseline" -- so the reported gains are on a balanced problem against a
+sequence model, not on an unbalanced authorisation stream against a gradient-boosted tree. It
+reports "competitive improvements in accuracy, precision, recall, and F1 score" without stating
+a base rate. Consulted to check whether it bears on section 4's negative; it does not, for the
+same reason Innan and Grossi above do not.
 
 **PeerJ Computer Science**, 2 September 2025, PMC12453863. The challenge statement attributes
 a ULB stacking AUC-ROC of 0.9887 to this paper. The paper reports 0.898 for its stacking model,

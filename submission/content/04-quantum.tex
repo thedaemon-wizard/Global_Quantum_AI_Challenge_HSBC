@@ -28,7 +28,8 @@ And the negative is about aggregate discrimination, not the operating point: H2 
 method that does not improve ranking can still improve a decision at a low false-positive
 threshold. One caveat: the protocol names the
 Huang geometric difference first and the implementation computes it without gating on it
-(amendment~A6), which would have made this rejection less decisive, not more. The statement cites two positive results, \Cited{0.87} precision and
+(amendment~A6), which would have made this rejection less decisive, not more. The statement's \Cited{\S4.1} table lists
+\Cited{five}; we engage two, \Cited{0.87} precision and
 \Cited{0.88} $F_1$ \Cited{(Deloitte and AWS, 2024; El Alami et al., 2024, ``Karimi'' there)}. The second is a
 \Cited{984}-row balanced undersample at seven principal components with no classical arm; the
 first is a thresholded precision on a \Cited{0.172}\,\% base rate --- \ClaimTestFraudRate\,\%
@@ -77,8 +78,7 @@ wrong.} It is a comparison between model \emph{families}, whose measured standar
 \ClaimMpsStandardErrorBestChi{} --- \ClaimPowerSeRatio{}-fold the baseline-against-itself
 figure the gate originally used. The effect it can resolve is
 \ClaimMpsMdeRealised{} average precision, against a pre-registered ceiling of
-\ClaimPowerCeiling{}; the appendix gives both in full. H4 is reported as underpowered, which
-the protocol commits to. Every interval contains zero, so any
+\ClaimPowerCeiling{}; the appendix gives both in full. Every interval contains zero, so any
 improvement is bounded above by $+\ClaimMpsCiHighBestChi{}$ average precision --- a
 non-superiority bound, not evidence of equivalence and not evidence that the tensor network is
 worse.

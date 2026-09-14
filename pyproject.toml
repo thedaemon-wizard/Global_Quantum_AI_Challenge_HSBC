@@ -83,6 +83,17 @@ gpu-crosscheck = [
     "qiskit-aer-gpu-cu11==0.17.2",
 ]
 
+# Regenerating notebooks/walkthrough.ipynb, and nothing else.  Isolated from `dev` deliberately:
+# `make venv` installs `.[dev]`, and a reviewer needs none of this to *read* a committed notebook
+# -- GitHub renders .ipynb natively.  Putting it in `dev` would change the environment that the
+# clean-room procedure builds, in exchange for nothing a reviewer can see.  Same shape as
+# gpu-crosscheck above, which parity.csv needs to regenerate but not to read.
+notebook = [
+    "jupytext==1.19.5",
+    "nbconvert==7.17.1",
+    "ipykernel==7.3.0",
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

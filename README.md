@@ -25,7 +25,7 @@ refuses to stage anything outside that list.
 | 1 | `HSBC-proposal.pdf` | PDF, 6 pp. | The concept proposal. Built from [`submission/content/`](submission/content) with every figure bound to a table |
 | 2 | `HSBC-appendix.pdf` | PDF, 3 pp. | Pre-registration and amendments, what we got wrong, the reproduction record, and the challenge statement's primary metrics in full (ROC AUC, AUPRC, $F_1$, precision, recall, confusion matrix) |
 | 3 | `HSBC-predictions.csv` | CSV, 115,534 rows | Per-transaction output on the held-out block: the fraud probability in $[0, 1]$, the three-valued decision, and the binary decline it implies, with the band edges and certified threshold on every row so the decision is recomputable from the file — [`predictions.csv`](results/tables/predictions.csv) |
-| 4 | `HSBC-attribution-examples.csv` | CSV, 10 rows | Signed Shapley contributions behind ten individual in-band predictions, with the base value and score margin on each row — the challenge statement's §5.2 *Feature Attribution* output, which the other four uploads do not carry — [`attribution_examples.csv`](results/tables/attribution_examples.csv) |
+| 4 | `HSBC-attribution-examples.csv` | CSV, 10 rows | Signed Shapley contributions behind ten in-band predictions, with the base value and score margin on each row. The ten are **distinct explanations**, not the top ten by score: `card1` carries three quarters of the in-band model, so ranking by margin alone returned ten rows holding three distinct vectors, and `run_explain.py` now deduplicates on the Shapley vector before the cut — the challenge statement's §5.2 *Feature Attribution* output, which the other four uploads do not carry — [`attribution_examples.csv`](results/tables/attribution_examples.csv) |
 | 5 | `HSBC-certified-region.png` | PNG | Which (band budget, $\alpha$, $\alpha_{\mathrm{FN}}$) cells certify and which do not — [`certified_region.png`](results/figures/certified_region.png) |
 
 The four Expected Outcomes listed on the portal's challenge panel — the statement's §5.2
@@ -411,7 +411,11 @@ make walkthrough  # trace the certificate against the committed tables (seconds,
 [`notebooks/walkthrough.py`](notebooks/walkthrough.py), which recomputes the certificate chain
 — blocks, certified configurations, held-out validation, the coverage arms, both quantum arms —
 from `results/tables/` and asserts each step. It refits nothing, so it costs about a second and
-answers *is what is reported internally consistent?* `make reproduce` refits everything and
+answers *is what is reported internally consistent?* **Its executed output is committed** as
+[`notebooks/walkthrough.ipynb`](notebooks/walkthrough.ipynb), which GitHub renders inline, so
+every assertion and value can be read without cloning or running anything; `make notebook`
+regenerates it and needs the optional `.[notebook]` extra, which is kept out of `.[dev]` so that
+`make venv` and the clean-room procedure are unchanged. `make reproduce` refits everything and
 answers *do the tables regenerate?* The full-scale tensor-network sweep is deliberately excluded
 from `reproduce` at 12.1 GPU-hours; run it with `make seedsweep`.
 
