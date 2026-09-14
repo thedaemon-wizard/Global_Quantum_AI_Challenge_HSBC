@@ -10,7 +10,7 @@ identifier, its first author's surname, and an alias the entry declares as
 surname is usually the handle that finds them; the alias covers the entries that have
 no author to cite -- an instrument named in prose, or a lower-case package name.
 
-**60 entries. 60 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
+**62 entries. 62 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
 
 ---
 
@@ -55,6 +55,8 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **QM-17** | Comparative Performance Analysis of Quantum Machine Learning Architectures for Credit Card Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md`, `submission/content/04-quantum.tex` |
 | **QM-18** | Q-SYNTH: Hybrid Quantum-Classical Adversarial Augmentation for Imbalanced Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md` |
 | **QM-19** | Spectral Anatomy of Quantum Gaussian Process Kernels | `docs/decisions.md`, `src/hsbcfraud/quantum/screens.py`, `docs/OPEN_FINDINGS.md`, `submission/content/01-problem.tex` |
+| **QM-20** | The Fourier Wall: Why Public Tabular Datasets Refuse Quantum Advantage, and a Certified Recipe for Where It Lives | `docs/decisions.md` |
+| **QM-21** | A brief review of quantum machine learning techniques for financial services | `docs/decisions.md`, `submission/content/04-quantum.tex` |
 | **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/OPEN_FINDINGS.md`, `docs/PROVENANCE.md` and 28 more |
 | **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/OPEN_FINDINGS.md` and 28 more |
 | **DS-3** | Calibrating Probability with Undersampling for Unbalanced Classification | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/metrics.py` |

@@ -5661,3 +5661,48 @@ who did not open the table. The submission's own committed artefact was the only
 caught it -- which is the argument for binding prose to tables, made once more at the cost of a
 sentence that was never written.
 
+<a id="d-169"></a>
+### D-169 A venue sweep looking for a counterexample found a peer-reviewed anchor instead
+
+Section 4 reports both quantum arms failing. The exposure that carries is not that the result is
+wrong but that **someone published the opposite in 2026 and we did not look**. So the question
+asked was the adversarial one: is there a 2026 paper reporting a quantum kernel or tensor network
+beating a tuned gradient-boosting baseline on tabular fraud data?
+
+**Swept by venue rather than by keyword**, because a keyword search returns what it is given:
+MDPI (31 candidate 2026 works), Elsevier via Crossref member 78 (Expert Systems with
+Applications, EAAI, Applied Soft Computing, Decision Support Systems, Knowledge-Based Systems,
+Neurocomputing, Information Sciences, Physica A, IRFA), Wiley, PLOS, PeerJ CS, Frontiers,
+Springer, Nature/npj, IEEE Access and TQE, World Scientific, IOP, plus arXiv quant-ph and cs.LG
+listings for 2026-01 to 2026-09.
+
+**Nothing contradicts the result.** Two papers looked like they might:
+
+* **IEEE Access 14:62923** claims quantum-assisted RBMs achieve "superior performance". Its
+  classical comparator is **another RBM**; no gradient-boosted baseline appears anywhere, the
+  data is a 39,000-row 50-50 undersample, and the quantum method **loses to classical simulated
+  annealing on $F_1$**, 84 against 88. CatBoost is in the paper -- as a feature selector.
+* ***Mathematics* 14(16):3002** reports a win over XGBoost on Bank Marketing. The method is
+  classical ("quantum-inspired" Born-rule aggregation), the data is not fraud, the margin is
+  0.0058 nats of NLL on calibration metrics with no AUC or average precision, and **the
+  single-author preprint reported the opposite sign on both datasets**.
+
+**What the sweep produced instead is better than the absence of a counterexample.** [QM-21],
+*Machine Learning: Science and Technology* **7**(2):021002, is a 2026 peer-reviewed topical
+review co-authored by four researchers at Edinburgh's Quantum Software Lab and **two inside
+NatWest Group**. It reports fraud QML as "competitive" with gradient boosting -- never superior
+-- and states there is "no large-scale deployment of QML models in live financial systems". A
+bank-co-authored journal review is a stronger citation for this position than any negative
+preprint, and section 4 now carries it beside the controlled benchmark it already cited.
+
+[QM-20] was added at the same time and matters for a different reason: **it is this study's own
+method, arrived at independently.** Mancilla and Tagliani argue the tabular failure is
+"a structural property of the datasets rather than merely a limitation of current models", and
+operationalise it as a "simulator-free structural screen" before any downstream comparison --
+which is what `screens.py` does. It also names spectral conditions for advantage where
+[D-168](#d-168) and section 4 name only a direction.
+
+**Recorded because a null search result is evidence only if its scope is written down.** "We
+found nothing" is worth nothing a year from now without the list of venues that were actually
+opened, and the two near-misses above are the ones a reviewer is most likely to raise.
+

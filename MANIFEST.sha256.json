@@ -48,18 +48,18 @@
     "results/tables/split_arm_baselines.csv": "21582c1dae1cde2c3bbd6ab0d06ff611014a4e5a1aff4dd04e67cafbe25b878f",
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "57b77d92c664129e1af8aa2579e1307e81602b1e2ef7b092fca8fddec5221f55",
-    "submission/proposal.pdf": "5c03bb3ee24e446145e34cccbb41626db118f1955250fc2e32109a218a2dcca0"
+    "submission/appendix.pdf": "a0bc8aab811ef56ed5da1e466464ca049ecfe87194d1c265c1faaa07ad0598c9",
+    "submission/proposal.pdf": "83a2e7da8cc2f66ffe68b8895078351582ff2435448ac1db5bacd70e7f1ec92c"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
-    "docs/REFERENCES.md": "0e61c8926e85b99593ddc3f4150b61558cc3ce0e1c5239afcca2668a2ae30a1b",
-    "docs/claims.yaml": "091f66c47b29e5ffb6f552ddc6fe428f74dec9c9b0e06a663124a06d4f8fc403",
-    "docs/decisions.md": "2b2740464793958805b789b892def2f50f47f11d946394ab33d7d52dff3bab6b",
-    "docs/protocol.lock.json": "dff5e863872ba6fc17370a01bd305b67b9934df51fe76fbdcb1b57d945bef613",
+    "docs/REFERENCES.md": "23696a547976ee9599cd0b933197eda1ff70b38a903e8e3585c2940be1d71774",
+    "docs/claims.yaml": "b1c709a35a187045e87245f816d7e6b7cc1e68ec6bbbb913c6db798aa843921f",
+    "docs/decisions.md": "6104d538c17e2dd72c97792e09ae60bc8745491b7e52ea96a8ed792df27f78bc",
+    "docs/protocol.lock.json": "3265a8e1168905af3205d22bf547430bb9c6ca7b9999ea94785011dfdcbea978",
     "docs/protocol.md": "876050ee0a8ffc60df963f47e4e3a0be8978781bce93b423e57cd119740addf4",
     "docs/tables.yaml": "733fc794c24427f54e68901b97de12461deb806cf4acadcf6d1a26bf39a4c8b7",
-    "results/tables/decision_log.csv": "e16f332b0566ff7125671d231abdf7b34a71b6875a0df0a0a2072b48218910a7",
+    "results/tables/decision_log.csv": "3e029ca0d2eef9df256054b12f335ca39979b0fcdd1d2ae46b3ac3cc950d68ed",
     "results/tables/screen_bandwidth.csv": "36294b0fdebd9d3cb9628eb7bcfd9e477ba51a0fdd0209cc67780be8d7ffac7d",
     "results/tables/smoke.json": "9d5d081660f90802edbfacfa8689abec4d4d4d16f81c3025eb84e2eff34eccca",
     "results/tables/test_access.json": "cd9efe38349282ac0e224e06728e42ed98f204370523bb14e63a4f2f336cf756"
