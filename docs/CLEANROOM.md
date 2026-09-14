@@ -25,7 +25,7 @@ make venv         # python3.12, torch cu130 first, then the project and its dev 
 make venv-gpu     # OPTIONAL, and see below: without it two parity claims cannot hold
 make smoke        # S0-S8 environment assertions; any failure stops the build
 make walkthrough  # trace the certificate against the committed tables (seconds, no GPU)
-make reproduce    # refit everything except the 13-GPU-hour sweep, then write the manifest
+make reproduce    # refit everything except the 12.1-GPU-hour sweep, then write the manifest
 make check        # rebuild both PDFs, then the claim, citation, protocol and manifest gates
 ```
 
@@ -347,7 +347,7 @@ four it is designed not to, each for a reason a reviewer can check:
 |---|---|
 | `latency.csv` | opt-in by design; the run printed "NOT re-measuring latency" and said why |
 | `parity.csv` | the `gpu-crosscheck` extra is absent, so 4 comparisons ran against 12 committed, and the wider table is kept |
-| `mps_seed_sweep.csv` | the 13-GPU-hour sweep, excluded from `make reproduce` and run by `make seedsweep` |
+| `mps_seed_sweep.csv` | the 12.1-GPU-hour sweep, excluded from `make reproduce` and run by `make seedsweep` |
 | `mps_seed_spread.csv` | the documented producerless exemption ([PROVENANCE.md](PROVENANCE.md) section 1.4) |
 
 **The built documents are bit-reproducible.** `proposal.pdf`, `appendix.pdf`, `method.png` and
