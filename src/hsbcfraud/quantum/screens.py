@@ -71,6 +71,15 @@ def effective_rank_ratio(gram: np.ndarray) -> float:
     0.0039 and would itself be rejected, and the RBF family only enters the band above
     gamma = 3.2.  Every candidate that passes conditioning is therefore better conditioned
     than the classical reference, not merely comparable to it.
+
+    **Corroborated after the fact, and the band is conservative.**  Xu et al. (arXiv:2605.30952,
+    June 2026) adopt the same statistic under a change of variable -- normalised spectral entropy
+    ``S(K)/log n``, where ``r_eff = exp(S)/n`` gives ``S/log n = 1 + log(r_eff)/log n`` -- and
+    state numeric regimes: at or below 0.1 constant-collapse, at or above 0.95
+    Haar-concentration, useful in between.  At ``n = 300`` the band stipulated here maps to
+    ``[0.193, 0.816]``, inside that useful regime at both ends.  It does not make the choice
+    measured rather than stipulated, and the same paper reports the optimum moving with sample
+    size, so the word above stands.  See ``docs/REFERENCES.md`` QM-19.
     """
     eig = np.linalg.eigvalsh(np.asarray(gram, dtype=float))
     eig = np.clip(eig, 0.0, None)

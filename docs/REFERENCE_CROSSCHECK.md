@@ -10,7 +10,7 @@ identifier, its first author's surname, and an alias the entry declares as
 surname is usually the handle that finds them; the alias covers the entries that have
 no author to cite -- an instrument named in prose, or a lower-case package name.
 
-**57 entries. 57 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
+**58 entries. 58 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
 
 ---
 
@@ -35,7 +35,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **FR-5** | Temporal Graph Prototype-conditioned Conformal Prediction for Fraud Detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
 | **FR-6** | Non-exchangeable Conformal Prediction for Temporal Graph Neural Networks | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
 | **CP-17** | Conformal Risk Control under Non-Monotone Losses: Theory and Finite-Sample Guarantees | `docs/FACTCHECK_LOG.md`, `docs/decisions.md` |
-| **CP-18** | Selective Conformal Risk Control | `docs/decisions.md`, `submission/content/01-problem.tex` |
+| **CP-18** | Selective Conformal Risk Control | `docs/decisions.md`, `src/hsbcfraud/quantum/screens.py`, `submission/content/01-problem.tex` |
 | **CP-19** | Conformal Selective Prediction with General Risk Control | `docs/decisions.md`, `submission/content/01-problem.tex` |
 | **CP-20** | A Joint Finite-Sample Certificate for Adaptive Selective Conformal Risk Control | `docs/decisions.md`, `submission/content/03-results.tex` |
 | **QM-1** | Power of data in quantum machine learning | `docs/FACTCHECK_LOG.md`, `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `README.md`, `docs/decisions.md`, `docs/protocol.md` and 3 more |
@@ -52,6 +52,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **QM-16** | Digital Payments Fraud Detection Using Quantum Machine Learning and Amazon Braket | `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/04-quantum.tex` |
 | **QM-17** | Comparative Performance Analysis of Quantum Machine Learning Architectures for Credit Card Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md`, `submission/content/04-quantum.tex` |
 | **QM-18** | Q-SYNTH: Hybrid Quantum-Classical Adversarial Augmentation for Imbalanced Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md` |
+| **QM-19** | Spectral Anatomy of Quantum Gaussian Process Kernels | `src/hsbcfraud/quantum/screens.py`, `docs/decisions.md`, `submission/content/01-problem.tex` |
 | **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md`, `docs/RESULTS.md` and 27 more |
 | **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 27 more |
 | **DS-3** | Calibrating Probability with Undersampling for Unbalanced Classification | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/metrics.py` |

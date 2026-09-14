@@ -348,6 +348,39 @@ is a fact about the literature, not an argument about their work, and it is reco
 proposal engages their earlier result and should engage it fairly.
 Cited as: `Innan et al., 2026`
 
+**[QM-19]** Xu, Li, Lin, Qiu, Zeng, Paisley and Zhao. "Spectral Anatomy of Quantum Gaussian
+Process Kernels". arXiv:2605.30952, submitted 29 May 2026, **v2 2 June 2026** (the version read).
+Adopts "the normalized spectral entropy $S(K)/\log n$ of the kernel Gram matrix" as a
+"scale-invariant, label-free design coordinate", and reports that structurally diverse quantum
+families and classical baselines "populate the same narrow band on this coordinate".
+
+**Why it is here: it supplies thresholds for the statistic this study's first screen already
+used, from an independent direction.** `screens.py` gates on an effective-rank *ratio*
+$r_{\mathrm{eff}} = \exp(S)/n$ and its docstring says in as many words that the band
+"is stipulated at [0.01, 0.35] rather than measured". This paper's decision procedure states
+numeric regimes -- verified in its algorithm block, not its abstract:
+
+> `if S(K)/log n <= 0.1 then regime = constant-collapse`
+> `else if S(K)/log n >= 0.95 then regime = Haar-concentration`
+> `else regime = useful`
+
+The two statistics are the same one under a change of variable. From
+$r_{\mathrm{eff}} = \exp(S)/n$ it follows that
+$S/\log n = 1 + \log r_{\mathrm{eff}} / \log n$, exactly and independently of log base.
+At the screening size $n = 300$ the stipulated band **[0.01, 0.35] maps to
+$S/\log n \in [0.193, 0.816]$, strictly inside this paper's useful regime $(0.10, 0.95)$** --
+conservative at both ends. **The change of variable is this file's arithmetic, not a claim
+either source makes**, and it is written out so a reader can check it rather than take it.
+
+**Two things it does not do.** It does not validate the *choice* of band, only show that the
+choice sits inside an independently derived one; and the paper reports that the optimum within
+the useful regime **moves with the sample size** -- "the absolute sweet-spot $S(K^*)/\log n$
+shifts from 0.91 at $n = 30$ to 0.79 at $n = 100$" -- so a fixed band is an approximation this
+paper would qualify rather than endorse. Both points are recorded because the screen was used to
+**reject**: every one of the 120 configurations failed the *second* screen regardless, so nothing
+here changes the outcome.
+Cited as: `Xu et al., 2026` -- consulted 2026-09-12, not cited in either shipped PDF.
+
 ## 4. Datasets and evaluation protocol
 
 **[DS-1]** IEEE-CIS Fraud Detection. Kaggle, 2019. Provided by Vesta Corporation.
