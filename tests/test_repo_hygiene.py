@@ -946,7 +946,7 @@ def test_the_method_figure_stays_within_the_height_it_replaced() -> None:
     )
 
 
-# A tripwire, not a measured optimum.  The README is 469 lines today and its job is to be read
+# A tripwire, not a measured optimum.  The README is 471 lines today and its job is to be read
 # end to end; the failure mode this guards is growth by accretion, where sections are appended
 # until nobody reads past the first screen and the `docs/` split quietly stops being maintained.
 # The headroom is deliberate: a ceiling that fires on the next honest paragraph gets raised
@@ -1079,3 +1079,46 @@ def test_no_module_under_src_is_orphaned() -> None:
         f"or tests/: {orphaned}. Delete them, or wire them in. A module that ships without a "
         f"caller reads as live code to anyone auditing this repository."
     )
+
+
+def test_the_readme_reference_count_matches_the_reference_file() -> None:
+    """README section 8.1 counts `REFERENCES.md`; nothing made the two move together.
+
+    The count drifted to 57 against an actual 60 because three entries were added on
+    2026-09-14 and `REFERENCE_CROSSCHECK.md` followed -- it is generated -- while the README
+    did not, because no gate binds a README number to anything.  D-141 recorded that hole and
+    closed it for the Beta-Binomial worked example only; this is the same class of defect at a
+    different number, found by an audit rather than by a check.
+
+    Binding the two here is cheaper than a general README ledger and catches the specific
+    failure that actually occurred: adding a reference without renumbering the prose.
+    """
+    references = (REPO / "docs" / "REFERENCES.md").read_text(encoding="utf-8")
+    entries = re.findall(r"^\*\*\[[A-Z]+-[0-9]+\]\*\*", references, re.M)
+    readme = (REPO / "README.md").read_text(encoding="utf-8")
+    stated = re.search(r"\| (\d+) numbered entries,", readme)
+    assert stated, "README section 8.1 no longer states a reference count in the expected form"
+    assert int(stated.group(1)) == len(entries), (
+        f"README.md says {stated.group(1)} numbered entries; docs/REFERENCES.md has "
+        f"{len(entries)}. Adding a reference means updating the count in README section 8.1."
+    )
+
+
+def test_the_readme_length_narration_is_current() -> None:
+    """Two files narrate the README's line count, and both had gone stale at 469 against 471.
+
+    The ceiling itself never fired -- 471 is well under 600 -- so the gate stayed green while
+    the sentences describing it became wrong.  A number in prose beside a passing test reads as
+    checked, which is worse than no number at all.
+    """
+    actual = len((REPO / "README.md").read_text(encoding="utf-8").splitlines())
+    for relative, pattern in (
+        ("docs/COMPLIANCE_CHECKLIST.md", r"(\d+) lines against a 600-line ceiling"),
+        ("tests/test_repo_hygiene.py", r"The README is (\d+) lines today"),
+    ):
+        found = re.search(pattern, (REPO / relative).read_text(encoding="utf-8"))
+        assert found, f"{relative} no longer narrates the README length in the expected form"
+        assert int(found.group(1)) == actual, (
+            f"{relative} says {found.group(1)} lines; README.md has {actual}."
+        )
+

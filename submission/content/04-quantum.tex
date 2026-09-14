@@ -12,19 +12,27 @@ usable band --- \emph{and} not reproducible by a tuned RBF ($\rho_{\mathrm{RBF}}
 largest absolute off-diagonal correlation over a bandwidth grid).
 
 \ClaimScreenPassConditioning{} of \ClaimScreenConfigs{} pass conditioning.
-\textbf{\ClaimScreenPassBoth{} pass both.} The closest any configuration came to distinctness
-was $\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$; the median is
-\ClaimScreenMedianRbf{} and the maximum \ClaimScreenMaxRbf{}. On \ClaimScreenSamples{}
-stratified rows with at most eight features, no configuration cleared the pre-registered bar ---
-which reporting a downstream accuracy would have hidden. One caveat: the protocol names the
+\textbf{\ClaimScreenPassBoth{} pass both.} On \ClaimScreenSamples{} stratified rows with at most
+eight features, no configuration cleared the pre-registered bar --- which reporting a downstream
+accuracy would have hidden.
+\textbf{The boundary is characterised, and so is what would cross it.} The closest approach to
+distinctness was $\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$ against a median of
+\ClaimScreenMedianRbf{}, and it sits at the widest bandwidth the grid holds, where conditioning
+also peaks (\ClaimScreenCondPassWidest\,\%, against none at the narrowest): the grid stopped
+where both screens were still improving, and the near misses are \emph{unentangled}. So an
+encoding outside the RBF family at a bandwidth that does not concentrate would pass these screens
+unmodified; we did not find one, and screening wider is the testable next step. For the tensor network the requirement is a comparison
+powered for cross-family noise, about \ClaimMdeSampleFactor{} times the in-band evaluation set.
+And the negative is about aggregate discrimination, not the operating point: H2 never ran, and a
+method that does not improve ranking can still improve a decision at a low false-positive
+threshold. One caveat: the protocol names the
 Huang geometric difference first and the implementation computes it without gating on it
 (amendment~A6), which would have made this rejection less decisive, not more. The statement cites two positive results, \Cited{0.87} precision and
 \Cited{0.88} $F_1$ \Cited{(Deloitte and AWS, 2024; El Alami et al., 2024, ``Karimi'' there)}. The second is a
-\Cited{984}-row balanced undersample at seven principal components with no classical arm ---
-neither this task's \ClaimTestFraudRate\,\% base rate nor a comparison --- and the first is a
-thresholded precision on a \Cited{0.172}\,\% base rate --- \ClaimTestFraudRate\,\% here --- with
-no recall. Neither tests distinctness from a classical kernel before scoring, which is where
-this section stops. The one controlled benchmark on real card-transaction data
+\Cited{984}-row balanced undersample at seven principal components with no classical arm; the
+first is a thresholded precision on a \Cited{0.172}\,\% base rate --- \ClaimTestFraudRate\,\%
+here --- with no recall. Neither tests distinctness from a classical kernel before scoring,
+which is where this section stops. The one controlled benchmark on real card-transaction data
 \Cited{(Faryad, arXiv:2608.15718, 2026)} finds no robust quantum advantage, and one apparent
 advantage to be an artefact of unequal search budgets.
 
@@ -36,10 +44,9 @@ f_\ell(\mathbf{x}) = \sum_{\{s\}} \bigl[A^{s_1} \cdots A^{s_N}\bigr]_\alpha W_{\
 where $W$ is the head that closes the final bond into the two class logits $\ell$, sweeping the
 bond dimension $\chi$ rather than tuning it. In the band, on identical rows and features, it reaches average
 precision \ClaimMpsApBestChi{} at the largest bond dimension against \ClaimGbdtApBand{} for
-the gradient-boosted baseline, a paired difference of \ClaimMpsDeltaApBestChi. Both sit near
-the \ClaimBandFraudRate\,\% floor average precision cannot fall below, and neither ranks the
-band far above chance --- the band is the region the incumbent scorer already could not
-separate, so re-scoring it has limited headroom for \emph{any} model.
+the gradient-boosted \Cited{XGBoost} baseline, a paired difference of \ClaimMpsDeltaApBestChi.
+Neither ranks the band far above chance --- it is the region the incumbent scorer already could
+not separate, so re-scoring it has limited headroom for \emph{any} model.
 
 \input{generated/table-mps}
 
@@ -48,12 +55,11 @@ features, trained on $\Dtrain$ and scored once on $\Dtest$, across \ClaimSweepJo
 four bond dimensions at four seeds each --- the best draw reaches \ClaimSweepBestAp{} average
 precision against \ClaimGbdtFullApMin--\ClaimGbdtFullApMax{} for the baseline ---
 \ClaimMpsShareFull\,\% of it. The baseline also sees entity-aggregate
-columns the arm does not; without them the gap barely moves (\texttt{docs/RESULTS.md}). The in-band \ClaimMpsShareBand\,\% is not comparable with it:
-average precision floors at the base rate, and the band is \ClaimBandFraudRate\,\% positive
-against \ClaimTestFraudRate\,\%. As lift over that floor the two agree,
-\ClaimMpsLiftShareBand\,\% and \ClaimMpsLiftShareFull\,\%, so the deficit does not widen with
-dimension. Every one of the \ClaimSweepJobs{} loses, so which draw is reported does not change
-the conclusion.
+columns the arm does not; without them the gap barely moves (\texttt{docs/RESULTS.md}). The in-band \ClaimMpsShareBand\,\% is not comparable:
+average precision floors at the base rate, \ClaimBandFraudRate\,\% in band against
+\ClaimTestFraudRate\,\%. As lift over that floor the two agree, \ClaimMpsLiftShareBand\,\% and
+\ClaimMpsLiftShareFull\,\%, so the deficit does not widen with dimension. Every one of the
+\ClaimSweepJobs{} loses, so the reported draw does not matter.
 
 \textbf{Capacity is not resolvable, and replication is how we know.} The largest seed spread at one bond
 dimension is \ClaimSweepSeedSpread{} average precision against \ClaimSweepChiSpread{} for the
@@ -61,16 +67,15 @@ capacity signal --- \ClaimSweepSpreadRatio{} times --- so a per-$\chi$ ordering 
 a maximum. \textbf{And \ClaimSweepStalled{} of \ClaimSweepJobs{} fits diverged to the prior},
 at one seed and two bond dimensions, on the stable contraction path; a matched re-run
 reproduces both to six decimals. Excluding them \emph{raises} the ratio to
-\ClaimSweepSpreadRatioTrained{}, so part of the apparent capacity signal was the failures.
-
+\ClaimSweepSpreadRatioTrained{}, so part of the capacity signal was the failures.
 
 \paragraph{The comparison is underpowered, and the gate that should have said so was itself
 wrong.} It is a comparison between model \emph{families}, whose measured standard error is
 \ClaimMpsStandardErrorBestChi{} --- \ClaimPowerSeRatio{}-fold the baseline-against-itself
 figure the gate originally used. The effect it can resolve is
 \ClaimMpsMdeRealised{} average precision, against a pre-registered ceiling of
-\ClaimPowerCeiling{}; the appendix gives both defects in full. So H4 is reported as
-underpowered, which is what the protocol commits to. Every interval contains zero, so any
+\ClaimPowerCeiling{}; the appendix gives both in full. H4 is reported as underpowered, which
+the protocol commits to. Every interval contains zero, so any
 improvement is bounded above by $+\ClaimMpsCiHighBestChi{}$ average precision --- a
 non-superiority bound, not evidence of equivalence and not evidence that the tensor network is
 worse.

@@ -5,13 +5,11 @@
 Most steps below were executed in this study on public data
 (Section~\ref{sec:results}); the power-sized evaluation block and the change-management cadence
 describe Phase~II and were not. Some pre-registered items were \emph{not} executed --- two kernel hypotheses and the
-entanglement ablation, closed by the screens, and amendment~A7's drift measurements --- and the
-appendix enumerates them, because a plan that cannot say which steps ran is not one.
+entanglement ablation, closed by the screens, and amendment~A7's drift measurements --- and the appendix enumerates them: a plan that cannot say which steps ran is not one.
 
 \textbf{Success is a certificate, not a score.} A PoC succeeds if the band-conditional
 false-decline rate is certified at a level the business names, with family-wise error control,
-on a block never used to build it. Average precision and ROC AUC are
-reported alongside but decide nothing. Failure is equally well defined --- the admissible
+on a block never used to build it. Average precision and ROC AUC decide nothing. Failure is equally well defined --- the admissible
 set comes back empty, as it does here at the tightest band budget --- and the
 acceptance test is the held-out read in Section~\ref{sec:results}.
 
@@ -20,13 +18,10 @@ fixed \emph{before} the quantum-versus-classical comparison and the block sized 
 one change that would make it informative here; Section~\ref{sec:quantum} reports
 what happens when it is not.
 
-\textbf{Threshold change management.} $\lambda$ moves on every recalibration, so it needs an
-owner and a cadence rather than a rerun. Model risk approves each move quarterly, matching the
+\textbf{Threshold change management.} $\lambda$ moves on every recalibration, so it needs an owner and a cadence. Model risk approves each move quarterly, matching the
 rolling window the fraud-rate definition already uses, and out of cycle whenever realised
-in-band risk crosses the certified $\alpha$. If a recalibration fails to certify, the rule falls back to
-the previously certified $\lambda$, and failing that to the incumbent scorer with the band
-closed --- today's behaviour, not an uncertified threshold. Phase~II runs the challenger in
-shadow first, scoring every authorisation and acting on none.
+in-band risk crosses the certified $\alpha$. If a recalibration fails to certify, the rule falls back to the previously certified $\lambda$, then to the incumbent scorer with the band
+closed --- today's behaviour, not an uncertified threshold. Phase~II runs the challenger in shadow, acting on nothing.
 
 \textbf{What keeps the plan honest.} Grids, splits and thresholds are hashed before any model is
 fitted, the hypotheses are frozen with dated amendments, and every retraction is recorded ---

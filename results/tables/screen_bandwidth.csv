@@ -1,0 +1,7 @@
+bandwidth,n_configurations,conditioning_pass_rate,distinctness_pass_rate,min_rbf_correlation,distinctness_bar,closest_encoding,closest_entanglement,closest_n_features
+0.03125,20,0.0,0.0,0.8106523800518239,0.6,dense_angle,linear,4
+0.0625,20,0.0,0.0,0.8503398631775204,0.6,dense_angle,linear,4
+0.125,20,0.15,0.0,0.9138457418182456,0.6,dense_angle,linear,4
+0.25,20,0.15,0.0,0.8448755945026125,0.6,zz,linear,4
+0.5,20,0.35,0.0,0.799866504713447,0.6,zz,linear,4
+1.0,20,0.75,0.0,0.6290838598453133,0.6,zz,none,4

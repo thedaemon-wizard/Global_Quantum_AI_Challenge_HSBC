@@ -158,6 +158,7 @@ freeze:
 # document it summarises.  Deriving it inside `claims` is what makes that impossible.
 derived:
 	$(PY) scripts/summarise_decisions.py
+	$(PY) scripts/summarise_screens.py
 	$(PY) scripts/make_crosscheck.py
 
 claims: derived

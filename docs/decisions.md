@@ -5632,3 +5632,32 @@ running `value_counts()` on the deliverable gets `step-up` at 8.48 % against the
 9.35 % and has no way to reconcile them. Section 1 now prints both figures, so the CSV and the
 PDF can be checked against each other by anyone who has only those two.
 
+<a id="d-168"></a>
+### D-168 A suggested improvement was refuted by our own table, and the argument it replaced was wrong too
+
+A review of the submission against the challenge statement proposed adding one sentence on noise,
+to convert three unaddressed §5.3 rows at once: *depolarizing noise drives a fidelity Gram matrix
+toward the identity, moving it away from the conditioning band, so a noise model can only make
+the rejection more decisive.* It is a clean argument and it reads as obviously true.
+
+**It is false on this data, and `screens.csv` says so.** The conditioning band is
+$r_{\mathrm{eff}} \in [0.01, 0.35]$. Across the 120 screened configurations $r_{\mathrm{eff}}$
+spans **0.00334 to 0.13191** -- **92 fail by sitting below the band and not one sits above it**.
+Noise drives $r_{\mathrm{eff}}$ toward 1, so it would move those 92 *toward* the band. The
+proposed sentence gets the direction backwards for three quarters of the grid.
+
+**Checking it also condemned what was already written.** `COMPLIANCE_CHECKLIST.md` C24 justified
+skipping a noise study on the same reasoning -- a method "rejected on noiseless grounds", so
+noise "cannot change a conclusion". That inherits the same error. It has been rewritten.
+
+**The correct argument is the other screen.** Conditioning was never the binding constraint: 28
+of 120 passed it. **Distinctness is what nothing passed** -- 0 of 120, at every bandwidth. So the
+rejection does not rest on a quantity noise would move favourably. Whether noise changes
+RBF-distinguishability is **untested**, and is now recorded as untested rather than argued away.
+
+**The general point is about where a plausible sentence comes from.** This one was not invented:
+it is standard, it is what a referee would expect, and it would have survived review by anyone
+who did not open the table. The submission's own committed artefact was the only thing that
+caught it -- which is the argument for binding prose to tables, made once more at the cost of a
+sentence that was never written.
+

@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 167
+    value: 168
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -380,6 +380,23 @@ claims:
       false-decline guarantee is about, and the one a cardholder experiences.  Not part of the
       routing split -- it overlaps `OperatingStepUpShare`, because a transaction can be routed
       to a challenge and then declined.  docs/RESULTS.md derives both.
+
+  - key: ScreenCondPassWidest
+    value: 75.0
+    scale: 100
+    source: results/tables/screen_bandwidth.csv
+    select: {bandwidth: 1.0}
+    column: conditioning_pass_rate
+    tolerance: 0.01
+    note: >
+      Share of configurations clearing the conditioning screen at the **widest** bandwidth the
+      grid contains.  The rate rises monotonically with bandwidth -- 0, 0, 15, 15, 35, 75 -- and
+      the closest approach to distinctness is at the same endpoint, so the pre-registered grid
+      stopped exactly where both screens were improving.  Saying so is what turns "none passed"
+      into a characterised boundary with a named direction, which is what the challenge
+      statement asks for when it says to characterize the conditions under which quantum
+      approaches perform differently.  Derived by `scripts/summarise_screens.py` from
+      `screens.csv`; it reads no model and touches no held-out data.
 
   - key: ScreenConfigs
     value: 120

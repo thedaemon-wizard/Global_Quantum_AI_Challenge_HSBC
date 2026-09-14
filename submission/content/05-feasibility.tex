@@ -4,22 +4,17 @@
 
 \textbf{What the PoC sprint would build.} The same protocol on the issuer's stream: fit the
 incumbent scorer, freeze four blocks, calibrate the band, certify the band-conditional
-false-decline rate at a level the business picks. Every component has been run
-end to end here, so the sprint is a port and a re-calibration rather than a build: three stages
-of roughly a month with a month of slack --- split integrity, then calibration and
+false-decline rate at a level the business picks. Every component has been run end to end here, so the sprint is a port and a re-calibration, not a build: three stages of about a month with a month of slack --- split integrity, then calibration and
 certification, then the quantum re-ranker, last because it is the only stage that can fail to
 produce a result.
 
-\textbf{Compute, measured rather than estimated.} The classical core is cheap: the
-baseline fits the in-band problem in under a second, and calibration is a sort.
+\textbf{Compute, measured rather than estimated.} The classical core is cheap: the baseline fits the in-band problem in under a second and calibration is a sort.
 The expensive component is the quantum-inspired arm: \ClaimSweepJobs{} full-scale
 tensor-network fits over \ClaimSweepTrainRows{} rows and 431 sites took
 \ClaimSweepSecondsMin{}--\ClaimSweepSecondsMax{} seconds each on the one
 \Record{RTX~PRO 6000 Blackwell (96\,GB), CUDA 13, Python 3.12} workstation every number here was
 measured on. Per-step cost is flat in the bond dimension, against the
-\ClaimSweepChiFlopSpan{}-fold spread a $\chi^2$ model predicts, so capacity is nearly free, chain
-length is the cost, and a resource estimate scales with the feature count rather than the
-ansatz. No QPU is required (Section~\ref{sec:hybrid}).
+\ClaimSweepChiFlopSpan{}-fold spread a $\chi^2$ model predicts, so capacity is nearly free, chain length is the cost, and a resource estimate scales with feature count, not the ansatz. No QPU is required (Section~\ref{sec:hybrid}).
 
 \textbf{Latency, against the budget the statement gives.} Of the
 \ClaimLatencyAuthorisationBudgetMs{}\,ms authorisation ceiling about \ClaimLatencyNetworkMs{}\,ms
@@ -30,19 +25,17 @@ kernel evaluation --- would cost \ClaimLatencyKernelMedian{}\,ms, \ClaimLatencyK
 times as much, its tail taking \ClaimLatencyKernelBudgetShare\,\% of that budget. Cost is linear
 in the support set, so the classical core is not the latency risk and the kernel is; the band
 bounds aggregate kernel compute, not the per-request tail, which a transaction landing in the
-band pays in full. Both bound model cost on this workstation at the profile
-\texttt{latency.csv} records for each --- the scorer pinned to one thread, the kernel on
-unconstrained BLAS --- so the ratio is not like for like.
+band pays in full. Both are model cost on this workstation at the profile
+\texttt{latency.csv} records --- scorer pinned to one thread, kernel on unconstrained BLAS ---
+so the ratio is not like for like.
 
-\textbf{Data, and why the PoC cannot reuse this file.} The method needs settled labels and an
-entity key to cluster on; both are ordinary in an issuer's data and only approximated here, and
-the benchmark's competition rules permit non-commercial research use only. The protocol ports;
+\textbf{Data, and why the PoC cannot reuse this file.} The method needs settled labels and an entity key to cluster on; both are ordinary in an issuer's data and only approximated here, and the benchmark's rules permit non-commercial research use only. The protocol ports;
 the data does not.
 
 \textbf{Constraints we have measured, and would carry into Phase II.} The population is
 conditional on an incumbent: this file contains only transactions an existing stack approved,
 because declined attempts cannot generate a chargeback. That is exactly the population a
-champion/challenger comparison runs on, so it is the right restriction --- but no result
+champion/challenger comparison runs on, so it is the right restriction --- but nothing
 extrapolates past it. The label is partly an entity flag, since a chargeback propagates to
 later transactions sharing an account, email or billing address, and Shapley attribution makes
 that concrete: \ClaimAttributionTopShare{} of the in-band model's total contribution falls on
@@ -52,10 +45,3 @@ this on an issuer's own data, where an entity key is a key and not a predictor. 
 is sample-starved by design: conditioning on a narrow band is what makes the guarantee bind the
 component we care about and what limits how tight $\alpha$ can go. A larger calibration block or
 a wider band buys a tighter one; the method is unchanged.
-
-\textbf{What would change the quantum conclusion.} An encoding demonstrably outside the RBF
-family, at a bandwidth that does not concentrate, would pass the same screens unmodified; we did
-not find one. For the tensor network the requirement is a comparison powered for cross-family
-noise, about \ClaimMdeSampleFactor{} times the in-band evaluation set. And the negative is about
-aggregate discrimination, not the operating point: H2 never ran, and a method that does not
-improve ranking can still improve a decision at a low false-positive threshold.
