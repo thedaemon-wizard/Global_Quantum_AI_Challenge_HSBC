@@ -314,6 +314,26 @@ seven principal components, **with no classical baseline** -- so it is neither t
 rate nor a comparison, which is what proposal section 4 says about it.
 Cited as: `El Alami et al., 2024`
 
+**[QM-18]** Innan, A., El Alami, Innan, N., Shafique and Bennai. "Q-SYNTH: Hybrid
+Quantum-Classical Adversarial Augmentation for Imbalanced Fraud Detection".
+arXiv:2605.21164, 20 May 2026 (v1 only; no journal reference listed). Read 2026-09-12.
+A parameterised quantum circuit as GAN generator against a classical discriminator, synthesising
+fraudulent transactions to address class imbalance -- the quantum route to the problem this study
+handles with thresholds instead.
+
+**It does not claim quantum advantage**, and its own comparisons go the other way: SMOTE achieves
+stronger feature-wise similarity, and classical GANs attain higher downstream performance in
+several settings. The abstract claims only "a favorable compromise between distributional
+fidelity and downstream performance".
+
+**Four of its five authors wrote [QM-17]** -- El Alami, Innan, Shafique and Bennai -- which is
+the paper the challenge statement cites for its $F_1 = 0.88$ quantum result under the name
+"Karimi et al.". So the group behind the statement's own quantum reference published, eighteen
+months later and in the same application, a hybrid method that declines to claim advantage. That
+is a fact about the literature, not an argument about their work, and it is recorded because the
+proposal engages their earlier result and should engage it fairly.
+Cited as: `Innan et al., 2026`
+
 ## 4. Datasets and evaluation protocol
 
 **[DS-1]** IEEE-CIS Fraud Detection. Kaggle, 2019. Provided by Vesta Corporation.
@@ -468,6 +488,27 @@ call it today.
 ## 7. Sources consulted and deliberately not relied upon
 
 Recorded because excluding a source is a decision.
+
+**These entries are unnumbered on purpose, and that is why they are counted separately.**
+`REFERENCE_CROSSCHECK.md` reports "0 recorded as deliberately not relied upon", which is true of
+the **numbered** set it enumerates: all 57 of those are reached from the repository. The sources
+below carry no `[XX-N]` key, so the generator does not see them and the count does not include
+them. There are **seven** -- six of long standing, plus the no-free-lunch result added on
+2026-09-12 -- and each says what it was consulted for and why it is not used.
+
+**Yu, Xu and colleagues.** "No-Free-Lunch Theories for Tensor-Network Machine Learning Models".
+arXiv:2412.05674, 7 December 2024 (v1 only; no journal reference). Read 2026-09-12.
+Proves no-free-lunch theorems for machine-learning models built on matrix product states, and
+extends them to two-dimensional projected entangled-pair states.
+
+**Not relied upon, and the reason is about what it would be doing here.** Section 4 reports a
+tensor network that did not beat gradient boosting, underpowered against its pre-registered
+ceiling. A no-free-lunch theorem states that no model class is universally best; it does not
+explain why *this* matrix product state lost to *this* baseline on *this* data, and the
+abstract states no bound in terms of bond dimension or sample size that could be applied to the
+comparison. Citing it beside the negative result would read as theoretical support for an
+empirical finding that has none, which is the failure the appendix's power-gate retraction was
+written about. The honest position is that the comparison is underpowered and says so.
 
 **Joshi, S., Wang, T., Hassani, H. and Dobriban, E.** "Risk-Controlled Post-Processing of
 Decision Policies". arXiv:2605.06479, 7 May 2026. Verified against the arXiv record 2026-09-02.

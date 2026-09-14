@@ -10,7 +10,7 @@ identifier, its first author's surname, and an alias the entry declares as
 surname is usually the handle that finds them; the alias covers the entries that have
 no author to cite -- an instrument named in prose, or a lower-case package name.
 
-**56 entries. 56 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
+**57 entries. 57 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
 
 ---
 
@@ -50,7 +50,8 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **QM-13** | Initialization and training of matrix product state probabilistic models | `docs/decisions.md` |
 | **QM-15** | Tensor Network Kernel Machines: A JAX Framework for Machine Learning and Nonlinear System Identification | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/mps.py` |
 | **QM-16** | Digital Payments Fraud Detection Using Quantum Machine Learning and Amazon Braket | `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/04-quantum.tex` |
-| **QM-17** | Comparative Performance Analysis of Quantum Machine Learning Architectures for Credit Card Fraud Detection | `docs/decisions.md`, `submission/content/04-quantum.tex` |
+| **QM-17** | Comparative Performance Analysis of Quantum Machine Learning Architectures for Credit Card Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md`, `submission/content/04-quantum.tex` |
+| **QM-18** | Q-SYNTH: Hybrid Quantum-Classical Adversarial Augmentation for Imbalanced Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md` |
 | **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md`, `docs/RESULTS.md` and 27 more |
 | **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 27 more |
 | **DS-3** | Calibrating Probability with Undersampling for Unbalanced Classification | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/metrics.py` |

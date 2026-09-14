@@ -130,6 +130,39 @@ that word too.
 The proposal states the two rates; the trend statistics are here, which is why this file rather
 than the six-page body carries them.
 
+## Class imbalance: what was done, and the quantum alternative that was not
+
+The challenge statement (§5.3) asks that handling of class imbalance "should be documented
+(e.g., resampling, loss weighting, threshold tuning)". This study takes the third and refuses the
+first, and the refusal is not a preference:
+
+**Imbalance is absorbed by thresholds, not by resampling.** At a 3.412 % positive rate that is a
+choice, and the guarantee is what makes it. Resampling the calibration block would break the
+exchangeability the split-conformal argument rests on -- the calibration and test scores must be
+exchangeable for the order statistic to carry its coverage, and a resampled calibration set is
+not exchangeable with an unresampled deployment stream. So the band edges and $\lambda$ carry
+the imbalance instead, and the certificate bounds the error that placement commits.
+
+**The quantum route to the same problem exists and was not taken.** Q-SYNTH
+([QM-18](REFERENCES.md), arXiv:2605.21164, May 2026) puts a parameterised quantum circuit in a
+GAN generator to synthesise fraudulent transactions for exactly this imbalance. It is worth
+naming for three reasons:
+
+* it is the *quantum* version of the option this study declines, so declining it is a choice
+  between documented alternatives rather than an omission;
+* **it does not claim quantum advantage** -- SMOTE achieves stronger feature-wise similarity in
+  its own comparison, and classical GANs higher downstream performance in several settings,
+  which is a third independent 2026 result in this application pointing the same way as
+  [QM-17](REFERENCES.md) and the controlled benchmark in section 4;
+* **four of its five authors wrote QM-17**, the paper the challenge statement cites for its
+  $F_1 = 0.88$ quantum result under the name "Karimi et al.". The group behind the statement's
+  own quantum reference published, eighteen months later and in the same application, a method
+  that declines to claim advantage.
+
+None of that is an argument against their work, and none of it is evidence for this study's
+design. It is recorded because the proposal engages QM-17 directly and should engage it with the
+rest of what that group has published.
+
 ## What the rule finally declines, which is not the number section 1 prints
 
 Section 1 gives the operating point as **86.72 % approved outright, 9.35 % routed to a 3-D Secure

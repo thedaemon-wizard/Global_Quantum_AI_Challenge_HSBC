@@ -437,7 +437,7 @@ power gate that can be computed afterwards is not a gate.
 | [`docs/protocol.md`](docs/protocol.md) | Pre-registration, frozen before any model was fitted. Estimand, split, decision rule, band freezing, null hypotheses H1–H5, screens, out-of-scope claims, and its dated amendments |
 | [`docs/decisions.md`](docs/decisions.md) | Every entry, including the retractions and the reason for each |
 | [`docs/RESULTS.md`](docs/RESULTS.md) | Every result table in full, with the caveat attached to each and the retractions that produced them |
-| [`docs/REFERENCES.md`](docs/REFERENCES.md) | 56 numbered entries, every one of them reached from somewhere in this repository: conformal theory, fraud prior art, quantum ML evidence, datasets, regulation and software, plus an unnumbered section recording sources deliberately **not** relied upon. Ten entries cited by nothing were removed rather than left for a reader to chase. [`REFERENCE_CROSSCHECK.md`](docs/REFERENCE_CROSSCHECK.md) reports which are reached from the repository and which are not |
+| [`docs/REFERENCES.md`](docs/REFERENCES.md) | 57 numbered entries, every one of them reached from somewhere in this repository: conformal theory, fraud prior art, quantum ML evidence, datasets, regulation and software, plus an unnumbered section recording sources deliberately **not** relied upon. Ten entries cited by nothing were removed rather than left for a reader to chase. [`REFERENCE_CROSSCHECK.md`](docs/REFERENCE_CROSSCHECK.md) reports which are reached from the repository and which are not |
 | [`NOTICE`](NOTICE) | Third-party licences, including why `cuquantum-cu11` is not installed by default |
 
 ### 8.2 Implementation

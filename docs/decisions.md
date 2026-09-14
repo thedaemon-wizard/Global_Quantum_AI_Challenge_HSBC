@@ -5359,3 +5359,49 @@ recorded rather than quietly fixed. Six earlier passes are unaffected -- each ra
 [section 2f](CLEANROOM.md) records their process-level evidence. What changed is that the
 procedure no longer depends on remembering whether something is already running.
 
+<a id="d-161"></a>
+### D-161 A September literature sweep, and the one paper it added
+
+The reference set was current to 25 August 2026 and verified on 2026-09-02. The three pillars
+the argument rests on were re-swept on 2026-09-12 against work published since.
+
+**Conformal risk control: nothing to add.** The three most relevant 2026 papers are already
+cited -- selective conformal risk control, conformal selective prediction with general risk
+control, and risk-controlled post-processing of decision policies. A group-conditional variant
+appeared in July 2026 but is a language-model paper, and this study's certificate is already
+conditional on the band rather than marginal, which section 2 and the appendix both set out.
+
+**Tensor networks: nothing to add, and one deliberate refusal.** A no-free-lunch result for
+matrix-product-state learning exists (arXiv:2412.05674). It is **not** cited. It is a December
+2024 preprint with one version and no journal, its abstract states no bound in terms of bond
+dimension or sample size, and a no-free-lunch theorem says no model is universally best -- which
+does not explain why *this* matrix product state lost to *this* gradient-boosted baseline.
+Citing it would dress an empirical, underpowered negative result in theoretical support this
+study has not established, which is the failure mode section 4 is written to avoid.
+
+**Quantum kernels: one addition, [QM-18].** Q-SYNTH (arXiv:2605.21164, May 2026) puts a
+parameterised quantum circuit in a GAN generator to synthesise fraudulent transactions for class
+imbalance. It matters here on three counts, and the third was not expected:
+
+* It is the **quantum route to the problem this study declines**. Section 5.3 of the statement
+  asks that imbalance handling be documented; this study uses threshold placement and refuses
+  resampling because a resampled calibration block is not exchangeable with an unresampled
+  deployment stream. Naming the quantum alternative makes that a choice between documented
+  options rather than an omission.
+* It **does not claim quantum advantage** -- SMOTE beats it on feature-wise similarity and
+  classical GANs on downstream performance in several of its own settings. That is a third
+  independent 2026 result in this application pointing the same way.
+* **Four of its five authors wrote QM-17** -- El Alami, Innan, Shafique and Bennai --
+  the paper the challenge statement cites for its $F_1 = 0.88$ quantum result under the name
+  "Karimi et al.". The group behind the statement's own quantum reference published, eighteen
+  months later and in the same application, a method that declines to claim advantage.
+
+The third point is recorded as a fact about the literature and not as an argument about their
+work. Proposal section 4 engages QM-17 directly, and engaging one paper from a group while
+ignoring its successor in the same application would be selective reading.
+
+**Nothing was added to the shipped PDFs.** Both are at their page limits, the submission is
+frozen, and none of this changes a result -- it strengthens the account of the literature the
+result sits in. `REFERENCES.md` now holds 57 entries and `make_crosscheck.py` reports 57 reached,
+0 cited nowhere.
+
