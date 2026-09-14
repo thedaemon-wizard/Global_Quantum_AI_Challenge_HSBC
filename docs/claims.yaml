@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 166
+    value: 167
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -361,9 +361,25 @@ claims:
       100 %.  The terminal figure -- every transaction the rule finally declines, outer
       threshold plus the in-band rows the certified lambda declines after routing them to a
       challenge -- is the `declined overall` row of the same table, 4.80 %, and is discussed
-      in docs/RESULTS.md.  It is deliberately not a claim: both shipped PDFs are at their page
-      limits, a two-character edit was measured to move six lines across a page boundary, and
-      the routing split section 1 prints is not false -- it partitions traffic and sums to 100.
+      in docs/RESULTS.md.  **It is now `OperatingTerminalDeclineShare` below and section 1
+      prints both.**  It was held back while the page limit had no slack; section 1 was
+      subsequently compressed by 48 characters with pages 2-6 byte-identical, which bought the
+      room.  The routing split is not false -- it partitions traffic and sums to 100 -- but
+      "declined" without "outright" reads as the rate a cardholder meets, and that is 4.80 %.
+
+  - key: OperatingTerminalDeclineShare
+    value: 4.80
+    scale: 100
+    source: results/tables/operating_point.csv
+    select: {decision: declined overall}
+    column: share
+    tolerance: 0.01
+    note: >
+      Every transaction the rule finally declines: the outer threshold plus the 1,007 in-band
+      rows the certified lambda declines after routing them to a challenge.  This is the rate a
+      false-decline guarantee is about, and the one a cardholder experiences.  Not part of the
+      routing split -- it overlaps `OperatingStepUpShare`, because a transaction can be routed
+      to a challenge and then declined.  docs/RESULTS.md derives both.
 
   - key: ScreenConfigs
     value: 120

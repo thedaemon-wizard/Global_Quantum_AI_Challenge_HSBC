@@ -5603,3 +5603,32 @@ weakens the rest by making the log's completeness a thing a reviewer has to spot
 than assume. The narrowing is now recorded, D-059 carries a forward pointer, and 5c quotes the
 sentence the PDF actually contains.
 
+<a id="d-167"></a>
+### D-167 The decline rate a cardholder meets was in the repository but not in the submission
+
+Section 1 printed "\ClaimOperatingDeclineShare\,\% declined" under the bare word *declined*.
+That is the **outer** threshold only. The certified lambda declines a further 1,007 in-band
+transactions after routing them to a challenge, so the rate a cardholder actually meets is
+**4.80 %**, not 3.93 %. `docs/RESULTS.md` says so in terms -- "4.80 % is the rate a
+false-decline guarantee is about" -- and **neither shipped PDF contained the number**.
+
+**The routing split was never false.** 86.72 / 9.35 / 3.93 partitions traffic and sums to 100,
+and `OperatingStepUpShare`'s 9.35 % already includes the rows that are later declined. The defect
+is that "declined", unqualified, in a document whose subject is certifying a false-decline rate,
+reads as the decline rate -- and the smaller of the two numbers is the one that flatters.
+
+**This was previously adjudicated the other way, and the reason expired.** The claim note read
+"deliberately not a claim: both shipped PDFs are at their page limits, a two-character edit was
+measured to move six lines across a page boundary." That was true when written. [D-164](#d-164)'s
+compression then removed 48 characters from page 1 with pages 2-6 byte-identical, which bought
+the room, and the addition rebuilt at 6/6 on the first attempt. **A constraint-based deferral
+needs re-testing when the constraint moves**; nothing was watching for that, and the note would
+have gone on justifying the omission indefinitely.
+
+**How it was found.** Not by reading the proposal -- by reading the *uploaded* `predictions.csv`
+as a reviewer would. Its `decision` column has **four** values, `step-up-declined` among them,
+and that value is explained only in `docs/RESULTS.md`, which is not an uploaded file. A reviewer
+running `value_counts()` on the deliverable gets `step-up` at 8.48 % against the proposal's
+9.35 % and has no way to reconcile them. Section 1 now prints both figures, so the CSV and the
+PDF can be checked against each other by anyone who has only those two.
+
