@@ -312,6 +312,20 @@ documents can see they are the same paper rather than reading the difference as 
 the statement. The $F_1$ was obtained on a 984-row balanced undersample of ULB reduced to
 seven principal components, **with no classical baseline** -- so it is neither this task's base
 rate nor a comparison, which is what proposal section 4 says about it.
+
+**Re-verified against v3 on 2026-09-12, and every specific holds.** arXiv papers are living
+documents and this one has three versions -- v1 2024-12-27, v2 2025-01-03, **v3 2026-01-14** --
+so the figures quoted in a shipped PDF had to be checked against the current one rather than
+the one first read. Section IV of v3: "Random Under Sampling is implemented to create balanced
+datasets with a 50/50 ratio. Each dataset is reduced to 492 fraudulent and 492 non-fraudulent
+transactions" (492 + 492 = **984**, which is why the literal string "984" does not appear), and
+"PCA is applied to the European dataset, reducing its dimensions to **seven** features named V1
+through V7". Section V-D attributes the headline result to the European dataset: "the
+configuration of the Z feature map with the Pauli Two Design ansatz achieves the highest
+F1-score of **0.88**". The only occurrence of "classical baseline" in v3 describes a *different*
+study, reference [36], not this paper's own comparison -- the three arms it compares (VQC, SQNN,
+EQNN) are all quantum. v3 also uses a second dataset, BankSim, undersampled the same way; the
+0.88 is not from it.
 Cited as: `El Alami et al., 2024`
 
 **[QM-18]** Innan, A., El Alami, Innan, N., Shafique and Bennai. "Q-SYNTH: Hybrid
