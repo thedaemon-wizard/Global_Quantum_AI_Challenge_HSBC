@@ -48,18 +48,18 @@
     "results/tables/split_arm_baselines.csv": "21582c1dae1cde2c3bbd6ab0d06ff611014a4e5a1aff4dd04e67cafbe25b878f",
     "results/tables/splits.csv": "d3b6c0325db7ecea46769bb8baa7aef043e402f73331a1c41f54c33d77c53552",
     "results/tables/tradeoff.csv": "f6eb7e195bb228ff1def5ddd0307c799039979317dec097a01a6de9b7cb7742d",
-    "submission/appendix.pdf": "22652b375283e33f1e1f2b2282eecb8602a4216e0b705be73815b63d15a58dae",
-    "submission/proposal.pdf": "9a88a628ec33c86e95268f5a5ab263f65637e7b3f3a06a2bb895d841d2346bfa"
+    "submission/appendix.pdf": "6d2ce9a44822606113121c1ac55fcd2d34c8b60bbd5048e8919fb056a12013f1",
+    "submission/proposal.pdf": "c81ceabe728d8de34357ab9174ce52dd3f6749f8a9ae8154f5f4b2233c893ed2"
   },
   "specification": {
     "configs/default.yaml": "7dc286eb4d9b4e0a8d8ed91e7e57122789a615ea30c535a6e262c24339a47675",
-    "docs/REFERENCES.md": "59298624955285113d74b685466b78f1718a92cb258c24bfb24960f834a05966",
-    "docs/claims.yaml": "8acd0dd070510067944e8a6b514eddbcb42020cf09338f6084e8184288f6400d",
-    "docs/decisions.md": "08df4ab0fe17be0d097f485eb6601590d65258adb4b96b751e1d9a4a30594b96",
+    "docs/REFERENCES.md": "42c94345efeb1451db3741f70f710b569128cac906442d35f51739082148734c",
+    "docs/claims.yaml": "3b02e3f9f126b80d2b48dab63782a630bd906a2b4de73461edc810d81eeb5203",
+    "docs/decisions.md": "ae11c9be03251656d3d1de2387b19f43ccbed109c852ec55cf05b384076b0ab7",
     "docs/protocol.lock.json": "67c12127b76100696023a57d20a0904301485d0cbe6b64c07e2bd32791fd9507",
     "docs/protocol.md": "876050ee0a8ffc60df963f47e4e3a0be8978781bce93b423e57cd119740addf4",
     "docs/tables.yaml": "733fc794c24427f54e68901b97de12461deb806cf4acadcf6d1a26bf39a4c8b7",
-    "results/tables/decision_log.csv": "6fa9f187c9d04d6668731c6acb478a7a91ffc2d78576998bd1d8edfbb03b019f",
+    "results/tables/decision_log.csv": "1e8c3969fbeabd6b806c020fcebfd25f7b1d5285f6a7462e140506d8e4100b1f",
     "results/tables/smoke.json": "9d5d081660f90802edbfacfa8689abec4d4d4d16f81c3025eb84e2eff34eccca",
     "results/tables/test_access.json": "cd9efe38349282ac0e224e06728e42ed98f204370523bb14e63a4f2f336cf756"
   }

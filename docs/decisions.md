@@ -5466,3 +5466,48 @@ classical reference, which agrees with [QM-10] and adds no new mechanism. Both w
 because the shipped PDFs are at their page limits and neither changes a result; both are
 recorded here so the next reader does not have to re-find them.
 
+<a id="d-163"></a>
+### D-163 The p-value carries a factor of e that its own source says to drop
+
+Both controlled risks are means of **0/1 losses** -- `riskcontrol.py` says so in as many words --
+and the p-value is Hoeffding-Bentkus, whose Bentkus branch is `e * P(Binom(n, alpha) <= ceil(nt))`.
+Remark 4 of Bates et al., **the paper this bound is taken from and which this repository already
+cites as CP-8**, says:
+
+> "The Bentkus inequality is closely related to an exact confidence region for the mean of a
+> binomial distribution. In the special [case] where the loss takes values only in {0,1}, this
+> exact binomial result gives the most precise upper confidence bound and **should always be
+> used**."
+
+Learn-then-Test says the same thing in its selective-classification example: "Because selective
+classification involves control of a binary loss, we use the exact binomial tail bound (the HB
+bound without the extra factor e)."
+
+**So the estimator is conservative by a factor of e, on the authority of its own source.** That
+bites where this study says its binding constraint is: only 5 of 48 grid cells certify, and the
+stated mechanism is sample size acting through the concentration bound.
+
+**What it costs was measured rather than argued.** On all five certified cells the Bentkus branch
+binds, so the penalty is exactly `e = 2.718` -- and the p-values run from `2.6e-34` to `5.7e-103`
+against a Holm threshold near `0.005`. **Nothing there is within thirty orders of magnitude of
+flipping.** What cannot be determined from the committed table is whether any of the 43
+uncertified cells would cross, because their per-lambda p-values are not retained; establishing
+that needs a re-run, and a re-run of the certificate spends the evaluation.
+
+**Not changed, for the reason that has decided every comparable question here.** The
+pre-registration was frozen on this estimator before any model was fitted, and the single
+`D_test` evaluation is spent. Swapping the p-value afterwards and re-certifying is a second
+evaluation -- the same argument that declined the tuned baseline in [D-147](#d-147), where the
+prize was larger. Taking extra power by relaxing a bound after seeing which cells failed is
+precisely the move the pre-registration exists to forbid.
+
+**Recorded in three places rather than fixed in one**: the code comment beside the `math.e`, this
+entry, and the reference entry for CP-8. A conservatism that is named, sourced and quantified is
+a different object from one a reviewer discovers.
+
+**Two things this is not.** It is not a validity problem -- conservatism can only make the
+certificate harder to earn, and `tests/test_riskcontrol.py` already pins that the returned value
+never falls below the exact binomial tail, which is the property that would matter if the error
+ran the other way. And the fix is not "use a betting or WSR bound instead": the same paper
+reports WSR matching HB on Bernoulli data, because there is no variance for it to exploit.
+

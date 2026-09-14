@@ -10,7 +10,7 @@ identifier, its first author's surname, and an alias the entry declares as
 surname is usually the handle that finds them; the alias covers the entries that have
 no author to cite -- an instrument named in prose, or a lower-case package name.
 
-**59 entries. 59 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
+**60 entries. 59 reached from the repository, 0 recorded as deliberately not relied upon, 1 cited nowhere.**
 
 ---
 
@@ -80,4 +80,11 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 
 ## Cited nowhere
 
-None. Every declared entry is reached from at least one file.
+These are declared in the reference list and reached by nothing in the repository.
+That is not automatically a defect — a reference can establish context for a claim
+made in prose — but each one is a citation a reader cannot follow to a use, so it is
+listed rather than left to be discovered.
+
+| Entry | Subject |
+|---|---|
+| **FR-7** | When Can Fraud Operations Authorize Automation? A Decision-Support Framework for Fresh Audit Evidence and Review Workload |

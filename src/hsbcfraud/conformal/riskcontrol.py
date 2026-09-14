@@ -93,6 +93,18 @@ def hoeffding_bentkus_p_value(empirical_risk: float, n: int, alpha: float) -> fl
     hoeffding = math.exp(-n * _h1(min(empirical_risk, alpha), alpha))
     bentkus = math.e * float(stats.binom.cdf(math.ceil(n * empirical_risk), n, alpha))
     return float(min(1.0, hoeffding, bentkus))
+    # The `math.e` above is a known, measured conservatism, not an oversight.  Both risks here
+    # are means of 0/1 losses, and Bates et al. Remark 4 -- the source this bound is taken from
+    # -- says that in that case "this exact binomial result gives the most precise upper
+    # confidence bound and should always be used".  Dropping the factor would do exactly that.
+    #
+    # It is retained because the pre-registration was frozen on this estimator before any model
+    # was fitted and the single `D_test` evaluation is spent; changing the p-value now is a new
+    # campaign, which is the same reasoning that declined the tuned baseline in D-147.
+    #
+    # What it costs was measured rather than assumed: on all five certified cells the Bentkus
+    # branch binds, so the penalty is exactly `e`, and the p-values are between 1e-34 and 1e-103
+    # against a Holm threshold near 0.005.  Nothing there is close.  See D-163.
 
 
 @dataclass(frozen=True)

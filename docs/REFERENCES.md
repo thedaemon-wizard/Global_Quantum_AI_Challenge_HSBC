@@ -86,6 +86,8 @@ asserts that it returns 1 when the empirical risk reaches `alpha`, is monotone i
 risk and in the sample size, and never falls below the exact binomial tail -- the direction
 that would make it anti-conservative and certify configurations it should not.
 
+**Remark 4 of this paper recommends against the bound this study takes from it.** "In the special [case] where the loss takes values only in {0,1}, this exact binomial result gives the most precise upper confidence bound and should always be used." Both risks here are 0/1, so the `e` factor in the Bentkus branch is a conservatism on the authority of the source. Measured at exactly `e` on all five certified cells and retained because the pre-registration is frozen -- see [D-163](decisions.md).
+
 **[CP-9]** Angelopoulos, A. N., Bates, S., Fisch, A., Lei, L. and Schuster, T. "Conformal
 Risk Control". *International Conference on Learning Representations*, 2024.
 arXiv:2208.02814.
@@ -134,6 +136,38 @@ describes its own objective as conformal-style rather than a finite-sample guara
 credit card fraud detection". *Decision Support Systems* 208, 2026.
 DOI 10.1016/j.dss.2026.114717.
 Conformal risk control with a formal guarantee on the false-negative rate.
+
+**[FR-7]** Deng, J. et al. "When Can Fraud Operations Authorize Automation? A Decision-Support
+Framework for Fresh Audit Evidence and Review Workload". arXiv:2608.08577, v1 9 August 2026.
+Verified against the arXiv record 2026-09-12.
+
+**The nearest concurrent work by setting, and it is the inverse of this one.** It overlaps on
+four features at once, which no other paper in the reference list does: a **three-valued**
+allocation -- "automatic approval, analyst review, and automatic blocking" -- on **IEEE-CIS**,
+under a **chronological** evaluation, with **simultaneous finite-sample control**.
+
+**What makes it complementary rather than competing is which region carries the guarantee.**
+Its rule is "Supported regions are automated; unsupported regions **remain in review**", and the
+control it derives is of *unsafe authorization* -- so the guarantee attaches to the automated
+regions and the reviewed region is where it declines to make one. This study is the mirror
+image: the automated regions carry no certificate and the **band routed to review** is the one
+the certificate is conditional on. The two papers partition the same decision and certify
+opposite halves of it.
+
+Three further differences, each checked rather than assumed:
+
+* **Not conformal and not Learn-then-Test.** Its bound comes from a Bernoulli test-martingale
+  argument with Clopper-Pearson for zero-error cells, and it cites the risk-control literature
+  as adjacent work.
+* **A different estimand.** Its errors are region-level averages, not a rate conditional on the
+  transaction being legitimate, which is what `R(lambda)` here is.
+* **Different assumptions.** It needs representative randomized audits and a prespecified
+  condition linking historical to current action risk; this study needs exchangeability within
+  the band and reports where that breaks.
+
+Recorded because omitting it is the one thing a reader who knows this area would read as a
+novelty overclaim -- and because the distinction, once stated, is favourable.
+Cited as: `Deng et al., 2026` -- consulted 2026-09-12, not cited in either shipped PDF.
 
 **[FR-5]** Chen, Gong, Cheng and Jin. "Temporal Graph Prototype-conditioned Conformal
 Prediction for Fraud Detection" (ProtoCP). *KDD* 2026. DOI 10.1145/3770855.3818061.
