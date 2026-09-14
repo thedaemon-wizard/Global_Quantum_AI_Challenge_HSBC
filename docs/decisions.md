@@ -1972,7 +1972,11 @@ for P7 to P9 were submitted early and the producing runs were not saved. So no a
 attributes the 69-qubit answer to a tensor network. The saved runs are exact to 60 qubits
 (P6, circuit compression plus MPS sampling) and P5 at 50 qubits by MPS marginal alone.
 
-The claim is now "nine of ten peaked circuits, the largest at 69 qubits; the saved
+**Superseded on the 60 by [D-166](#d-166)**, which narrowed section 8 to 50 once the sentence
+became a claim about the *author's own attack*: the paragraph above already records that the
+60-qubit result is P6 by circuit compression plus MPS sampling, which is not that attack.
+
+The claim was then "nine of ten peaked circuits, the largest at 69 qubits; the saved
 tensor-network runs are exact to 60 qubits and degrade above it". Both figures verified, and
 the sentence is better for naming the boundary: a proposal whose own section 4 reports its
 tensor network losing is more credible for saying where the method stops working.
@@ -5568,4 +5572,34 @@ a Holm threshold near `0.005`, so no reachable correction changes which cells ce
 
 Recorded because a reviewer reading LTT alongside this submission will notice the departure, and
 an unexplained departure from a cited method's own recommendation reads as an oversight.
+
+<a id="d-166"></a>
+### D-166 A number was narrowed from 60 to 50 without an entry saying so
+
+Section 8 read "exact to 60 qubits" and now reads **50**. The change was correct. It was made in
+`8f9cb4d`, a commit about credentials and verification gates, and **none of the seven decision
+entries in that commit mentions it** -- so for eight days the last recorded word on the number
+was [D-059](#d-059)'s 60, while the document said 50. Found by cross-checking
+`VERIFICATION_CHECKLIST.md` section 5c against the built PDF; 5c was still describing the 60 as
+what the submission claims.
+
+**Why 50 is the right number.** D-059 established the facts and then bound them to a sentence
+that no longer exists. Its own text records that the 60-qubit result is **P6, solved by circuit
+compression plus MPS sampling** -- the pass manager collapses 2,088 gates to 29 at depth 1, at
+which point the tensor network is contracting a nearly trivial circuit -- and that **P5 at 50
+qubits is the one solved by the MPS marginal attack alone**. Section 8's sentence attributes the
+attack to the author: *"the matrix-product-state attack is his own, merged upstream."* Under that
+subject, 60 is the wrong boundary, because P6 did not use his attack.
+
+The 50 has the artefact behind it. `P5_soft_rise.qasm.txt`, written by the run his own pull
+request added, reports `Loaded circuit: 50 qubits`, `50 observables` and `Weak=0/50`, and its bit
+string matches the published answer at **Hamming 0**. At 69 the same attack was run and
+**failed** -- 32 of 69 bits wrong, which is a coin toss -- and the team's verifier records it as
+such.
+
+**The general fault is not the number, it is that a claim moved without a record.** Every other
+retraction here has an entry, which is what makes the log usable as evidence; one silent change
+weakens the rest by making the log's completeness a thing a reviewer has to spot-check rather
+than assume. The narrowing is now recorded, D-059 carries a forward pointer, and 5c quotes the
+sentence the PDF actually contains.
 

@@ -174,14 +174,17 @@ quantity -- the docstring's "236x and 261x" is withdrawn for that reason.
 
 ## Outside this repository
 
-### X1 -- The portfolio and section 8 name different Qiskit credentials
+### X1 -- CLOSED 2026-09-14. The credentials no longer disagree
 
-Section 8 links the portfolio, which is the proposal's only verification URL. Section 8 names the
-IBM certification; the portfolio still lists only the Qiskit Advocate. A reviewer opening the
-link finds a credential the proposal does not name, and vice versa.
+Section 8 links the portfolio, which is the proposal's only verification URL. For eight days the
+two named *different* Qiskit credentials -- §8 the IBM certification, the portfolio the Advocate
+-- so a reviewer opening the link found a credential the proposal did not name, and vice versa.
 
-**Author action.** Recorded in [VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md) section 5c
-with the two other portfolio divergences. Nothing in this repository can fix it.
+**Closed by [D-156](decisions.md), which removed the credential from §8 rather than adding one to
+the portfolio.** Its issuer grades it "Foundational", and beside three merged upstream pull
+requests and hardware runs it added no evidence to a section scored on execution capability. §8
+now names no Qiskit credential, so nothing contradicts the portfolio; both are recorded in
+[CREDENTIALS.md](CREDENTIALS.md) section 8 with the badge URL. **No author action.**
 
 ---
 

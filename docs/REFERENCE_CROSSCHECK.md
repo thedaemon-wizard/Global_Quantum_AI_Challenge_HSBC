@@ -25,20 +25,20 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **CP-5** | Conformal prediction beyond exchangeability | `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/conformal/weighted.py`, `tests/test_conformal.py`, `NOTICE` and 2 more |
 | **CP-6** | Split Conformal Prediction and Non-Exchangeable Data | `docs/decisions.md`, `docs/protocol.md` |
 | **CP-7** | Learn then Test: Calibrating Predictive Algorithms to Achieve Risk Control | `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `tests/test_riskcontrol.py`, `src/hsbcfraud/conformal/riskcontrol.py`, `NOTICE` and 3 more |
-| **CP-8** | Distribution-Free, Risk-Controlling Prediction Sets | `docs/PROVENANCE.md`, `docs/decisions.md`, `tests/test_riskcontrol.py`, `NOTICE`, `README.md`, `docs/REFERENCE_IMPLEMENTATION.md` and 3 more |
+| **CP-8** | Distribution-Free, Risk-Controlling Prediction Sets | `docs/PROVENANCE.md`, `docs/decisions.md`, `tests/test_riskcontrol.py`, `NOTICE`, `README.md`, `docs/OPEN_FINDINGS.md` and 4 more |
 | **CP-9** | Conformal Risk Control | `docs/REFERENCE_IMPLEMENTATION.md`, `NOTICE`, `README.md`, `docs/decisions.md`, `docs/protocol.md`, `src/hsbcfraud/conformal/riskcontrol.py` and 1 more |
 | **CP-10** | Conformal Prediction Under Covariate Shift | `docs/REFERENCE_IMPLEMENTATION.md`, `NOTICE`, `README.md`, `docs/decisions.md`, `docs/protocol.md`, `src/hsbcfraud/conformal/split.py` and 1 more |
 | **CP-15** | When Is a Conformal Guarantee Fair? Auditing Silent Subgroup Under-Coverage in Alzheimer's Disease Longitudinal Prediction | `docs/decisions.md` |
 | **FR-1** | Cost-Sensitive Conformal Prediction and Human-in-the-Loop Abstention for Imbalanced High-Stakes Decision Support: A Multi-Domain Benchmark | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/protocol.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
 | **FR-2** | Uncertainty-Aware Fraud Detection Using Hybrid Transformer With Gated Token Mixing and Conformal Risk Control | `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
 | **FR-3** | DISCO: Decoupling representation learning and risk control for reliable credit card fraud detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/protocol.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
-| **FR-7** | When Can Fraud Operations Authorize Automation? A Decision-Support Framework for Fresh Audit Evidence and Review Workload | `docs/decisions.md`, `submission/content/01-problem.tex` |
-| **FR-5** | Temporal Graph Prototype-conditioned Conformal Prediction for Fraud Detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
+| **FR-7** | When Can Fraud Operations Authorize Automation? A Decision-Support Framework for Fresh Audit Evidence and Review Workload | `docs/OPEN_FINDINGS.md`, `docs/decisions.md`, `submission/content/01-problem.tex` |
+| **FR-5** | Temporal Graph Prototype-conditioned Conformal Prediction for Fraud Detection | `docs/FACTCHECK_LOG.md`, `docs/OPEN_FINDINGS.md`, `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
 | **FR-6** | Non-exchangeable Conformal Prediction for Temporal Graph Neural Networks | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
 | **CP-17** | Conformal Risk Control under Non-Monotone Losses: Theory and Finite-Sample Guarantees | `docs/FACTCHECK_LOG.md`, `docs/decisions.md` |
-| **CP-18** | Selective Conformal Risk Control | `docs/decisions.md`, `src/hsbcfraud/quantum/screens.py`, `submission/content/01-problem.tex` |
+| **CP-18** | Selective Conformal Risk Control | `docs/OPEN_FINDINGS.md`, `docs/decisions.md`, `src/hsbcfraud/quantum/screens.py`, `submission/content/01-problem.tex` |
 | **CP-19** | Conformal Selective Prediction with General Risk Control | `docs/decisions.md`, `submission/content/01-problem.tex` |
-| **CP-20** | A Joint Finite-Sample Certificate for Adaptive Selective Conformal Risk Control | `docs/decisions.md`, `submission/content/03-results.tex` |
+| **CP-20** | A Joint Finite-Sample Certificate for Adaptive Selective Conformal Risk Control | `docs/decisions.md`, `docs/OPEN_FINDINGS.md`, `submission/content/03-results.tex` |
 | **CP-21** | Risk-Controlled Post-Processing of Decision Policies | `docs/decisions.md` |
 | **QM-1** | Power of data in quantum machine learning | `docs/FACTCHECK_LOG.md`, `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `README.md`, `docs/decisions.md`, `docs/protocol.md` and 3 more |
 | **QM-2** | Exponential concentration in quantum kernel methods | `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
@@ -50,13 +50,13 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **QM-10** | Quantum Kernel k-Means for Credit-Card Fraud Detection: A Controlled Benchmark on Real Transaction Data | `docs/PROVENANCE.md`, `docs/decisions.md`, `docs/FACTCHECK_LOG.md`, `submission/content/04-quantum.tex` |
 | **QM-12** | Supervised Learning with Tensor Networks | `docs/PROVENANCE.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/mps.py`, `docs/RESULTS.md`, `docs/decisions.md` |
 | **QM-13** | Initialization and training of matrix product state probabilistic models | `docs/decisions.md` |
-| **QM-15** | Tensor Network Kernel Machines: A JAX Framework for Machine Learning and Nonlinear System Identification | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/mps.py` |
+| **QM-15** | Tensor Network Kernel Machines: A JAX Framework for Machine Learning and Nonlinear System Identification | `docs/FACTCHECK_LOG.md`, `docs/OPEN_FINDINGS.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/mps.py` |
 | **QM-16** | Digital Payments Fraud Detection Using Quantum Machine Learning and Amazon Braket | `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/04-quantum.tex` |
 | **QM-17** | Comparative Performance Analysis of Quantum Machine Learning Architectures for Credit Card Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md`, `submission/content/04-quantum.tex` |
 | **QM-18** | Q-SYNTH: Hybrid Quantum-Classical Adversarial Augmentation for Imbalanced Fraud Detection | `docs/RESULTS.md`, `docs/decisions.md` |
-| **QM-19** | Spectral Anatomy of Quantum Gaussian Process Kernels | `docs/decisions.md`, `src/hsbcfraud/quantum/screens.py`, `submission/content/01-problem.tex` |
-| **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md`, `docs/RESULTS.md` and 27 more |
-| **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/PROVENANCE.md` and 27 more |
+| **QM-19** | Spectral Anatomy of Quantum Gaussian Process Kernels | `docs/decisions.md`, `src/hsbcfraud/quantum/screens.py`, `docs/OPEN_FINDINGS.md`, `submission/content/01-problem.tex` |
+| **DS-1** | IEEE-CIS Fraud Detection | `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/OPEN_FINDINGS.md`, `docs/PROVENANCE.md` and 28 more |
+| **DS-2** | IEEE-CIS label definition | `docs/claims.yaml`, `NOTICE`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/OPEN_FINDINGS.md` and 28 more |
 | **DS-3** | Calibrating Probability with Undersampling for Unbalanced Classification | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/metrics.py` |
 | **DS-4** | Database: Open Database, Contents: Database Contents | `docs/decisions.md`, `NOTICE`, `docs/PROVENANCE.md`, `docs/protocol.md`, `submission/content/A1-protocol.tex` |
 | **DS-5** | Leveraging Machine Learning to Detect Fraud: Tips to Developing a Winning Kaggle Solution | `docs/COMPLIANCE_CHECKLIST.md`, `docs/decisions.md` |
