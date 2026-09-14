@@ -496,3 +496,45 @@ differs from the tree by the act of documenting the verification.
 lock, so it is the only one where "exactly one execution produced this tree" is enforced rather
 than assumed. Given [D-160](decisions.md), that distinction is no longer theoretical.
 
+## 2h. Eighth run, 2026-09-14: the deadline tree, and the first clone to see the notebook
+
+Clone of `origin/main` at `bf709ba`, dataset staged, then `make venv`, `make smoke`,
+`make walkthrough`, `make check`, `pytest`, `make submission`. **`make reproduce` was
+deliberately not run**, and the reason is stronger than a time budget: an AST comparison with
+docstrings stripped showed `riskcontrol.py` and `screens.py` **AST-identical** to the seventh
+pass's tree, and the only other changes under `scripts/` were classification and staging lists.
+Every producer that writes into `results/tables/` was bit-for-bit unchanged, so refitting would
+have re-derived identical tables from identical code. The seventh pass had already shown 0 tables
+differing in a measured value.
+
+What this run existed to test was clone-scoped and exercised by `make check`:
+
+```
+=== EXIT-VENV 0 ===          torch 2.13.0+cu130, cuda True, arch sm_120 present
+=== EXIT-SMOKE 0 ===         16 pins exact; xgboost 3.4.1 CPU gap 1.11e-16; shap gap 3.81e-06
+=== EXIT-WALKTHROUGH 0 ===   every assertion holds against the committed tables
+=== EXIT-CHECK 0 ===         105 claims agree; 51 scientific artefacts match; a8275e8fc7666cb3
+=== EXIT-PYTEST 0 ===        216 passed, 1 skipped
+=== EXIT-SUBMISSION 0 ===    5 files, 12.1 MB, largest 11.5 MB
+```
+
+These markers are the operator's wrapper, not something a clone provides -- see the note at the
+head of section 2 and [D-173](decisions.md).
+
+Three things ran in a clone for the first time and all held:
+
+* **`summarise_screens.py`**, added the same day and the first new entry in the `derived` target
+  since that target was written. Reported `120 configurations, 90 distinct kernels`, matching the
+  committed `screen_distinct.csv`.
+* **Both notebook gates**, which passed **without `.[notebook]` installed** -- the reason they
+  were written against the jupytext format with the standard library instead of importing
+  jupytext. A gate that skips when its dependency is absent is not a gate, and a clone is exactly
+  where that dependency is absent.
+* **`assemble_submission.py` staging a fifth hash-checked file**, since `riskcontrol.py` left the
+  set on 2026-09-14 and every staged file is now a manifest member.
+
+**All five staged files are byte-identical to the working tree's**, compared by SHA-256, and so is
+`notebooks/walkthrough.ipynb` -- which nothing in this run regenerated, so that is a statement
+about the commit rather than about the normalisation. The normalisation was tested separately, by
+building twice and comparing digests ([D-174](decisions.md)).
+
