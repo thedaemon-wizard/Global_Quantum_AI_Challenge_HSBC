@@ -190,6 +190,32 @@ is that the binding mechanism is sample size acting through the concentration bo
 on ImageNet and COCO; it does not address fraud, payments, temporal ordering or distribution
 shift, so it bounds the novelty claim on the estimand while leaving the setting open.
 
+**[CP-21]** Joshi, S., Wang, T., Hassani, H. and Dobriban, E. "Risk-Controlled
+Post-Processing of Decision Policies". arXiv:2605.06479, 7 May 2026 (v1, the version read).
+Verified against the arXiv record 2026-09-12.
+
+**The closest published work on the axis CP-18 to CP-20 do not cover: it certifies a decision,
+not a prediction set.** Given a deterministic baseline policy, it chooses a new policy
+maximising agreement with the baseline "subject to a chance constraint on a user-specified
+loss", and shows the optimum has a threshold structure -- follow the baseline except where
+switching to a fallback "yields a large reduction in conditional violation risk". Finite-sample:
+expected excess risk `O(log n / n)` in the i.i.d. setting, with "precise expected risk control
+under exchangeability" when an exact-safe fallback exists.
+
+**Structurally it is the nearest neighbour of the three-valued rule**, which is why it is cited
+here rather than left out: routing selected contexts to a fallback is what a step-up challenge
+is, and thresholding a score to decide when to route is what this study does at `lambda`.
+
+**It bounds the novelty claim on one axis and leaves both distinctions standing.** The guarantee
+is on the policy's loss, **not conditioned on the region routed to** -- the paper re-routes to a
+fallback rather than certifying a risk *within* the retained set, which is what CP-18, CP-19 and
+CP-20 address. It assumes **i.i.d. or exchangeable** data, which is the assumption this study's
+temporal arm breaches on every seed at the two loosest levels. And it is evaluated on COVID-19
+radiograph diagnosis, LLM routing and a synthetic multiclass task -- **no fraud, payments or
+transaction data**. So "certifies a decision" is no longer the distinguishing half of the claim;
+"conditioned on the abstention region, under a split that orders time" still is.
+Cited as: `Joshi et al., 2026` -- consulted 2026-09-12, not cited in either shipped PDF.
+
 ## 3. Quantum machine learning -- the state of the evidence
 
 **[QM-1]** Huang, H.-Y., Broughton, M., Mohseni, M., Babbush, R., Boixo, S., Neven, H. and

@@ -5405,3 +5405,64 @@ frozen, and none of this changes a result -- it strengthens the account of the l
 result sits in. `REFERENCES.md` now holds 57 entries and `make_crosscheck.py` reports 57 reached,
 0 cited nowhere.
 
+<a id="d-162"></a>
+### D-162 A September 2026 literature sweep, and what it did and did not move
+
+Two independent sweeps were run on 2026-09-12 -- one on quantum kernels, one on tensor networks
+and distribution-free risk control -- against a submission already frozen. Each finding was
+re-verified here before being acted on, and two of the three most useful ones did not survive in
+the form they arrived.
+
+**The novelty claim survives, and the sweep sharpens why.** An arXiv full-text sweep for
+conformal methods on payments returns almost nothing: the decision-certifying methods
+(CP-21, and a release/flag/defer audit on lung cancer) live in other domains, and everything on
+payments produces **prediction sets or coverage**. Specifically returned empty: 3-D Secure or
+step-up authentication with a distribution-free guarantee; "false decline" as a term anywhere in
+the conformal literature; Learn-then-Test applied to payments; and IEEE-CIS with conformal
+methods at all. That is the same position [D-085](#d-085) reached by reading the four
+payments papers directly, arrived at from the other direction.
+
+**Every payments-side paper the sweep surfaced was already cited.** DISCO ([FR-3]), ProtoCP
+([FR-5]), NCPNET ([FR-6]) and the cost-sensitive abstention benchmark ([FR-1]) are all in the
+reference list, and DISCO is the one this repository already had to stop calling "marginal"
+because it certifies a class-conditional false-negative rate on real card-fraud data. A sweep
+finding nothing new on the axis a submission claims is a weaker result than finding something,
+and it is reported as such.
+
+**One genuine gap, and [D-161](#d-161) had recorded it as closed when it was not.** That entry,
+written the same day, states that "the three most relevant 2026 papers are already cited --
+selective conformal risk control, conformal selective prediction with general risk control, and
+**risk-controlled post-processing of decision policies**". The first two are CP-18 and CP-19.
+The third was **not in the reference list at all** -- `grep` for `2605.06479` returned nothing,
+and a second search by title confirmed it. A sweep that concludes "nothing to add" is only worth
+what its inventory is worth, and this one asserted coverage it had not checked.
+
+Joshi, Wang, Hassani and Dobriban certify a *decision policy* with a finite-sample guarantee,
+which is the axis CP-18 to CP-20 do not cover -- they condition on a retained region but certify
+prediction sets or generic risks. Structurally it is the nearest
+neighbour of the three-valued rule: routing selected contexts to a fallback is what a step-up
+challenge is. It is now cited as CP-21, and it **narrows** what this submission can claim: "certifies a
+decision" is no longer distinguishing. What remains distinguishing is the conjunction --
+conditioned on the abstention region, on a payment stream, under a split that orders time --
+and the paper assumes exchangeability, which is the assumption the temporal arm breaches on
+every seed at the two loosest levels.
+
+**[QM-19] corroborates screen one's band from an independent direction**, and the verification
+is worth recording because the first pass got it wrong. The thresholds are in the paper's
+algorithm block, not its abstract; a fetch of the abstract missed them, a first regex over the
+PDF missed them, and this entry was briefly written up as unverified before the pseudocode was
+located. Under the exact change of variable `S/log n = 1 + log(r_eff)/log n` the band stipulated
+in `screens.py` maps to `[0.193, 0.816]` inside that paper's useful regime `(0.10, 0.95)`. The
+same paper reports the optimum moving with sample size, so the band remains an approximation and
+the word "stipulated" stays in the docstring.
+
+**What was reported and not acted on**, each for a stated reason. A 2026 fidelity kernel that
+beats classical kernels on ULB (arXiv:2608.24631) comes **second to a plain Laplacian kernel on
+IEEE-CIS**, which is this study's dataset, and its authors state the kernel "can also be
+evaluated exactly on a classical computer" -- so it is a counterexample to "no quantum kernel
+ever helps", which this submission does not claim, and not to the screens. A peer-reviewed
+QSVM-versus-tuned-classical comparison on ULB reports the quantum models not surpassing the
+classical reference, which agrees with [QM-10] and adds no new mechanism. Both were left out
+because the shipped PDFs are at their page limits and neither changes a result; both are
+recorded here so the next reader does not have to re-find them.
+
