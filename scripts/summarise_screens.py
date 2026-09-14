@@ -39,6 +39,17 @@ REPO = Path(__file__).resolve().parents[1]
 # duplicating a number the protocol hashes is worse than naming it here with its source.
 DISTINCTNESS_BAR = 0.60
 
+# Two configurations are the same kernel when every measured screen statistic agrees.  Comparing
+# measured outputs rather than the (encoding, qubits, bandwidth, entanglement) labels is the point:
+# the duplicates arise precisely because different labels build the same circuit.
+DISTINCTNESS_KEY = [
+    "effective_rank",
+    "rbf_correlation",
+    "geometric_difference",
+    "off_diagonal_mean",
+    "top_eigenvalue",
+]
+
 
 def summarise(screens: pd.DataFrame) -> pd.DataFrame:
     """One row per bandwidth: how close the grid came, and how often it cleared conditioning."""
@@ -71,6 +82,18 @@ def main(argv: list[str] | None = None) -> int:
     target = args.tables / "screen_bandwidth.csv"
     frame.to_csv(target, index=False)
 
+    # How many of the screened configurations are actually distinct kernels.  `build_feature_map`
+    # ignores `entanglement` for the `z` map, and `zz` at `entanglement="none"` builds the
+    # structurally identical circuit, so the grid contains exact duplicates.  The conclusion does
+    # not move -- nothing passes either way -- but "120 configurations" overstates the search by a
+    # third, and a reviewer can find that in three lines.  Better said by us.
+    distinct = len(screens[DISTINCTNESS_KEY].drop_duplicates())
+    counts = args.tables / "screen_distinct.csv"
+    pd.DataFrame(
+        [{"quantity": "configurations", "value": len(screens)},
+         {"quantity": "distinct_kernels", "value": distinct}]
+    ).to_csv(counts, index=False)
+
     print(f"{'bandwidth':>10s} {'cond':>6s} {'dist':>6s} {'min rho':>9s}  closest")
     for row in frame.itertuples():
         print(
@@ -85,7 +108,8 @@ def main(argv: list[str] | None = None) -> int:
         f"\n  Closest approach at bandwidth {best.bandwidth:g}, which is "
         f"{'the widest the grid contains' if best.bandwidth == widest else 'interior to the grid'}."
     )
-    print(f"  Wrote {display_path(target)}")
+    print(f"\n  {len(screens)} configurations, {distinct} distinct kernels.")
+    print(f"  Wrote {display_path(target)} and {display_path(counts)}")
     return 0
 
 

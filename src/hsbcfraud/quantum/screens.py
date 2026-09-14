@@ -14,9 +14,11 @@ Thanasilp, Wang, Cerezo and Holmes (*Nature Communications* 15:5200, 2024) show 
 concentration: as qubit count grows the off-diagonal kernel entries collapse toward a
 constant, and the model's predictions become independent of its input.  Kakavand, Strohmeyer
 and Schlotter (arXiv:2604.18837, 2026) measured the consequence across nine tabular datasets
-and 8,400 SVM fits -- no significant quantum-classical difference anywhere -- and located it
-in the eigenspectrum: a usable kernel sits in a middle range of effective rank, while quantum
-kernels land either near-uniform (concentrated) or near-rank-one.
+and 8,400 SVM fits.  None of its 29 pairwise comparisons is significant, though its seed
+analysis does find one dataset (haberman) quantum-favourable at p = 0.004, a +1.9 pp
+advantage its own conclusion calls "modest".  It located the mechanism in the eigenspectrum:
+a usable kernel sits in a middle range of effective rank, while quantum kernels land either
+near-uniform (concentrated) or near-rank-one.
 
 The escape from concentration is bandwidth tuning.  But Slattery et al. (*Physical Review A*
 107:062417, 2023) and Florez-Ablan, Roth and Schnabel (arXiv:2503.05602, 2025) show that the

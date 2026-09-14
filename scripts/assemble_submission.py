@@ -69,7 +69,15 @@ STAGED: tuple[tuple[str, str], ...] = (
     ("submission/proposal.pdf", "HSBC-proposal.pdf"),
     ("submission/appendix.pdf", "HSBC-appendix.pdf"),
     ("results/tables/predictions.csv", "HSBC-predictions.csv"),
-    ("src/hsbcfraud/conformal/riskcontrol.py", "HSBC-riskcontrol.py"),
+    # Was `src/hsbcfraud/conformal/riskcontrol.py`.  **The portal rejected the .py upload on
+    # 2026-09-14** despite listing PY among its accepted formats, so the slot went to the one
+    # remaining Expected Output that shipped nowhere in the uploaded set.  The statement's 5.2
+    # table has three rows -- Fraud Probability, Binary Prediction, Feature Attribution -- and
+    # the first two are columns of `predictions.csv` while the third was only an aggregate
+    # sentence in proposal 5.  Attribution cannot be added to `predictions.csv` instead: those
+    # are held-out rows, and computing Shapley values over them needs a third script authorising
+    # `D_test`, which is the single-evaluation rule the whole submission rests on.  See D-171.
+    ("results/tables/attribution_examples.csv", "HSBC-attribution-examples.csv"),
     ("results/figures/certified_region.png", "HSBC-certified-region.png"),
 )
 
@@ -83,12 +91,15 @@ STAGED: tuple[tuple[str, str], ...] = (
 # is the one artefact a reviewer actually receives, and it was being checked less strictly than
 # the repository it comes from.
 #
-# `riskcontrol.py` is deliberately absent: it is source, the manifest covers neither `src/` nor
-# any Python file, and listing it here would silently check nothing.
+# Every staged file is now a manifest member, so all five are checked.  The earlier note here
+# explained why `riskcontrol.py` was exempt -- it was source, and the manifest covers neither
+# `src/` nor any Python file, so listing it would have checked nothing.  That exemption is gone
+# with the file.
 HASH_CHECKED = (
     "submission/proposal.pdf",
     "submission/appendix.pdf",
     "results/tables/predictions.csv",
+    "results/tables/attribution_examples.csv",
     "results/figures/certified_region.png",
 )
 

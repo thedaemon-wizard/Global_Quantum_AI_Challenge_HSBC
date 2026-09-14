@@ -3,7 +3,7 @@
 \label{sec:quantum}
 
 \paragraph{The kernel never reached the task.} Before running a fidelity quantum kernel we
-pre-registered screens over \ClaimScreenConfigs{} configurations of encoding
+pre-registered screens over \ClaimScreenConfigs{} configurations --- \ClaimScreenDistinctKernels{} distinct --- of encoding
 (\texttt{z}, \texttt{zz} and dense-angle feature maps) $\times$ qubits $\times$ bandwidth
 $\times$ entanglement (linear or none), and gated on two: a kernel is usable only if it is
 not exponentially concentrated --- effective rank
@@ -17,11 +17,12 @@ eight features, no configuration cleared the pre-registered bar --- which report
 accuracy would have hidden.
 \textbf{The boundary is characterised, and so is what would cross it.} The closest approach to
 distinctness was $\rho_{\mathrm{RBF}} = \ClaimScreenMinRbfCorrelation$ against a median of
-\ClaimScreenMedianRbf{}, and it sits at the widest bandwidth the grid holds, where conditioning
-also peaks (\ClaimScreenCondPassWidest\,\%, against none at the narrowest): the grid stopped
-where both screens were still improving, and the near misses are \emph{unentangled}. So an
-encoding outside the RBF family at a bandwidth that does not concentrate would pass these screens
-unmodified; we did not find one, and screening wider is the testable next step. For the tensor network the requirement is a comparison
+\ClaimScreenMedianRbf{}, at the widest bandwidth the grid holds, where conditioning also peaks
+(\ClaimScreenCondPassWidest\,\%, against none at the narrowest). The grid ends where the
+encoding does --- there the phase spans one full period, and beyond it feature values alias ---
+and the near misses are \emph{unentangled}. So the open direction is a different map, not a
+wider one: an encoding outside the RBF family that does not concentrate would pass these screens
+unmodified, and we did not find one. For the tensor network the requirement is a comparison
 powered for cross-family noise, about \ClaimMdeSampleFactor{} times the in-band evaluation set.
 And the negative is about aggregate discrimination, not the operating point: H2 never ran, and a
 method that does not improve ranking can still improve a decision at a low false-positive

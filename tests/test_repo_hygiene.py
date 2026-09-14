@@ -946,7 +946,7 @@ def test_the_method_figure_stays_within_the_height_it_replaced() -> None:
     )
 
 
-# A tripwire, not a measured optimum.  The README is 471 lines today and its job is to be read
+# A tripwire, not a measured optimum.  The README is 479 lines today and its job is to be read
 # end to end; the failure mode this guards is growth by accretion, where sections are appended
 # until nobody reads past the first screen and the `docs/` split quietly stops being maintained.
 # The headroom is deliberate: a ceiling that fires on the next honest paragraph gets raised

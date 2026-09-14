@@ -294,10 +294,26 @@ the two-dimensional screen in `src/hsbcfraud/quantum/screens.py` is designed to 
 initial for the first author, no venue, and the bandwidth direction inverted. The screen itself
 was unaffected -- it evaluates both axes at every bandwidth and gates on neither direction.*
 
-**[QM-6]** Kakavand, Strohmeyer and Schlotter. arXiv:2604.18837, April 2026.
-Nine tabular datasets, 8,400 SVM fits, hardware-validated. No pairwise quantum-classical
-comparison significant; an 18.1 percentage-point balanced-accuracy deficit. Recommends
-spectral pre-screening, which this study implements.
+**[QM-6]** Kakavand, S., Strohmeyer, C. and Schlotter, M. "Benchmarking Quantum Kernel Support
+Vector Machines Against Classical Baselines on Tabular Data: A Rigorous Empirical Study with
+Hardware Validation". arXiv:2604.18837, 20 April 2026 (v1, the only version; full text read
+2026-09-14). Nine tabular datasets, 970 kernel evaluations and 8,400 additional SVM fits,
+hardware-validated. An 18.1 percentage-point balanced-accuracy deficit. Recommends spectral
+pre-screening, which this study implements.
+
+**This entry and `screens.py` both used to say the paper found no quantum-classical difference
+"anywhere". That is wrong, and wrong in the direction that flatters this submission.** Its two
+analyses answer different questions. The headline is "none of 29 pairwise quantum-classical
+comparisons reach significance at $\alpha = 0.05$" -- true. But its seed analysis (16 seeds)
+reports, in conclusion point 1: *"Only haberman shows robust quantum favourability (p = 0.004,
+87.5 % seed win rate), with a modest +1.9 pp advantage."* Section 6.1 calls haberman "the sole
+dataset showing quantum favourability". Corrected 2026-09-14; see [D-170](decisions.md).
+
+Its Table 7 is also a better corroboration of the conditioning band than the entry previously
+gave. It defines the same statistic this study uses -- normalised spectral entropy
+$\exp(H(p))/N$ -- and measures it: RBF at 0.06-0.07, poly3 at 0.03, linear at 0.01, against
+quantum maps at 0.40-0.74 (too flat) or 0.01-0.02 (rank-one collapse). The stipulated band
+$[0.01, 0.35]$ contains the classical range and excludes the too-flat family.
 
 **[QM-7]** Bowles, J., Ahmed, S. and Schuld, M. "Better than classical? The subtle art of
 benchmarking quantum machine learning models". arXiv:2403.07059, 2024.

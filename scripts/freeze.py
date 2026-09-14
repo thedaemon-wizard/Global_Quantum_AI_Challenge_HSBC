@@ -71,6 +71,7 @@ SPECIFICATION = (
     # `make check` compares the manifest -- the same regeneration-then-verify ordering that made
     # `decision_log.csv` report as a changed scientific artefact.  It measures nothing new.
     "results/tables/screen_bandwidth.csv",
+    "results/tables/screen_distinct.csv",
     # The single-evaluation ledger.  Excluded from SCIENTIFIC below for the same reason and
     # listed here so it stays *tracked*: dropping it from both classes would leave the file that
     # records how many times the held-out fold was read as the one artefact under `results/`
@@ -93,6 +94,7 @@ SPECIFICATION = (
 SPECIFICATION_UNDER_RESULTS = (
     "results/tables/decision_log.csv",
     "results/tables/screen_bandwidth.csv",
+    "results/tables/screen_distinct.csv",
     "results/tables/test_access.json",
     # `smoke.json` records what S0-S8 asserted about *this machine* -- driver, device name, CUDA
     # build.  Under SCIENTIFIC it promised byte-identity across hosts, which it cannot keep by

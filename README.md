@@ -25,15 +25,14 @@ refuses to stage anything outside that list.
 | 1 | `HSBC-proposal.pdf` | PDF, 6 pp. | The concept proposal. Built from [`submission/content/`](submission/content) with every figure bound to a table |
 | 2 | `HSBC-appendix.pdf` | PDF, 3 pp. | Pre-registration and amendments, what we got wrong, the reproduction record, and the challenge statement's primary metrics in full (ROC AUC, AUPRC, $F_1$, precision, recall, confusion matrix) |
 | 3 | `HSBC-predictions.csv` | CSV, 115,534 rows | Per-transaction output on the held-out block: the fraud probability in $[0, 1]$, the three-valued decision, and the binary decline it implies, with the band edges and certified threshold on every row so the decision is recomputable from the file — [`predictions.csv`](results/tables/predictions.csv) |
-| 4 | `HSBC-riskcontrol.py` | PY | The Learn-then-Test implementation the certificate rests on — [`riskcontrol.py`](src/hsbcfraud/conformal/riskcontrol.py) |
+| 4 | `HSBC-attribution-examples.csv` | CSV, 10 rows | Signed Shapley contributions behind ten individual in-band predictions, with the base value and score margin on each row — the challenge statement's §5.2 *Feature Attribution* output, which the other four uploads do not carry — [`attribution_examples.csv`](results/tables/attribution_examples.csv) |
 | 5 | `HSBC-certified-region.png` | PNG | Which (band budget, $\alpha$, $\alpha_{\mathrm{FN}}$) cells certify and which do not — [`certified_region.png`](results/figures/certified_region.png) |
 
 The four Expected Outcomes listed on the portal's challenge panel — the statement's §5.2
 Expected Outputs together with its Reporting Considerations — are each answered by a named
 artefact:
-per-transaction probabilities and binary predictions by upload 3; feature attribution by §5 of
-the proposal and [`attribution_examples.csv`](results/tables/attribution_examples.csv), which
-carries the Shapley contributions behind ten individual predictions; the classical-baseline
+per-transaction probabilities and binary predictions by upload 3; feature attribution by upload
+4 and §5 of the proposal; the classical-baseline
 comparison by §3 against a gradient-boosted baseline at fixed hyperparameters, which is the
 one classical baseline the statement requires; and the quantum encoding and circuit-design
 documentation by §4 and §7.
@@ -41,6 +40,15 @@ documentation by §4 and §7.
 Upload 3 replaced the certificate table, whose full 48-cell grid is exactly what upload 5
 plots and which is public as [`riskcontrol.csv`](results/tables/riskcontrol.csv). It was the
 only staged file a reviewer could read somewhere else.
+
+**Upload 4 was `HSBC-riskcontrol.py` until 2026-09-14, when the portal rejected the `.py`**
+despite listing PY among its accepted formats. The slot went to the one Expected Output that
+shipped nowhere else: the statement's §5.2 table has three rows, and while Fraud Probability and
+Binary Prediction are columns of upload 3, Feature Attribution was only an aggregate sentence in
+the proposal. It could not simply be added to upload 3 as extra columns — those are held-out
+rows, and computing Shapley values over them would need a third script authorising $D_{test}$,
+which is the single-evaluation rule this submission rests on. The Learn-then-Test implementation
+remains public at [`riskcontrol.py`](src/hsbcfraud/conformal/riskcontrol.py).
 
 The proposal maps to the six assessment criteria as: problem framing and expected impact (§1),
 technical approach (§2, §4), feasibility and resources (§5), validation plan (§6), hybrid

@@ -69,7 +69,7 @@ claims:
       split.
 
   - key: DecisionEntries
-    value: 169
+    value: 171
     source: results/tables/decision_log.csv
     column: decision_entries
     tolerance: 0
@@ -380,6 +380,22 @@ claims:
       false-decline guarantee is about, and the one a cardholder experiences.  Not part of the
       routing split -- it overlaps `OperatingStepUpShare`, because a transaction can be routed
       to a challenge and then declined.  docs/RESULTS.md derives both.
+
+  - key: ScreenDistinctKernels
+    value: 90
+    source: results/tables/screen_distinct.csv
+    select: {quantity: distinct_kernels}
+    column: value
+    tolerance: 0.5
+    note: >
+      The 120 screened configurations contain **30 exact duplicates**, so only 90 kernels are
+      distinct.  `build_feature_map` ignores `entanglement` for the `z` map, and `zz` at
+      `entanglement="none"` builds the structurally identical circuit -- 24 duplicate rows from
+      `z`/`zz` at `none` across four qubit counts and six bandwidths, plus 6 from `dense_angle`
+      at one qubit where `linear` and `none` coincide.  The conclusion is unchanged, because 0
+      of 120 and 0 of 90 both pass, but "120 configurations" overstates the size of the search
+      by a third and a reviewer can reproduce that in three lines against `screens.csv`.
+      Derived by `scripts/summarise_screens.py`.  See D-170.
 
   - key: ScreenCondPassWidest
     value: 75.0

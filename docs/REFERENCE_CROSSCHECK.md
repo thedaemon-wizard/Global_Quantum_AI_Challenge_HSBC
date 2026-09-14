@@ -44,7 +44,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **QM-2** | Exponential concentration in quantum kernel methods | `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
 | **QM-4** | Numerical evidence against advantage with quantum fidelity kernels on classical data | `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
 | **QM-5** | On the similarity of bandwidth-tuned quantum kernels and classical kernels | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
-| **QM-6** | Kakavand, Strohmeyer and Schlotter | `docs/REFERENCE_IMPLEMENTATION.md`, `src/hsbcfraud/quantum/screens.py` |
+| **QM-6** | Benchmarking Quantum Kernel Support Vector Machines Against Classical Baselines on Tabular Data: A Rigorous Empirical Study with Hardware Validation | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/quantum/screens.py` |
 | **QM-7** | Better than classical? The subtle art of benchmarking quantum machine learning models | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/quantum/featuremaps.py` |
 | **QM-8** | A Mixture-of-Experts Framework for Practical Hybrid-Quantum Models in Credit Card Fraud Detection | `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `docs/protocol.md`, `src/hsbcfraud/stats.py` |
 | **QM-10** | Quantum Kernel k-Means for Credit-Card Fraud Detection: A Controlled Benchmark on Real Transaction Data | `docs/PROVENANCE.md`, `docs/decisions.md`, `docs/FACTCHECK_LOG.md`, `submission/content/04-quantum.tex` |

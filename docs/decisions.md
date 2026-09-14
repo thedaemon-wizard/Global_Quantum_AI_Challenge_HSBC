@@ -5706,3 +5706,66 @@ which is what `screens.py` does. It also names spectral conditions for advantage
 found nothing" is worth nothing a year from now without the list of venues that were actually
 opened, and the two near-misses above are the ones a reviewer is most likely to raise.
 
+<a id="d-170"></a>
+### D-170 Two overstatements in our own favour, both in the kernel section
+
+A literature check run against the repository rather than against the proposal found two, and
+neither was visible from inside.
+
+**One: a cited paper's positive result was dropped.** `screens.py` and [QM-6] both said Kakavand,
+Strohmeyer and Schlotter found "no significant quantum-classical difference **anywhere**". The
+paper has two analyses and they do not agree. Its headline is true -- "none of 29 pairwise
+quantum-classical comparisons reach significance" -- but its seed analysis over 16 seeds
+concludes, in numbered point 1: *"Only haberman shows robust quantum favourability (p = 0.004,
+87.5 % seed win rate), with a modest +1.9 pp advantage."* Section 6.1 calls haberman "the sole
+dataset showing quantum favourability". Our word "anywhere" collapsed the two analyses into the
+one that suited us. **This is the SP 800-227 failure again**: a summary that is defensible
+sentence by sentence and wrong as a whole, erring toward our own conclusion. Corrected in both
+places, quoting the paper's own "modest".
+
+Verified the way [D-164](#d-164) now requires: the abstract page does not contain "haberman" at
+all, and a check that stopped there would have concluded the finding was invented. It is in the
+full text, in six places.
+
+**Two: "120 configurations" is 90 distinct kernels.** `build_feature_map` ignores `entanglement`
+for the `z` map, and `zz` at `entanglement="none"` builds the structurally identical circuit. So
+24 rows duplicate across `z`/`zz` at `none` over four qubit counts and six bandwidths, plus 6
+more from `dense_angle` at one qubit where `linear` and `none` coincide -- **30 exact duplicate
+groups, confirmed by comparing measured screen outputs rather than labels**. The conclusion is
+untouched, 0 of 120 and 0 of 90 both pass, but the size of the search was overstated by a third
+in a section whose whole argument is the thoroughness of an a-priori rejection. Section 4 now
+prints both numbers, bound to `screen_distinct.csv`.
+
+**Three, and this one was self-inflicted an hour earlier.** [D-169](#d-169)'s section 4 text said
+"screening wider is the testable next step". It is not: `scale_features` maps to
+$[0, \pi c]$ and the phase gate doubles it, so $c = 1$ is exactly one full period and beyond it
+two feature values alias onto the same phase. The grid does not stop arbitrarily -- **it stops
+where the encoding stops** -- which is a better answer to the obvious reviewer question and makes
+the sentence it replaced false. The open direction is a different map, not a wider one.
+
+<a id="d-171"></a>
+### D-171 The portal rejected a format it advertises, and the replacement closed a real gap
+
+`HSBC-riskcontrol.py` was upload 4 for the whole of this project. **The portal refused it on
+2026-09-14**, although its own upload panel lists `PY` among the accepted formats alongside PDF,
+PNG, CSV and the rest. No error was recoverable; the file simply did not take.
+
+**The replacement is better than the thing it replaced, which is worth saying plainly rather
+than dressing up a forced move.** The statement's §5.2 *Expected Outputs* is a three-row table:
+Fraud Probability, Binary Prediction, Feature Attribution. The first two are columns of
+`predictions.csv`. **The third shipped nowhere in the uploaded set** -- `attribution.csv` and
+`attribution_examples.csv` are both repository-only, and a reviewer working down that table with
+only the uploads in hand could tick two of three. `riskcontrol.py` answers no row of it.
+
+**The obvious alternative was rejected on protocol grounds.** Adding `top_feature` and
+`top_contribution` columns to `predictions.csv` would have satisfied the row without spending a
+slot. It cannot be done: those are the 115,534 **held-out** rows, `run_explain.py` operates on
+$D_{band}$ and $D_{cal}$ by construction, and computing Shapley values over $D_{test}$ needs a
+third script calling `TestFoldGuard.authorise`. The single-evaluation ledger is the submission's
+central integrity claim and is not worth a deliverables checkbox.
+
+**What is lost is smaller than it looks.** `riskcontrol.py` was the only staged file that was
+not a manifest member, so `HASH_CHECKED` had to exempt it -- the upload set is now fully
+hash-checked for the first time. The implementation stays public in the repository the proposal
+links from its title block.
+
