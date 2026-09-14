@@ -5511,3 +5511,61 @@ never falls below the exact binomial tail, which is the property that would matt
 ran the other way. And the fix is not "use a betting or WSR bound instead": the same paper
 reports WSR matching HB on Bernoulli data, because there is no variance for it to exploit.
 
+<a id="d-164"></a>
+### D-164 A quote was nearly retracted as fabricated because the wrong version was checked
+
+CP-18 was to be strengthened with a limitation sentence from its Conclusions. Verification ran
+first, and it came back negative twice: an ar5iv render found no limitations discussion, and a
+keyword sweep of `arxiv.org/html/2512.12844v1` for "limitation", "deferred", "fallback" and
+"human review" returned **no instances found** for all four. Two independent negatives is
+normally enough to call a quote fabricated and retract it.
+
+**It was not fabricated. The paper has two versions and the sentence is only in v2.** The abstract
+page lists v1 (14 December 2025) and v2 (27 April 2026); the sweep had hit v1, and v2's closing
+paragraph carries the sentence verbatim. Our own reference entry dated the paper 14 December
+2025, so **the entry was pinned to the one version that does not contain what was being looked
+for** -- the check and the citation were consistently wrong together, which is why nothing
+flagged it.
+
+**This is the second time a negative finding about this literature was itself the error.**
+[D-158](#d-158) records the first: thresholds reported as absent from Xu et al. were present, in a
+pseudocode algorithm block that both a fetch and a regex passed over. The failure is the same
+shape each time -- *absence of evidence produced by a tool, promoted to evidence of absence* --
+and both would have removed correct material from the submission.
+
+**Rule adopted: before recording a quote as unverifiable, establish which version was searched
+and whether later ones exist.** For arXiv that is the version list on the abstract page, and the
+reference entry gets pinned to the version actually read. QM-17 was already pinned this way; CP-18
+now is too.
+
+**The content matters more than the process point.** SCRC certifies the *selected* subset and
+states as its own limitation that rejected cases carry no guarantee and "should be handled by a
+downstream fallback mechanism such as human review". The band certified here **is** that region.
+Together with [D-163](#d-163)'s concurrent work -- Deng et al., which certifies the automated
+regions and leaves review in place uncertified -- the two nearest relatives both decline, from
+opposite directions, to certify the half this submission certifies. Section 1 previously
+separated itself from SCRC on exchangeability and payments alone; it now also says which half of
+the decision each side takes, in the source's words. A reviewer who knows this area is more
+likely to have read the limitation than the method.
+
+<a id="d-165"></a>
+### D-165 Holm rather than the fixed-sequence procedure LTT recommends
+
+Learn-then-Test section 2.3.1 recommends fixed-sequence testing, and "Holm" does not appear in
+its main text. This study uses Holm, and the reason is not that the recommendation was missed.
+
+Fixed-sequence spends its power on a pre-committed ordering: it walks the grid in a declared
+order and stops at the first non-rejection. That is the right instrument when one risk is being
+controlled and the ordering can be argued in advance. **Two opposing risks are controlled here** --
+a false-decline rate that tightening the band reduces and a missed-fraud rate that the same
+tightening increases -- so a single ordering cannot be chosen without prejudging which of the two
+binds, and the grid is two-dimensional in $(\lambda, \alpha)$ rather than a line.
+
+Holm is valid under arbitrary dependence between the tests, needs no ordering, and costs power.
+It was chosen for the validity, with the cost accepted. On this data the cost is not visible:
+[D-163](#d-163) measures the certified cells at p-values between `2.6e-34` and `5.7e-103` against
+a Holm threshold near `0.005`, so no reachable correction changes which cells certify.
+
+Recorded because a reviewer reading LTT alongside this submission will notice the departure, and
+an unexplained departure from a cited method's own recommendation reads as an oversight.
+

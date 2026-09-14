@@ -192,7 +192,8 @@ does not apply. The monotonicity in `lambda` was checked by inspection of
 a different property.
 
 **[CP-18]** Xu, Y., Guo, W. and Wei, Z. "Selective Conformal Risk Control".
-arXiv:2512.12844, 14 December 2025.
+arXiv:2512.12844. **Version-pinned to v2, 27 April 2026** -- v1 (14 December 2025) does not
+contain the limitation quoted below, and the entry previously carried the v1 date.
 The closest published relative of the band-conditional certificate: conformal risk control
 applied *on the selected subset* rather than on all of it, in two variants -- SCRC-T, which
 preserves exchangeability by computing thresholds jointly over calibration and test points, and
@@ -201,6 +202,20 @@ certificate used here. Cited in section 1 to bound the novelty claim rather than
 the construction is prior art for conditioning on a retained region, and what is not prior art
 is doing so on a payment stream under a split that orders time. Note the co-author overlap with
 CP-17, which this submission already cites.
+
+**v2 adds a limitation that makes this paper support the novelty claim as well as bound it.**
+Its closing paragraph states:
+
+> "A limitation of the current framework is that it does not provide a second-stage
+> prediction-set guarantee for rejected samples; these cases are intentionally deferred and
+> should be handled by a downstream fallback mechanism such as human review or a more
+> specialized model."
+
+The rejected region is where this paper stops, and it names human review as what should receive
+it. **That region is what the certificate here is conditional on.** So the nearest selective-risk
+work and the nearest concurrent payments work ([FR-7], Deng et al.) certify the automated side
+and leave review uncertified, from opposite directions -- one as a stated limitation, the other
+by construction. Quoted in section 1. See [D-164](decisions.md).
 
 **[CP-19]** Bai, T. and Jin, Y. "Conformal Selective Prediction with General Risk Control".
 arXiv:2603.24704, 25 March 2026.
@@ -330,7 +345,11 @@ TTNS-Sketch warm start, neither applied here; both are Phase II recommendations.
 **[QM-15]** Saiapin, A. and Batselier, K. "Tensor Network Kernel Machines: A JAX Framework for
 Machine Learning and Nonlinear System Identification". arXiv:2608.07043, 7 August 2026.
 On a tabular regression benchmark with the tensor-network model held fixed, alternating least
-squares reaches 0.102 validation MSE against Adam's 0.145, about three times faster. Cited
+squares reaches 0.102 validation MSE against Adam's 0.145 at batch 32, in 1.161 s against
+3.251 s. **The 2.8x is computed here; the paper states no multiple**, only that ALS needs "a
+fraction of the training time of Adam" -- and against full-batch Adam (1.675 s, 0.183 MSE) the
+same ratio is 1.4x. Checked against the full text 2026-09-14, which corrected "about three
+times faster" in this entry. Cited
 against the optimiser choice in `src/hsbcfraud/quantum/mps.py`, with its limit stated: the
 closed-form core update is a least-squares construction and does not transfer to the log-loss
 trained here. Read with Jäger, Plenio and Rieser (ESANN 2025, pp. 537-542), who find
@@ -603,8 +622,11 @@ below carry no `[XX-N]` key, so the generator does not see them and the count do
 them. There are **seven** -- six of long standing, plus the no-free-lunch result added on
 2026-09-12 -- and each says what it was consulted for and why it is not used.
 
-**Yu, Xu and colleagues.** "No-Free-Lunch Theories for Tensor-Network Machine Learning Models".
-arXiv:2412.05674, 7 December 2024 (v1 only; no journal reference). Read 2026-09-12.
+**Wu, J.-C., Ye, Q., Deng, D.-L. and Yu, L.-W.** "No-Free-Lunch Theories for Tensor-Network
+Machine Learning Models". arXiv:2412.05674, 7 December 2024 (v1 only; no journal reference).
+Read 2026-09-12; author line re-checked against the arXiv record 2026-09-14, which corrected
+this entry -- it previously read "Yu, Xu and colleagues", naming the *last* author first and an
+"Xu" who is not among them.
 Proves no-free-lunch theorems for machine-learning models built on matrix product states, and
 extends them to two-dimensional projected entangled-pair states.
 

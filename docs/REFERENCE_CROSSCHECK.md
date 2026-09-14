@@ -10,7 +10,7 @@ identifier, its first author's surname, and an alias the entry declares as
 surname is usually the handle that finds them; the alias covers the entries that have
 no author to cite -- an instrument named in prose, or a lower-case package name.
 
-**60 entries. 59 reached from the repository, 0 recorded as deliberately not relied upon, 1 cited nowhere.**
+**60 entries. 60 reached from the repository, 0 recorded as deliberately not relied upon, 0 cited nowhere.**
 
 ---
 
@@ -32,6 +32,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **FR-1** | Cost-Sensitive Conformal Prediction and Human-in-the-Loop Abstention for Imbalanced High-Stakes Decision Support: A Multi-Domain Benchmark | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/protocol.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
 | **FR-2** | Uncertainty-Aware Fraud Detection Using Hybrid Transformer With Gated Token Mixing and Conformal Risk Control | `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
 | **FR-3** | DISCO: Decoupling representation learning and risk control for reliable credit card fraud detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/protocol.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
+| **FR-7** | When Can Fraud Operations Authorize Automation? A Decision-Support Framework for Fresh Audit Evidence and Review Workload | `docs/decisions.md`, `submission/content/01-problem.tex` |
 | **FR-5** | Temporal Graph Prototype-conditioned Conformal Prediction for Fraud Detection | `docs/FACTCHECK_LOG.md`, `docs/decisions.md`, `docs/COMPLIANCE_CHECKLIST.md`, `submission/content/01-problem.tex` |
 | **FR-6** | Non-exchangeable Conformal Prediction for Temporal Graph Neural Networks | `docs/FACTCHECK_LOG.md`, `docs/REFERENCE_IMPLEMENTATION.md`, `docs/decisions.md`, `src/hsbcfraud/quantum/featuremaps.py`, `src/hsbcfraud/quantum/screens.py` |
 | **CP-17** | Conformal Risk Control under Non-Monotone Losses: Theory and Finite-Sample Guarantees | `docs/FACTCHECK_LOG.md`, `docs/decisions.md` |
@@ -80,11 +81,4 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 
 ## Cited nowhere
 
-These are declared in the reference list and reached by nothing in the repository.
-That is not automatically a defect — a reference can establish context for a claim
-made in prose — but each one is a citation a reader cannot follow to a use, so it is
-listed rather than left to be discovered.
-
-| Entry | Subject |
-|---|---|
-| **FR-7** | When Can Fraud Operations Authorize Automation? A Decision-Support Framework for Fresh Audit Evidence and Review Workload |
+None. Every declared entry is reached from at least one file.

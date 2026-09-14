@@ -12,8 +12,10 @@ false-negative rate on card fraud, \Cited{Nayak and Bushara} report a fraud obje
 own paper calls conformal-style rather than a finite-sample guarantee, and
 \Cited{Chen et al.} carry the temporal case to a graph model --- but none conditions the
 guarantee on the abstention region it routes to, and those that do order time certify a
-prediction set rather than a decision. Selection-conditional risk control does condition on the
-retained region \Cited{(Xu et al.; Bai and Jin)}, under exchangeability and not on payments.
+prediction set rather than a decision. Selection-conditional risk control does condition on a
+retained region \Cited{(Xu et al.; Bai and Jin)}, under exchangeability, not on payments, and on
+the opposite half: it defers rejected cases uncertified to \Cited{``human review''} --- the
+band certified here --- as does the concurrent \Cited{Deng et al.}
 Both are what this submission adds, and the second turns out to matter.
 
 \textbf{What we contribute.} A three-valued rule whose \emph{abstention band} carries a
@@ -24,31 +26,30 @@ classical baseline on the same decision.
 \textbf{What a successful PoC would demonstrate.} A step-up decision whose false-decline rate
 carries a distribution-free, finite-sample certificate at a level the bank sets, validated on a
 block it never saw --- the artefact a model-risk function can audit, which an AUC cannot
-provide. This study meets that target on public data, at loose levels only
+provide. This study meets that target on public data at loose levels only
 ($\alpha \ge 0.10$) and at the band budgets the sample size permits; the PoC target is the same
-property at the budget the business chooses rather than the one the data forces.
+property at the budget the business chooses, not the one the data forces.
 
 \textbf{What the rule does to a day of traffic.} On the held-out block, at the certified
 configuration with the tightest $\alpha$: \ClaimOperatingApproveShare\,\% approved outright,
 \ClaimOperatingStepUpShare\,\% routed to a 3-D~Secure challenge, \ClaimOperatingDeclineShare\,\%
-declined. The middle number is the whole argument for a three-valued rule --- routing that
-volume to human analysts is not operationally possible and a step-up is --- and it is the
+declined. The middle number is the whole argument for a three-valued rule, and it is the
 number a bank can price before it believes anything else in this document.
 
 \textbf{Expected impact.} The deliverable is an operating guarantee, not a score, and three
-consequences follow from that --- none of which needs a quantum result. A model-risk function
+consequences follow, none needing a quantum result. A model-risk function
 can review a bound instead of a metric, which is what validation and monitoring
 \Cited{SR 26-2} asks of a decisioning model and an AUC cannot supply --- and it matters more
 here, not less, because fraud detection reads on the \Cited{EU AI Act} Annex~III
-\emph{exception}, so no external high-risk regime supplies that discipline. The operating point becomes an input: $\alpha$ and the band
-budget are chosen by the business, and the certificate reports whether that choice is
-attainable rather than asserting it. And the band bounds what the expensive component costs ---
+\emph{exception}, so no external high-risk regime supplies that discipline. The operating point becomes an input: the business
+chooses $\alpha$ and the band budget, and the certificate reports whether that choice is
+attainable. And the band bounds what the expensive component costs ---
 Section~\ref{sec:feasibility} prices it against the authorisation budget --- which is what makes
 a quantum re-ranker discussable at all. The statement prices the other side itself ---
 \Cited{\$443bn in 2021} falsely declined globally, \Cited{40\,\%+} of customers abandoning after
-one --- and a certified bound on the rate is what turns that into a number a bank can act on. We
-attach no figure of our own: the issuer-side cost is not public, so the study certifies the
-\emph{rate} and leaves the bank to multiply it.
+one --- and a certified bound on the rate is what turns that into a number a bank can act on. The
+issuer-side cost is not public, so we certify the \emph{rate} and leave the bank to multiply
+it.
 
 \textbf{Neither quantum arm produced a usable result, and they failed differently.} A fidelity
 quantum kernel was rejected by its own a-priori screens before it was run on the task --- a

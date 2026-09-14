@@ -185,6 +185,33 @@ with the two other portfolio divergences. Nothing in this repository can fix it.
 
 ---
 
+## Closed 2026-09-14 -- literature pass
+
+Four items from a sweep of the 2026 conformal and tensor-network literature, all resolved.
+
+* **CP-18's stated limitation was added, after the check that nearly removed it.** SCRC's closing
+  paragraph concedes it gives no guarantee for rejected samples, which "should be handled by a
+  downstream fallback mechanism such as human review" -- the region certified here. Two
+  verification passes reported the sentence absent before a third found it: **it is in v2 and
+  both passes had read v1**, the version our own entry was dated to. Quoted in section 1, entry
+  pinned to v2, method recorded in [D-164](decisions.md).
+* **The p-value's factor of e is a conservatism its own source recommends against.** Both risks
+  are 0/1 losses and Bates et al. Remark 4 says the exact binomial "should always be used" there.
+  Measured at exactly `e` on all five certified cells, where the p-values run 1e-34 to 1e-103
+  against a Holm threshold near 0.005, so nothing flips. Not changed -- the pre-registration is
+  frozen and the single `D_test` read is spent. [D-163](decisions.md).
+* **Holm rather than LTT's recommended fixed-sequence procedure.** Two opposing risks on a
+  two-dimensional grid, so no ordering can be committed in advance without prejudging which
+  binds. Chosen for validity under arbitrary dependence, at a cost this data cannot show.
+  [D-165](decisions.md).
+* **Three citation errors corrected against primary records.** The no-free-lunch paper was
+  attributed to "Yu, Xu and colleagues" -- it is Wu, Ye, Deng and Yu, naming the last author
+  first and an "Xu" who is not among them. QM-15's "about three times faster" is 2.8x, computed
+  here from runtimes the paper reports without stating any multiple, and 1.4x against its
+  full-batch variant. FR-5's datasets are YelpChi, S-FFSD, FTFD and BankSim, not IEEE-CIS.
+
+---
+
 ## Refuted
 
 Two findings from the same audit were reproduced and then **withdrawn**, and are listed so the
