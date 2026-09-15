@@ -76,7 +76,7 @@ no author to cite -- an instrument named in prose, or a lower-case package name.
 | **SW-4** | MAPIE 1.5.0 | `NOTICE`, `pyproject.toml`, `scripts/smoke.py` |
 | **SW-5** | crepes 0.9.1 | `docs/decisions.md`, `NOTICE`, `pyproject.toml`, `scripts/smoke.py` |
 | **SW-6** | XGBoost 3.4.1 | `Makefile`, `NOTICE`, `docs/CLEANROOM.md`, `docs/CREDENTIALS.md`, `docs/ENVIRONMENT.md`, `docs/FACTCHECK_LOG.md` and 20 more |
-| **SW-7** | SHAP 0.52.0 | `docs/REFERENCE_IMPLEMENTATION.md`, `NOTICE`, `docs/CLEANROOM.md`, `pyproject.toml`, `scripts/run_baselines.py`, `scripts/run_explain.py` and 2 more |
+| **SW-7** | SHAP 0.52.0 | `docs/REFERENCE_IMPLEMENTATION.md`, `NOTICE`, `docs/CLEANROOM.md`, `docs/decisions.md`, `pyproject.toml`, `scripts/run_baselines.py` and 3 more |
 | **SW-8** | scikit-learn 1.9.0 | `docs/decisions.md`, `NOTICE`, `docs/CREDENTIALS.md`, `docs/ENVIRONMENT.md`, `pyproject.toml`, `scripts/smoke.py` |
 | **SW-9** | PyTorch 2.13.0+cu130 | `Makefile`, `README.md`, `docs/CLEANROOM.md`, `docs/COMPLIANCE_CHECKLIST.md`, `docs/ENVIRONMENT.md`, `docs/decisions.md` and 2 more |
 | **SW-10** | LightGBM 4.7.0 | `docs/FACTCHECK_LOG.md`, `NOTICE`, `docs/VERIFICATION_CHECKLIST.md`, `docs/decisions.md`, `pyproject.toml`, `scripts/run_baselines.py` and 1 more |

@@ -1,47 +1,7 @@
 {
-  "S0": {
-    "detail": "16 pins exact; torch 2.13.0+cu130; no disowned dependency present",
-    "status": "PASS",
-    "subject": "dependency resolution"
-  },
-  "S1": {
-    "detail": "28q statevector in 3.03s; Aer reports device=GPU cuStateVec=True; device memory 411 -> 5347 MiB (+4936, 4096 expected)",
-    "status": "PASS",
-    "subject": "Aer GPU on sm_120"
-  },
-  "S2": {
-    "detail": "xgboost 3.4.1 device=cuda AUC 0.9972, CPU gap 1.11e-16",
-    "status": "PASS",
-    "subject": "XGBoost device=cuda"
-  },
-  "S3": {
-    "detail": "shap 0.52.0 x xgboost 3.4.1, max efficiency gap 3.81e-06",
-    "status": "PASS",
-    "subject": "SHAP TreeExplainer"
-  },
   "S4": {
-    "detail": "braket_sv ran offline with no credentials; Bell counts {'00': 120, '11': 136}",
-    "status": "PASS",
+    "detail": "braket_sv did not run offline: ImportError: cannot import name 'NoSuchThing' from 'braket.devices' (/home/a-koike/dev/github/GlobalQuantum_AI/GlobalQuantum_AI_HSBC_Project/.venv/lib64/python3.12/site-packages/braket/devices/__init__.py)",
+    "status": "FAIL",
     "subject": "Braket LocalSimulator offline"
-  },
-  "S5": {
-    "detail": "qiskit-aer 0.17.2 agrees with qiskit 2.5.2 to 1e-9",
-    "status": "PASS",
-    "subject": "Aer against Qiskit 2.5"
-  },
-  "S6": {
-    "detail": "pandas 3.0.5: silent no-op confirmed; AST gate flags bad and passes good",
-    "status": "PASS",
-    "subject": "pandas chained assignment"
-  },
-  "S7": {
-    "detail": "ULB creditcard.csv not present, and no script here fetches it (docs/PROVENANCE.md 1.2). E15 was not run for this reason.",
-    "status": "SKIP",
-    "subject": "ULB temporal split feasibility"
-  },
-  "S8": {
-    "detail": "5 disagreements with ceil((n+1)(1-alpha)) over the pinned alpha grid, all conservative; conformal/split.py uses the reference form",
-    "status": "PASS",
-    "subject": "MAPIE conformal quantile"
   }
 }

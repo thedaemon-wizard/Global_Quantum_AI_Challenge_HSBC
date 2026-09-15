@@ -312,6 +312,33 @@ def s3_shap_treeexplainer() -> str:
 # --------------------------------------------------------------------------------------
 # S4  Braket LocalSimulator without AWS
 # --------------------------------------------------------------------------------------
+# Run in a child interpreter rather than in this one.  The point of S4 is that the import
+# happens in an environment with no AWS anything, and in-process that was only incidentally
+# true: whether `braket` had already been imported depended on which checks ran before it.
+#
+# It stopped being true at all on 2026-09-14.  With IPython installed -- which arrives with
+# `ipykernel` in the `.[notebook]` extra -- running S3 before S4 made S4 raise
+# `KeyError: 'get_ipython'`.  The cause is upstream: `braket/ipython_utils.py` does
+# `sys.modules["IPython"].__dict__["get_ipython"]`, reaching into the module dictionary and so
+# bypassing the module `__getattr__` that modern IPython resolves `get_ipython` through.  After
+# `import shap`, `IPython` is in `sys.modules` with `hasattr(m, "get_ipython")` True and
+# `"get_ipython" in m.__dict__` False, which is exactly the state that raises.
+#
+# A child process gets a clean interpreter, so the check tests what it says it tests and cannot
+# be broken by an unrelated import in an earlier check.  Nothing in the pipeline was affected --
+# `run_explain.py` (shap) and `check_parity.py` (braket) never share a process -- so this was a
+# defect in the gate, not in any reported number.  See D-177.
+_S4_CHILD = """
+import json, sys
+from braket.circuits import Circuit
+from braket.devices import LocalSimulator
+
+device = LocalSimulator("braket_sv")
+result = device.run(Circuit().h(0).cnot(0, 1), shots=256).result()
+json.dump(dict(result.measurement_counts), sys.stdout)
+"""
+
+
 def s4_braket_local_offline() -> str:
     """``LocalSimulator`` runs with no credentials, no config file and no region.
 
@@ -321,30 +348,30 @@ def s4_braket_local_offline() -> str:
     Every AWS environment variable is cleared and HOME is redirected away from any
     ``~/.aws`` before the import, so credential discovery has nothing to find.
     """
+    import subprocess
     import tempfile
 
-    saved = {k: v for k, v in os.environ.items() if k.startswith("AWS_") or k == "HOME"}
-    try:
-        for key in list(os.environ):
-            if key.startswith("AWS_"):
-                del os.environ[key]
-        with tempfile.TemporaryDirectory() as empty_home:
-            os.environ["HOME"] = empty_home
-            from braket.circuits import Circuit
-            from braket.devices import LocalSimulator
-
-            device = LocalSimulator("braket_sv")
-            circuit = Circuit().h(0).cnot(0, 1)
-            result = device.run(circuit, shots=256).result()
-            counts = result.measurement_counts
-    finally:
-        for key in [k for k in os.environ if k.startswith("AWS_")]:
-            del os.environ[key]
-        os.environ.update(saved)
+    environment = {k: v for k, v in os.environ.items() if not k.startswith("AWS_")}
+    with tempfile.TemporaryDirectory() as empty_home:
+        environment["HOME"] = empty_home
+        finished = subprocess.run(
+            [sys.executable, "-c", _S4_CHILD],
+            capture_output=True,
+            text=True,
+            env=environment,
+            timeout=300,
+        )
+    if finished.returncode != 0:
+        raise SmokeFailure(
+            f"braket_sv did not run offline: {finished.stderr.strip().splitlines()[-1]}"
+            if finished.stderr.strip()
+            else "braket_sv did not run offline and said nothing"
+        )
+    counts = json.loads(finished.stdout)
 
     if set(counts) - {"00", "11"}:
-        raise SmokeFailure(f"Bell state produced impossible outcomes: {dict(counts)}")
-    return f"braket_sv ran offline with no credentials; Bell counts {dict(counts)}"
+        raise SmokeFailure(f"Bell state produced impossible outcomes: {counts}")
+    return f"braket_sv ran offline with no credentials; Bell counts {counts}"
 
 
 # --------------------------------------------------------------------------------------

@@ -5920,3 +5920,45 @@ printed tables, though not the assertions, which are `assert` statements rather 
 comparisons. The walkthrough fails loudly if a number moves; it would only look different if
 formatting did.
 
+<a id="d-177"></a>
+### D-177 The notebook extra turned a smoke check red, and the check was the thing at fault
+
+Verifying the notebook from a fresh clone -- `make venv`, then `pip install -e '.[notebook]'` as
+the documentation tells a reader to, then `make smoke` -- produced **`[FAIL] S4 Braket
+LocalSimulator offline: KeyError: 'get_ipython'`**. The eighth clean-room pass had S4 green, and
+the only difference was the extra.
+
+**The cause is upstream and worth stating precisely**, because the obvious reading is wrong.
+`braket/ipython_utils.py` decides whether it is in a notebook with:
+
+```python
+if "IPython" in sys.modules:
+    get_ipython = sys.modules["IPython"].__dict__["get_ipython"]
+```
+
+That reaches into the module dictionary and so **bypasses the module-level `__getattr__`** that
+modern IPython resolves `get_ipython` through. After `import shap`, `IPython` is in `sys.modules`
+with `hasattr(module, "get_ipython")` **True** and `"get_ipython" in module.__dict__` **False** --
+precisely the state that raises. `getattr()` would work; indexing `__dict__` does not.
+
+**Reproduced exactly**: S4 alone passes, S3 then S4 fails. S3 imports shap, S4 imports braket.
+
+**The blast radius is one check, and it is not any reported number.** `scripts/smoke.py` is the
+only place in the repository that imports shap and braket in the same process --
+`run_explain.py` (shap) and `check_parity.py` / `kernel.py` (braket) never share one. IPython is
+not in `.[dev]`; it arrives with `ipykernel`. So nothing in the pipeline was ever affected, and
+nothing was before 2026-09-14 either.
+
+**Fixed by making S4 test what it says it tests.** Its docstring claims the AWS environment is
+cleared "before the import" -- in-process that was only *incidentally* true, since whether
+`braket` had already been imported depended on which checks ran earlier in the same interpreter.
+The Braket exercise now runs in a **child interpreter** with a scrubbed environment, so the claim
+holds by construction and an unrelated import in an earlier check cannot break it. Negative-tested:
+breaking the child's import still fails the check, with the child's own error text.
+
+**Not worked around.** Forcing `get_ipython` into `IPython.__dict__` before importing braket
+would have made the symptom go away and left S4 asserting something weaker than it advertises.
+The extra is also unchanged: isolating it from `.[dev]` was right and remains right -- it kept
+`make venv` and every clean-room pass clean. What it did not do, and could not, was protect a
+check that imports two libraries into one process.
+
