@@ -5882,3 +5882,41 @@ moved.
 Safe to regenerate: `run_explain.py` reads `train`/`band`/`cal` and never authorises `D_test`, so
 no evaluation was spent.
 
+<a id="d-176"></a>
+### D-176 The Colab claim was tested by simulating Colab, not by asserting it
+
+`README.md` now says the walkthrough notebook "opens in Colab and runs there with no setup".
+That is a claim about an environment this project cannot log into, and the repository's habit is
+that a claim with no check behind it is the thing that turns out to be wrong.
+
+**What made it cheap to claim is also what made it testable.** `walkthrough.py` imports only
+`pandas`, which Colab preinstalls, and reads **seven committed CSVs** -- no dataset, no parquet,
+no run artefacts, no GPU. So the entire Colab setup is a `git clone`, and the runtime's only
+distinguishing feature is that `google.colab` is importable.
+
+**Simulated on 2026-09-14, and the fidelity is the point:**
+
+* the notebook was **fetched from `raw.githubusercontent.com`**, not read from the working tree,
+  and confirmed byte-identical to the committed copy -- so what ran is what a Colab user gets;
+* the working directory was an **empty** stand-in for `/content`, with no repository present;
+* `google.colab` was made importable as a PEP 420 namespace package, so the guard fired for the
+  same reason it fires in Colab rather than because a flag was set.
+
+It cloned itself, changed into the checkout, and ran to completion. **23 of 24 cells produced
+byte-identical output to the committed notebook.** The one difference is the bootstrap cell,
+empty locally and carrying `Cloning into ...` in Colab, which is the behaviour it was written to
+have.
+
+**Deliberately not added as a test.** It needs the network and it clones a repository, which
+makes it a poor gate -- it would fail for reasons unrelated to the code and teach a reader to
+ignore it, which is [D-080](#d-080)'s failure. The procedure is recorded in
+[VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md) so it can be repeated, and the two gates
+that *do* run everywhere -- the stdlib sync test and the fingerprint test -- cover the notebook
+itself.
+
+**One thing this does not test**: Colab's actual Python and pandas versions. It ran on this
+project's pinned pandas. A pandas major release could change a `to_string` layout and alter the
+printed tables, though not the assertions, which are `assert` statements rather than text
+comparisons. The walkthrough fails loudly if a number moves; it would only look different if
+formatting did.
+
