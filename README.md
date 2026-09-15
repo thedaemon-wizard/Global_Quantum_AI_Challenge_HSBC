@@ -413,7 +413,11 @@ make walkthrough  # trace the certificate against the committed tables (seconds,
 from `results/tables/` and asserts each step. It refits nothing, so it costs about a second and
 answers *is what is reported internally consistent?* **Its executed output is committed** as
 [`notebooks/walkthrough.ipynb`](notebooks/walkthrough.ipynb), which GitHub renders inline, so
-every assertion and value can be read without cloning or running anything; `make notebook`
+every assertion and value can be read without cloning or running anything, and which
+[opens in Colab](https://colab.research.google.com/github/thedaemon-wizard/Global_Quantum_AI_Challenge_HSBC/blob/main/notebooks/walkthrough.ipynb)
+and runs there with no setup — its first cell clones this repository when it detects a Colab
+runtime and does nothing otherwise, and the walkthrough imports only pandas and reads committed
+tables, so there is no dataset to stage and nothing to install; `make notebook`
 regenerates it and needs the optional `.[notebook]` extra, which is kept out of `.[dev]` so that
 `make venv` and the clean-room procedure are unchanged. `make reproduce` refits everything and
 answers *do the tables regenerate?* The full-scale tensor-network sweep is deliberately excluded

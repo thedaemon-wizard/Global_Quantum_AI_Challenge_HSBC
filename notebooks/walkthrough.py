@@ -28,9 +28,32 @@ consistent, not that the models retrain -- ``make reproduce`` is what does that.
 # %%
 from __future__ import annotations
 
+import os
+import subprocess
 from pathlib import Path
 
 import pandas as pd
+
+# Colab bootstrap, and a no-op everywhere else.  The guard is the import itself: `google.colab`
+# exists only inside a Colab runtime, so locally this block is skipped entirely and the cell
+# contributes no output to the committed notebook.
+#
+# The clone is all the setup there is.  This file imports only pandas, which Colab preinstalls,
+# and reads seven committed CSVs -- no dataset, no parquet, no run artefacts, no GPU.  So there
+# is nothing to `pip install` and nothing to stage; `make reproduce` is what needs an
+# environment, and this deliberately is not that.
+REPOSITORY = "https://github.com/thedaemon-wizard/Global_Quantum_AI_Challenge_HSBC.git"
+
+try:
+    import google.colab  # noqa: F401
+except ImportError:
+    pass
+else:
+    checkout = Path(REPOSITORY).stem
+    if not Path(checkout).exists():
+        subprocess.run(["git", "clone", "--depth", "1", REPOSITORY, checkout], check=True)
+    os.chdir(checkout)
+    print(f"Colab detected; running against a fresh clone in {Path.cwd()}")
 
 
 def _repository_root() -> Path:

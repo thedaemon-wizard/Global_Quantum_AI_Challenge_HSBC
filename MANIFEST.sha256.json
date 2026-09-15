@@ -1,6 +1,6 @@
 {
   "scientific": {
-    "notebooks/walkthrough.ipynb": "479017680b7abac145355a5154441a96aefdf6f6c043a48c36bc9cb5036ff86f",
+    "notebooks/walkthrough.ipynb": "4f55042291fbb65b487b1e74aaf5aa887205113f57e0557368d47a06e69dc2eb",
     "results/figures/architecture.pdf": "c9e5b28e560660d8285c31b299e1bfe0634f8bb68271c904c0612703243e55be",
     "results/figures/architecture.png": "fe68aeef1796db0f8d1da2836ed7a98d661742dc16b431b7e435170cb8de868d",
     "results/figures/certified_region.pdf": "f03b84a9aa3831f7033c813e05b261c3b55488e7389fec2b34df6ea47261354f",
